@@ -12,6 +12,7 @@ const userService = require("./users.services.js");
 const createMt5Account = async (req, res) => {
 	try {
 		const mt5Account = await userService.handleMt5AccountCreate(req.body);
+		console.log("mt5Account", mt5Account);
 		res.status(200).json(mt5Account);
 	} catch (error) {
 		res.status(500).json({ error: error.message });

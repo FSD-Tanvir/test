@@ -41,29 +41,29 @@ const newsTradingRiskRoutes = require("./src/modules/newsTradingRisk/newsTrading
 const stopLossRiskRoutes = require("./src/modules/stopLossRisk/stopLossRisk.routes.js");
 
 // Route middleware
-app.use("/api/fox-funded/v1/challenges", challengesRoutes);
-app.use("/api/fox-funded/v1/users", usersRoutes);
-app.use("/api/fox-funded/v1/orders", orderRoutes);
-app.use("/api/fox-funded/v1/coupons", couponRoutes);
-app.use("/api/fox-funded/v1/affiliate", affiliateRoutes);
-app.use("/api/fox-funded/v1/crypto", cryptoCloudRoutes);
-app.use("/api/fox-funded/v1/paytiko", paytikoRoutes);
-app.use("/api/fox-funded/v1/zenPay", zenPayRoutes);
-app.use("/api/fox-funded/v1/challengePass", challengePassRoutes);
-app.use("/api/fox-funded/v1/veriff", veriffRoutes);
-app.use("/api/fox-funded/v1/disableAccount", disableAccountRoutes);
-app.use("/api/fox-funded/v1/breach", breachRoutes);
-app.use("/api/fox-funded/v1/contracts", contractRoutes);
-app.use("/api/fox-funded/v1/tazapay", tazaPayRoutes);
-app.use("/api/fox-funded/v1/twoPercentRisk", twoPercentRisk);
-app.use("/api/fox-funded/v1/withdraw", withdrawRequest);
-app.use("/api/fox-funded/v1/leaderboard", leaderboard);
-app.use("/api/fox-funded/v1/meta", metaRoutes);
-app.use("/api/fox-funded/v1/orderHistory", orderHistory);
-app.use("/api/fox-funded/v1/affiliatePayout", affiliatePayout);
-app.use("/api/fox-funded/v1/banEmail", banEmail);
-app.use("/api/fox-funded/v1/newsTradingRisk", newsTradingRiskRoutes);
-app.use("/api/fox-funded/v1/stopLossRisk", stopLossRiskRoutes);
+app.use("/api/foxx-funded/v1/challenges", challengesRoutes);
+app.use("/api/foxx-funded/v1/users", usersRoutes);
+app.use("/api/foxx-funded/v1/orders", orderRoutes);
+app.use("/api/foxx-funded/v1/coupons", couponRoutes);
+app.use("/api/foxx-funded/v1/affiliate", affiliateRoutes);
+app.use("/api/foxx-funded/v1/crypto", cryptoCloudRoutes);
+app.use("/api/foxx-funded/v1/paytiko", paytikoRoutes);
+app.use("/api/foxx-funded/v1/zenPay", zenPayRoutes);
+app.use("/api/foxx-funded/v1/challengePass", challengePassRoutes);
+app.use("/api/foxx-funded/v1/veriff", veriffRoutes);
+app.use("/api/foxx-funded/v1/disableAccount", disableAccountRoutes);
+app.use("/api/foxx-funded/v1/breach", breachRoutes);
+app.use("/api/foxx-funded/v1/contracts", contractRoutes);
+app.use("/api/foxx-funded/v1/tazapay", tazaPayRoutes);
+app.use("/api/foxx-funded/v1/twoPercentRisk", twoPercentRisk);
+app.use("/api/foxx-funded/v1/withdraw", withdrawRequest);
+app.use("/api/foxx-funded/v1/leaderboard", leaderboard);
+app.use("/api/foxx-funded/v1/meta", metaRoutes);
+app.use("/api/foxx-funded/v1/orderHistory", orderHistory);
+app.use("/api/foxx-funded/v1/affiliatePayout", affiliatePayout);
+app.use("/api/foxx-funded/v1/banEmail", banEmail);
+app.use("/api/foxx-funded/v1/newsTradingRisk", newsTradingRiskRoutes);
+app.use("/api/foxx-funded/v1/stopLossRisk", stopLossRiskRoutes);
 
 runAllFunctions();
 
