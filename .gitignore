@@ -1,0 +1,122 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# dotenv environment variables file
+.env
+
+# npm package lock file
+package-lock.json
+
+# Yarn lock file
+yarn.lock
+
+# MacOS file
+.DS_Store
+
+# Editor directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional cache directory for Jest
+jest/
+
+# Serverless Framework directories
+.serverless/
+
+# Stylelint cache
+.stylelintcache
+
+# next.js build output
+.next/
+
+# Gatsby files
+.cache/
+public/
+
+# Nuxt.js build / generated files
+.nuxt/
+dist/
+
+# vuepress build output
+.vuepress/dist
+
+# Sapper build / generated files
+__sapper__/
+static/
+
+# Gridsome build / generated files
+.gridsome/
+
+# Sanity Studio
+.sanity/
+
+# Plop.js
+plopfile.js
+
+# Storybook files
+.storybook/
+.storybook-static/
+
+# FuseBox
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# node-waf configuration
+.lock-wscript
+
+# Unit test temp files
+.nyc_output/
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Compiled binary addons
+build/Release
+
+# Compiled source
+dist/
+tmp/
+temp/
+
+# Parcel cache
+.cache/
+#testing file
+test.http
+biome.json
+oauth.md
+uploads
+apiTest.http
