@@ -24,77 +24,72 @@ const createOrder = async (orderData) => {
 		//  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details 💬💬💬💬💬💬💬💬
 
 		// Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
-		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #007bff; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
-		  <h2 style="color: #007bff; text-align: center;">Your Order Confirmation</h2>
-		  <p style="font-size: 16px; color: #333; text-align: center;">
-		    Your order has been successfully created with the following details:
-		  </p>
-		  <p style="font-size: 18px; color: #007bff; font-weight: bold; text-align: center;">
-		    <span style="background-color: #e0f7fa; padding: 10px; border-radius: 5px; border: 1px solid #007bff;">
-		      Order ID: ${orderId}
-		    </span>
-		  </p>
-		  <p style="font-size: 16px; color: #333; text-align: center;">
-		    To track your order, please log in with the following credentials in our dashboard:
-		  </p>
-		  <p style="font-size: 16px; color: #333; margin-bottom: 10px; text-align: center;">
-		    <strong>Email:</strong>
-		    <span style="display: inline-block; background-color: #e0f7fa; padding: 10px; border-radius: 5px; border: 1px solid #007bff;">
-		      ${buyerDetails?.email}
-		    </span>
-		  </p>
-		  <p style="font-size: 16px; color: #333; margin-bottom: 20px; text-align: center;">
-		    <strong>Password:</strong>
-		    <span style="display: inline-block; background-color: #e0f7fa; padding: 10px; border-radius: 5px; border: 1px solid #007bff;">
-		      ${buyerDetails?.password}
-		    </span>
-		  </p>
-		  <div style="text-align: center; margin-bottom: 20px;">
-		    <a href="https://summitstrike.com/sign-in" style="display: inline-block; padding: 12px 25px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;">
-		      Login to Track Your Order
-		    </a>
-		  </div>
-		  <p style="font-size: 14px; color: #777; margin-top: 20px;">
-		    If you have any questions, feel free to
-		    <a href="https://summitstrike.com/contact" style="color: #007bff; text-decoration: none; font-weight: bold;">
-		      contact our support team
-		    </a>.
-		  </p>
-		  <div style="margin-top: 20px;">
-		    <a href="https://t.me/summitsrikecapital">
-		      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
-		    </a>
-		    <a href="https://discord.com/invite/2NpszcabHC">
-		      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRILFgGb5Qgu-Lc9kkKFcnjKso7EI85qQcy8A&s" alt="Discord" style="width: 32px; height: 32px;">
-		    </a>
-		  </div>
-		  <p style="font-size: 14px; color: #777;">
-		    Thank you for shopping with us!
-		  </p>
+		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #DB8112; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
+		<div style="text-align: center; margin-bottom: 15px;">
+		  <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 120px; height: auto;">
 		</div>
-
-		<style>
-		  @media only screen and (max-width: 600px) {
-		    div[style] {
-		      padding: 10px !important;
-		    }
-		    h2[style] {
-		      font-size: 22px !important;
-		    }
-		    p[style], a[style] {
-		      font-size: 16px !important;
-		    }
-		    a[style] {
-		      padding: 10px 20px !important;
-		    }
+		<h2 style="color: #DB8112; text-align: center; margin-bottom: 20px;">Your Order Confirmation</h2>
+		<p style="font-size: 16px; color: #333; text-align: center; margin-bottom: 10px;">
+		  Your order has been successfully created with the following details:
+		</p>
+		<p style="font-size: 20px; color: #333; font-weight: bold; text-align: center; margin-bottom: 20px;">
+		  Order ID: <span style="color: #DB8112; font-style: italic; font-size: 24px; text-decoration: underline dotted; font-weight: normal;">
+			${orderId}
+		  </span>
+		</p>
+		<p style="font-size: 16px; color: #333; text-align: center; margin-bottom: 10px;">
+		  To track your order, please log in with the following credentials in our dashboard:
+		</p>
+		<p style="font-size: 16px; color: #333; margin-bottom: 5px; text-align: center;">
+		  <strong>Email:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.email}</span>
+		</p>
+		<p style="font-size: 16px; color: #333; margin-bottom: 20px; text-align: center;">
+		  <strong>Password:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.password}</span>
+		</p>
+		<div style="text-align: center; margin-bottom: 20px;">
+		  <a href="https://foxx-funded.com/login" style="display: inline-block; padding: 12px 25px; background-color: #DB8112; color: #fff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;">
+			Login to Track Your Order
+		  </a>
+		</div>
+		<p style="font-size: 14px; color: #777; margin-top: 20px;">
+		  If you have any questions, feel free to
+		  <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+			contact our support team
+		  </a>.
+		</p>
+		<div style="margin-top: 20px; text-align: center;">
+		  <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
+			<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
+		  </a>
+		 
+		</div>
+		<p style="font-size: 14px; color: #777; margin-top: 20px;">
+		  Thank you for shopping with us!
+		</p>
+	  </div>
+	  
+	  <style>
+		@media only screen and (max-width: 600px) {
+		  div[style] {
+			padding: 10px !important;
 		  }
-		</style>
-		`;
+		  h2[style] {
+			font-size: 22px !important;
+		  }
+		  p[style], a[style] {
+			font-size: 16px !important;
+		  }
+		  a[style] {
+			padding: 10px 20px !important;
+		  }
+		}
+	  </style>
+	  `;
 
 		if (newOrder) {
 			await sendEmailSingleRecipient(
 				buyerDetails?.email,
-				"onboard your order",
+				"Onboard your order",
 				"Your order has been successfully created with the following details:",
 				htmlTemplate
 			);

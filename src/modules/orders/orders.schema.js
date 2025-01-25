@@ -25,19 +25,6 @@ const buyerDetailsSchema = new Schema(
 	}
 );
 
-const havenCapitalDetailsSchema = new Schema(
-	{
-		havenUserName: { type: String },
-		havenUserEmail: {
-			type: String,
-		},
-		mt5accountId: { type: String },
-	},
-	{
-		_id: false,
-	}
-);
-
 const orderSchema = new Schema(
 	{
 		orderId: { type: String, unique: true },
@@ -59,11 +46,8 @@ const orderSchema = new Schema(
 			type: buyerDetailsSchema,
 			required: true,
 		},
-		havenCapitalDetails: {
-			type: havenCapitalDetailsSchema,
-			default: null,
-		},
-		referralCode: { type: String, default: String },
+
+		referralCode: { type: String, default: "" },
 		subtotal: { type: Number, default: null }, // challenge_price
 		discountPrice: { type: Number, default: null },
 		totalPrice: { type: Number, default: null },
