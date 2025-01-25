@@ -76,6 +76,10 @@ const updateCoupon = async (id, updateData) => {
 			coupon.applicablePaymentMethods = updateData.applicablePaymentMethods;
 		}
 
+		if (updateData.status) {
+			coupon.status = updateData.status;
+		}
+
 		// Save the updated coupon
 		coupon = await coupon.save();
 
@@ -98,7 +102,6 @@ const allCoupons = async () => {
 		};
 	}
 };
-
 
 module.exports = {
 	createCoupon,
