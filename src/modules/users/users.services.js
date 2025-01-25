@@ -38,10 +38,10 @@ const handleMt5AccountCreate = async (userDetails) => {
 		const createMt5Account = await accountCreateAndDeposit(userDetails);
 		const amount = userDetails.amount;
 
-		// Find the last created document and update it by pushing a new entry into the dailyData array
 		const result = await StoreDataModel.findOneAndUpdate(
-			{}, // Empty filter to select all documents
+			{}, // Empty filter to match all documents
 			{
+				// Push a new entry into the `dailyData` array
 				$push: {
 					dailyData: {
 						mt5Account: createMt5Account?.login,
@@ -54,8 +54,10 @@ const handleMt5AccountCreate = async (userDetails) => {
 				},
 			},
 			{
-				sort: { _id: -1 }, // Sort by _id in descending order to get the last document
+				sort: { _id: -1 }, // Sort by `_id` in descending order to get the last document
 				new: true, // Return the updated document
+				upsert: true, // Create a new document if none exists
+				setDefaultsOnInsert: true, // Set default values if inserting a new document
 			}
 		);
 
