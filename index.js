@@ -7,7 +7,7 @@ const config = require("./src/config/config");
 const app = express();
 
 app.use(cors()); // Enable CORS for all routes
-app.use(bodyParser.urlencoded({ extended: true })); // Enable CORS
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()); // Parse JSON bodies
 app.use(bodyParser.json()); // Parse JSON bodies using body-parser
 
@@ -86,7 +86,7 @@ mongoose
 
 // Test route to check if server is running
 app.get("/", (req, res) => {
-	res.send("summit-capital-server-running");
+	res.send("Foxx-Funded-server-v2-backend is running");
 });
 
 // Graceful error handling

@@ -45,12 +45,9 @@ const mt5Account = new Schema(
 			default: "running",
 		},
 		challengeStageData: { type: Object, required: true },
-		isTrialAccount: { type: Boolean, default: false },
 	},
 	{ timestamps: true }
 );
-// Sparse index will allow multiple null values
-// mt5Account.index({ account: 1 }, { unique: true, sparse: true });
 
 // Define the main user schema
 const UserSchema = new Schema(
@@ -81,11 +78,14 @@ const UserSchema = new Schema(
 			default: "user",
 		},
 		affiliate: { type: Boolean, default: false },
-		hasUsedTrial: { type: Boolean, default: false },
-		hadTrial: { type: Boolean, default: false },
 	},
 	{ timestamps: true }
 );
+
+// Virtual for full name
+UserSchema.virtual("fullName").get(function () {
+	return `${this.first || ""} ${this.last || ""}`.trim();
+});
 
 // Method to generate JWT token for user authentication
 UserSchema.methods.generateAuthToken = function () {
