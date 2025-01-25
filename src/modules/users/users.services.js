@@ -56,8 +56,8 @@ const handleMt5AccountCreate = async (userDetails) => {
 			{
 				sort: { _id: -1 }, // Sort by `_id` in descending order to get the last document
 				new: true, // Return the updated document
-				upsert: true, // Create a new document if none exists
-				setDefaultsOnInsert: true, // Set default values if inserting a new document
+				// upsert: true, // Create a new document if none exists
+				// setDefaultsOnInsert: true, // Set default values if inserting a new document
 			}
 		);
 
