@@ -350,8 +350,8 @@ const updateOrder = async (id, data) => {
 										<p>Your Match Trader account has been successfully created. Here are your credentials:</p>
 										<p><strong>Account: :</strong> ${matchingAccount.account}</p>
 										<p><strong>Password: :</strong> ${matchingAccount.masterPassword}</p>
-										<p><strong>Platform: :</strong> Match Trader</p>
-										<p><strong>Broker: :</strong> Match Trader</p>
+										<p><strong>Platform: :</strong> MT5 </p>
+										<p><strong>Broker: :</strong> MT5 </p>
 										<p>Please keep this information secure and do not share it with anyone.</p>
 										<div class="download-links">
 											<p>Download the Match Trader for:</p>
