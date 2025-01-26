@@ -262,7 +262,6 @@ const resetPassword = async (req, res) => {
 const normalRegister = async (req, res) => {
 	try {
 		const result = await userService.normalRegister(req.body);
-		console.log("🚀 ~ normalRegister ~ result:", result);
 
 		res.status(201).json(result); // Respond with the created user
 	} catch (error) {
