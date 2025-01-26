@@ -354,7 +354,7 @@ const updateOrder = async (id, data) => {
 										<p><strong>Broker: :</strong> MT5 </p>
 										<p>Please keep this information secure and do not share it with anyone.</p>
 										<div class="download-links">
-											<p>Download the Match Trader for:</p>
+											<p>Download the MT5 for:</p>
 											<a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Android</a>
 											<a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank" rel="noopener noreferrer">iOS</a>
 											<a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Desktop</a>
