@@ -597,7 +597,6 @@ const normalRegister = async (data) => {
 			const user = new MUser(data);
 
 			const res = await user.save();
-			console.log(res);
 
 			return user;
 		}
