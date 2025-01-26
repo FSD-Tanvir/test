@@ -1,28 +1,24 @@
+const invoiceMailingHTMLTemplate = async (order) => {
+	let addOnsRow = "";
 
-const invoiceMailingHTMLTemplate = async(order) => {
-
-
-    let addOnsRow = '';
-
-        if (order?.addOns !== null || order?.addOns !== undefined || order?.addOns !== 0) {
-            addOnsRow = `
+	if (order?.addOns !== null || order?.addOns !== undefined || order?.addOns !== 0) {
+		addOnsRow = `
                 <tr>
                     <td colspan="2">Addons:</td>
                     <td>+ $${order?.addOns}</td>
                 </tr>
             `;
-        }
+	}
 
-    let Discount = 0;
+	let Discount = 0;
 
-    if(order.discountPrice === 0){
-        Discount = 0;
-    }
-    else{
-       Discount = Math.floor((order.orderItems[0].challengePrice) - (order.discountPrice));
-    }
+	if (order.discountPrice === 0) {
+		Discount = 0;
+	} else {
+		Discount = Math.floor(order.orderItems[0].challengePrice - order.discountPrice);
+	}
 
-    return `
+	return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -43,77 +39,74 @@ const invoiceMailingHTMLTemplate = async(order) => {
                 margin: 0 auto;
                 background-color: #ffffff;
                 padding: 20px;
-                border-radius: 8px;
+                border-radius: 10px;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                border: 2px solid #DB8112;
             }
             .header {
-                background-color: #6a1b9a;
-                padding: 20px;
                 text-align: center;
-                color: white;
-                border-radius: 8px 8px 0 0;
+                margin-bottom: 15px;
             }
-            .header h1 {
-                margin: 0;
+            .header img {
+                max-width: 120px;
+                height: auto;
+            }
+            .title {
+                color: #DB8112;
                 font-size: 24px;
+                text-align: center;
+                margin-bottom: 20px;
             }
             .content {
                 padding: 20px;
-            }
-            .content h2 {
-                font-size: 18px;
-                margin-bottom: 20px;
             }
             .order-info {
                 margin-bottom: 20px;
             }
             .order-info h3 {
-                font-size: 16px;
-                margin-bottom: 10px;
+                font-size: 18px;
+                color: #333;
+                font-weight: bold;
             }
             .order-info p {
-                margin: 0;
-                font-size: 14px;
+                font-size: 16px;
                 color: #666;
+                margin: 0;
             }
             .table-container {
                 overflow-x: auto;
+                margin-top: 10px;
             }
             table {
                 width: 100%;
                 border-collapse: collapse;
                 margin-bottom: 20px;
+                font-size: 16px;
             }
             table th, table td {
                 padding: 10px;
-                text-align: left;
                 border: 1px solid #ddd;
+                text-align: left;
             }
             table th {
                 background-color: #f5f5f5;
+                color: #333;
             }
             .total {
-                text-align: right;
                 font-weight: bold;
+                text-align: right;
             }
             .total td {
                 border: none;
             }
             .billing-address {
-                padding: 20px;
                 background-color: #f0f0f0;
-                border-radius: 8px;
-                text-align: right;
-            }
-            .billing-address h3 {
-                margin-top: 0;
-                font-size: 16px;
-                color: #6a1b9a;
-            }
-            .billing-address p {
-                margin: 5px 0;
-                font-size: 14px;
+                padding: 15px;
+                border-radius: 10px;
+                margin-top: 20px;
                 color: #333;
+                font-size: 14px;
+                text-align: right;
             }
             .footer {
                 padding: 20px;
@@ -121,23 +114,33 @@ const invoiceMailingHTMLTemplate = async(order) => {
                 color: #777;
                 font-size: 14px;
                 border-top: 1px solid #ddd;
-                border-radius: 0 0 8px 8px;
             }
-            @media (max-width: 600px) {
-                .header h1 {
-                    font-size: 20px;
+            .footer a {
+                color: #DB8112;
+                text-decoration: none;
+                font-weight: bold;
+            }
+            .cta-button {
+                display: inline-block;
+                padding: 12px 25px;
+                background-color: #DB8112;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 5px;
+                font-size: 18px;
+                font-weight: bold;
+                text-align: center;
+                margin-top: 20px;
+            }
+            @media only screen and (max-width: 600px) {
+                .container {
+                    padding: 10px !important;
                 }
-                .content h2 {
-                    font-size: 16px;
+                .title {
+                    font-size: 22px !important;
                 }
                 table th, table td {
-                    font-size: 12px;
-                }
-                .total {
                     font-size: 14px;
-                }
-                .billing-address {
-                    text-align: left;
                 }
             }
         </style>
@@ -145,13 +148,29 @@ const invoiceMailingHTMLTemplate = async(order) => {
     <body>
         <div class="container">
             <div class="header">
-                <h1>Thanks for shopping with us</h1>
+                <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
             </div>
+            <div class="title">Your Order Confirmation</div>
             <div class="content">
-                <h2>Hi ${order.buyerDetails.first} ${order.buyerDetails.last},</h2>
-                <p>We have finished processing your order:</p>
-                <div class="order-info">
-                    <h3>Order ${order.orderId} (${new Date(order.createdAt).toLocaleDateString()})</h3>
+      <p style="font-size: 18px; color: #333; margin-bottom: 10px;">
+    Hi <span style="font-weight: bold; color: #DB8112;">${order.buyerDetails.first} ${
+		order.buyerDetails.last
+	}</span>,
+</p>
+<p style="font-size: 12px; color: #333;">
+    We have finished processing your order:
+</p>
+
+
+               <div class="order-info">
+    <h3>
+        Order <span style="font-weight: bold; font-style: italic; color: #DB8112;">${
+					order.orderId
+				}</span> 
+        (${new Date(order.createdAt).toLocaleDateString()})
+    </h3>
+</div>
+
                 </div>
                 <div class="table-container">
                     <table>
@@ -159,41 +178,33 @@ const invoiceMailingHTMLTemplate = async(order) => {
                             <tr>
                                 <th>Product</th>
                                 <th>Quantity</th>
-                                <th>Price</th> 
+                                <th>Price</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>${order.orderItems[0].challengeName}</td>
                                 <td>1</td>
-                                <td>
-                                    $${order.orderItems[0].challengePrice !== null && order.orderItems[0].challengePrice !== undefined 
-                                        ? order.orderItems[0].challengePrice.toFixed(2) 
-                                        : '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'}
-                                </td>
+                                <td>${
+																	order.orderItems[0].challengePrice !== null &&
+																	order.orderItems[0].challengePrice !== undefined
+																		? order.orderItems[0].challengePrice.toFixed(2)
+																		: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																}</td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
                                 <td colspan="2">Subtotal:</td>
-                                
-                                 <td>
-                                    $${order.subtotal !== null && order.subtotal !== undefined 
-                                        ? order.subtotal.toFixed(2) 
-                                        : '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'}
-                                </td>
+                                <td>${
+																	order.subtotal !== null && order.subtotal !== undefined
+																		? order.subtotal.toFixed(2)
+																		: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																}</td>
                             </tr>
-                            ${
-                                addOnsRow
-                             }
-
                             <tr>
                                 <td colspan="2">Discount:</td>
-								<td>
-  									
-								- $${Discount}
-									
-								</td>
+                                <td>- $${Discount}</td>
                             </tr>
                             <tr>
                                 <td colspan="2">Payment method:</td>
@@ -201,34 +212,30 @@ const invoiceMailingHTMLTemplate = async(order) => {
                             </tr>
                             <tr class="total">
                                 <td colspan="2">Total:</td>
-                                  <td>
-                                    $${order.totalPrice !== null && order.totalPrice !== undefined 
-                                        ? order.totalPrice.toFixed(2) 
-                                        : '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'}
-                                </td>
+                                <td>${
+																	order.totalPrice !== null && order.totalPrice !== undefined
+																		? order.totalPrice.toFixed(2)
+																		: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																}</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
                 <div class="billing-address">
-                      <p>${order.buyerDetails.first} ${order.buyerDetails.last}<br>
-                       ${order.buyerDetails.addr}<br>
-                       ${order.buyerDetails.city}<br>
-                       ${order.buyerDetails.zipCode}<br>
+                    <p>${order.buyerDetails.first} ${order.buyerDetails.last}<br>
                        ${order.buyerDetails.country}<br>
                        ${order.buyerDetails.phone}<br>
                        ${order.buyerDetails.email}<br>
-                       </p>
+                    </p>
                 </div>
+              
             </div>
             <div class="footer">
-                <p>Thanks for shopping with us.</p>
+                <p>Thank you for shopping with us! For any questions, feel free to <a href="https://foxx-funded.com/contact-us">contact our support team</a>.</p>
             </div>
         </div>
     </body>
     </html>`;
+};
 
-    
-}
-
-module.exports = {invoiceMailingHTMLTemplate}
+module.exports = { invoiceMailingHTMLTemplate };

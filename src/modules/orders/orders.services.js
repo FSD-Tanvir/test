@@ -264,8 +264,8 @@ const updateOrder = async (id, data) => {
 			user && (await user.mt5Accounts.find((account) => account.productId === orderId));
 
 		// Prepare the HTML content for the email
-		const htmlContent = `
-							<!DOCTYPE html>
+
+		const htmlContent = `<!DOCTYPE html>
 							<html>
 							<head>
 								<style>
@@ -273,61 +273,93 @@ const updateOrder = async (id, data) => {
 										font-family: Arial, sans-serif;
 										background-color: #f4f4f4;
 										margin: 0;
-										padding: 20px;
+										padding: 0;
+										display: flex;
+										justify-content: center;
+										align-items: center;
+										min-height: 100vh;
 									}
 									.email-container {
-										background-color: #ffffff;
-										padding: 20px;
-										border-radius: 5px;
-										box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+										width: 100%;
 										max-width: 600px;
-										margin: auto;
+										background-color: #ffffff;
+										border-radius: 8px;
+										box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+										border: 2px solid #DB8112;
+										overflow: hidden;
+										text-align: center;
+										padding: 20px;
+									}
+									.logo-container {
+										background-color: #ffffff;
+										margin-bottom: 15px;
+									}
+									.logo-container img {
+										max-width: 120px;
+										height: auto;
 									}
 									.header {
-										background-color: #007bff;
-										color: #ffffff;
-										padding: 10px;
-										border-radius: 5px 5px 0 0;
-										text-align: center;
+										color: #DB8112;
+										margin-bottom: 20px;
 									}
-									.content {
-										padding: 20px;
-										color: #333333;
-									}
-									.highlight {
-										background-color: #e0f7fa;
-										color: #007bff;
-										border: 1px solid #007bff;
-										margin: 0px 4px;
-										padding: 8px 40px;
-										border-radius: 3px;
-										display: inline-block;
+									.header h2 {
+										margin: 0;
+										font-size: 24px;
 										font-weight: bold;
 									}
-									.footer {
-										text-align: center;
-										font-size: 12px;
-										color: #aaaaaa;
+									.content {
+										color: #333333;
+										font-size: 16px;
+										line-height: 1.6;
+									}
+									.content p {
+										margin: 10px 0;
+									}
+									.download-links {
 										margin-top: 20px;
+									}
+									.download-links a {
+										display: inline-block;
+										color: #ffffff;
+										background-color: #DB8112;
+										text-decoration: none;
+										font-weight: bold;
+										padding: 10px 20px;
+										border-radius: 4px;
+										margin: 10px 5px;
+									}
+									.footer {
+										padding-top: 15px;
+										font-size: 14px;
+										color: #A3A7AF;
+										margin-top: 20px;
+										border-top: 1px solid #eeeeee;
 									}
 								</style>
 							</head>
 							<body>
 								<div class="email-container">
+									<div class="logo-container">
+										<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
+									</div>
 									<div class="header">
-										<h2>Your MT5 Account Credentials</h2>
+										<h2>Your Match Trader Account Credentials</h2>
 									</div>
 									<div class="content">
 										<p>Dear User,</p>
-										<p>Your MT5 account has been successfully created. Here are your credentials:</p>
-										<p><strong>Account:</strong> <span class="highlight">${matchingAccount.account}</span></p>
-										<p><strong>Password:</strong> <span class="highlight">${matchingAccount.masterPassword}</span></p>
-										<p><strong>Platform:</strong> <span class="highlight">MT5</span></p>
-										<p><strong>Server:</strong> <span class="highlight">Haven Capital Group Ltd </span></p>
+										<p>Your Match Trader account has been successfully created. Here are your credentials:</p>
+										<p><strong>Account: :</strong> ${matchingAccount.account}</p>
+										<p><strong>Password: :</strong> ${matchingAccount.masterPassword}</p>
+										<p><strong>Platform: :</strong> Match Trader</p>
+										<p><strong>Broker: :</strong> Match Trader</p>
 										<p>Please keep this information secure and do not share it with anyone.</p>
-                    <p>Download the MT5 for Android <a href=" https://download.mql5.com/cdn/mobile/mt5/android?server=HavenCapitalGroup-Server">h https://download.mql5.com/cdn/mobile/mt5/android?server=HavenCapitalGroup-Server</a></p>
-					<p>Download the MT5 for iOS <a href=" https://download.mql5.com/cdn/mobile/mt5/ios?server=HavenCapitalGroup-Server"> https://download.mql5.com/cdn/mobile/mt5/ios?server=HavenCapitalGroup-Server</a></p>
-					<p>Download the MT5 for Desktop <a href="https://download.mql5.com/cdn/web/haven.capital.group/mt5/havencapitalgroup5setup.exe">https://download.mql5.com/cdn/web/haven.capital.group/mt5/havencapitalgroup5setup.exe</a></p>
+										<div class="download-links">
+											<p>Download the Match Trader for:</p>
+											<a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Android</a>
+											<a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank" rel="noopener noreferrer">iOS</a>
+											<a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Desktop</a>
+					
+										</div>
 									</div>
 									<div class="footer">
 										<p>Thank you for choosing our services.</p>
@@ -341,7 +373,7 @@ const updateOrder = async (id, data) => {
 		if (matchingAccount) {
 			const info = await sendEmailSingleRecipient(
 				user.email,
-				"Your MT5 Account Credentials From SSC",
+				"Your MT5 Account Credentials From Foxx Funded",
 				`Your MT5 account: ${matchingAccount.account} and password: ${matchingAccount.masterPassword}`,
 				htmlContent
 			);
