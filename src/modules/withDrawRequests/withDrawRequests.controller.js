@@ -159,7 +159,6 @@ const updateWithDrawRequestById = async (req, res) => {
 
 // Handle GET request to fetch a single withdrawal request by ID
 const getWithDrawRequestById = async (req, res) => {
-	console.log(req.params);
 	try {
 		const { id } = req.params;
 
