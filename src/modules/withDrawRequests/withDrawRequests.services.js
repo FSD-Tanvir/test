@@ -378,7 +378,7 @@ module.exports = {
 	getWithDrawRequestByAccountNumberService,
 	getAllWithDrawRequestsService,
 	getAllWithDrawRequestsByEmailService,
-	updateWithDrawRequestByIdService,
+	// updateWithDrawRequestByIdService,
 	getWithDrawRequestByIdService,
 	getAllApprovedWithDrawRequestsByEmailService,
 	getAllPayoutsWithDrawRequestsByEmailService,
