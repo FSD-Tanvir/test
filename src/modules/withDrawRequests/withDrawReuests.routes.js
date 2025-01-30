@@ -34,7 +34,7 @@ router.post("/", createWithDrawRequest);
 router.get("/by-id/:id", getWithDrawRequestById); 
 router.get("/:accountNumber", getWithDrawRequestByAccountNumber);
 router.get("/", getAllWithDrawRequests);
-router.patch("/:id", updateWithDrawRequestById);
+// router.patch("/:id", updateWithDrawRequestById);
 
 
 

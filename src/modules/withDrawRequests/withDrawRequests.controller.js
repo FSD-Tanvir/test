@@ -125,37 +125,37 @@ const getAllWithDrawRequests = async (req, res) => {
 
 
 // Handle PATCH/PUT request to update a withdrawal request by _id
-const updateWithDrawRequestById = async (req, res) => {
-	try {
-		const { id } = req.params;
-		const updateData = req.body;
+// const updateWithDrawRequestById = async (req, res) => {
+// 	try {
+// 		const { id } = req.params;
+// 		const updateData = req.body;
 
-		// Validate if the _id is provided
-		if (!id) {
-			return res.status(400).json({ message: "ID is required." });
-		}
+// 		// Validate if the _id is provided
+// 		if (!id) {
+// 			return res.status(400).json({ message: "ID is required." });
+// 		}
 
-		// Call service to update the request
-		const updatedWithDrawRequest = await updateWithDrawRequestByIdService(
-			id,
-			updateData,
-		);
+// 		// Call service to update the request
+// 		const updatedWithDrawRequest = await updateWithDrawRequestByIdService(
+// 			id,
+// 			updateData,
+// 		);
 
-		if (!updatedWithDrawRequest) {
-			return res.status(404).json({ message: "Withdrawal request not found." });
-		}
+// 		if (!updatedWithDrawRequest) {
+// 			return res.status(404).json({ message: "Withdrawal request not found." });
+// 		}
 
-		res.status(200).json({
-			message: "Withdrawal request updated successfully",
-			data: updatedWithDrawRequest,
-		});
-	} catch (error) {
-		res.status(500).json({
-			message: "Error updating withdrawal request",
-			error: error.message,
-		});
-	}
-};
+// 		res.status(200).json({
+// 			message: "Withdrawal request updated successfully",
+// 			data: updatedWithDrawRequest,
+// 		});
+// 	} catch (error) {
+// 		res.status(500).json({
+// 			message: "Error updating withdrawal request",
+// 			error: error.message,
+// 		});
+// 	}
+// };
 
 // Handle GET request to fetch a single withdrawal request by ID
 const getWithDrawRequestById = async (req, res) => {
