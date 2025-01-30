@@ -383,7 +383,7 @@ module.exports = {
 	createWithDrawRequest,
 	getWithDrawRequestByAccountNumber,
 	getAllWithDrawRequests,
-	updateWithDrawRequestById,
+	// updateWithDrawRequestById,
 	getWithDrawRequestById,
 	getApprovedAccountByNumber,
 	getAllApprovedWithDrawRequestsByEmail,
