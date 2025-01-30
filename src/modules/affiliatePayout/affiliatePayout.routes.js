@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/payout", createAffiliatePayout);
 
 // GET request to retrieve all affiliate payouts
-router.get('/affiliate-payouts', getAllAffiliatePayoutsController);
+router.get('/', getAllAffiliatePayoutsController);
 
 // GET request to retrieve all payouts
 router.get("/approved/payouts", getAllAffiliatePayouts);
