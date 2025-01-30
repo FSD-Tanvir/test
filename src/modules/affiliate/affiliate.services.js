@@ -7,22 +7,6 @@ const createAffiliate = async (affiliateData) => {
 	return await affiliate.save();
 };
 
-// Function to find an affiliate by referralCode and increment the click count
-const clickUpdateByReferralCode = async (referralCode) => {
-	// Find the affiliate by their referralCode
-	const affiliate = await MAffiliate.findOne({ referralCode });
-
-	if (!affiliate) {
-		throw new Error("Affiliate not found");
-	}
-
-	// Increment the click count
-	affiliate.click += 1;
-
-	// Save the updated affiliate document
-	return await affiliate.save();
-};
-
 const getAffiliateData = async (email) => {
 	const affiliate = await MAffiliate.findOne({ email });
 	return affiliate;
@@ -35,70 +19,103 @@ const getAllAffiliates = async () => {
 
 // Function to find an affiliate by referral code
 const getAffiliateByReferralCode = async (referralCode) => {
-    try {
-        const affiliate = await MAffiliate.findOne({ referralCode });
-        if (!affiliate) {
-            throw new Error('Affiliate not found');
-        }
-        return affiliate;
-    } catch (error) {
-        throw error;
-    }
+	try {
+		const affiliate = await MAffiliate.findOne({ referralCode });
+		if (!affiliate) {
+			throw new Error("Affiliate not found");
+		}
+		return affiliate;
+	} catch (error) {
+		throw error;
+	}
 };
 
 const updateAffiliate = async (id, affiliateData) => {
 	try {
-		// Find the current affiliate data
 		const currentAffiliate = await MAffiliate.findById(id);
 
 		if (!currentAffiliate) {
 			console.log(`No affiliate found with ID: ${id}`);
-			return null; // or handle the case as needed
+			return null; 
 		}
-
-		// Update the affiliate data
 		const updatedAffiliate = await MAffiliate.findByIdAndUpdate(id, affiliateData, {
 			new: true,
-			runValidators: true, // This option ensures that validation rules are applied
+			runValidators: true, 
 		});
 
 		// Check if status has changed to 'approved' and was not previously 'approved'
 		if (updatedAffiliate.status === "approved" && currentAffiliate.status !== "approved") {
-			const emailSubject = `Affiliate Program Approval – Welcome to Summit Strike Capital`;
-			const emailBody = `
-                <p>Dear ${updatedAffiliate.fullName},</p>
-                <p>Congratulations! We are excited to inform you that your affiliate application for Summit Strike Capital has been approved.</p>
-                <p>We look forward to partnering with you and helping you succeed as a valued affiliate. With our exclusive financial services and tools, you'll be well-equipped to promote and earn through our program.</p>
-                <p><strong>Next Steps:</strong></p>
-                <ol>
-                    <li><strong>Here is your referral link:</strong> <a href="${updatedAffiliate.referralLink}">${updatedAffiliate.referralLink}</a></li>
-                <p>If you have any questions or need assistance, don’t hesitate to reach out to our affiliate support team at <a href="mailto:support@summitstrike.com">support@summitstrike.com</a>.</p>
-                <p>Once again, welcome aboard! We’re excited to see the results we can achieve together.</p>
-                <p>Best regards, <br>Affiliate Manager<br>Summit Strike Capital</p>
-            `;
-
-			// Send the approval email
+			const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #DB8112; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
+		<div style="text-align: center; margin-bottom: 15px;">
+		  <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 120px; height: auto;">
+		</div>
+		<h2 style="color: #DB8112; text-align: center; margin-bottom: 20px;">Dear ${updatedAffiliate.fullName},</h2>
+		<p style="font-size: 16px; color: #333; text-align: center; margin-bottom: 10px;">
+		 Congratulations! We are excited to inform you that your affiliate application for Fox Funded has been approved.
+		</p>
+		<p style="font-size: 20px; color: #333; font-weight: bold; text-align: center; margin-bottom: 20px;">
+		 We look forward to partnering with you and helping you succeed as a valued affiliate. With our exclusive financial services and tools, you'll be well-equipped to promote and earn through our program.
+		</p>
+		<p style="font-size: 16px; color: #333; text-align: center; margin-bottom: 10px;">
+		  Next Steps:
+		</p>
+		</p>
+		<p style="font-size: 16px; color: #333; margin-bottom: 5px; text-align: center;">
+		  <strong>Here is your referral link::</strong> <span style="color: #DB8112; font-weight: bold;"><a href="${updatedAffiliate.referralLink}">${updatedAffiliate.referralLink}</a></span>
+		</p>
+		<div style="text-align: center; margin-bottom: 20px;">
+		  <a href="https://foxx-funded.com/login" style="display: inline-block; padding: 12px 25px; background-color: #DB8112; color: #fff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;">
+			Login to your affiliate account and see your affiliate dashboard
+		  </a>
+		</div>
+		<p style="font-size: 14px; color: #777; margin-top: 20px;">
+		  If you have any questions, feel free to
+		  <a href="https://foxx-funded.com/contact-us" target="_blank" rel="noopener noreferrer" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+			contact our support team
+		  </a>.
+		</p>
+		<div style="margin-top: 20px; text-align: center;">
+		  <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
+			<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
+		  </a>
+		</div>
+	  </div>
+	  
+	  <style>
+		@media only screen and (max-width: 600px) {
+		  div[style] {
+			padding: 10px !important;
+		  }
+		  h2[style] {
+			font-size: 22px !important;
+		  }
+		  p[style], a[style] {
+			font-size: 16px !important;
+		  }
+		  a[style] {
+			padding: 10px 20px !important;
+		  }
+		}
+	  </style>
+	  `;
 			await sendEmailSingleRecipient(
 				updatedAffiliate.email,
-				emailSubject,
 				"Your affiliate application has been approved",
-				emailBody
+				htmlTemplate
 			);
 		}
 
 		return updatedAffiliate;
 	} catch (error) {
 		console.error("Error updating affiliate:", error);
-		throw error; // rethrow or handle the error as needed
+		throw error; 
 	}
 };
 
-
 module.exports = {
 	createAffiliate,
-	clickUpdateByReferralCode,
 	getAffiliateData,
 	getAllAffiliates,
 	updateAffiliate,
-	getAffiliateByReferralCode
+	getAffiliateByReferralCode,
 };

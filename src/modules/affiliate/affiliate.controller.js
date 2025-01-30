@@ -1,10 +1,10 @@
 // controllers/affiliate.controller.js
 const affiliateService = require("./affiliate.services.js");
 const { generateReferralCode, createReferralLink } = require("../../helper/autoGenerator.js");
-const sendMail = require("../../helper/couponMailing.js");
 
 const createAffiliate = async (req, res) => {
 	const affiliateData = req.body;
+	console.log(affiliateData);
 
 	if (!affiliateData.email) {
 		return res.status(400).json({ message: "Email is required." });
@@ -21,6 +21,8 @@ const createAffiliate = async (req, res) => {
 		res.status(400).json({ message: error.message });
 	}
 };
+
+
 const getAffiliateDataHandler = async (req, res) => {
 	const { email } = req.params;
 
@@ -51,23 +53,7 @@ const updateAffiliateHandler = async (req, res) => {
 	}
 };
 
-// Click update function to handle referral link click
-const clickUpdate = async (req, res) => {
-	const { referralCode } = req.params; // Get referralCode from the URL
 
-	try {
-		// Find the affiliate by referralCode and update the click count
-		const updatedAffiliate = await affiliateService.clickUpdateByReferralCode(referralCode);
-
-		// Log the click update (for debugging)
-		console.log(`ReferralCode ${referralCode}: Click count updated to ${updatedAffiliate.click}`);
-
-		// Redirect the user to the main site (or any other destination)
-		res.redirect("https://summitstrike.com"); // Replace with your actual destination URL
-	} catch (error) {
-		res.status(400).json({ message: error.message });
-	}
-};
 
 // Controller to get an affiliate by referral code
 const getAffiliate = async (req, res) => {
@@ -88,7 +74,6 @@ const getAffiliate = async (req, res) => {
 
 module.exports = {
 	createAffiliate,
-	clickUpdate,
 	getAffiliateDataHandler,
 	getAllAffiliatesHandler,
 	updateAffiliateHandler,
