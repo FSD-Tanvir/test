@@ -22,15 +22,15 @@ router.post('/uploads', upload.single('file'), uploadContractController);
 
 router.post('/generate-public-url', generateURLContractController);
 
-// only for admin
-
-
-router.put('/:fileId/status', updateStatus)
-
 router.get('/single/:account', getSingleContractController);
 router.delete("/:account", deleteSingleContractController);
 
+// only for admin
+
+router.put('/:fileId/status', updateStatus)
+
 router.get('/', getAllContractController);
+
 router.get('/email/:email', getAllContractControllerWithEmail);
 
 
