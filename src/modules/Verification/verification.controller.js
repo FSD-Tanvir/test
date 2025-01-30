@@ -31,8 +31,15 @@ const createVeriffSessionController = async (req, res) => {
 
 
 const handleVeriffWebhook = async (req, res) => {
-    console.log("req.body", req.body)
+  
+  // console.log("In handleVeriffWebhook")
   try {
+    // console.log("req.body line number 36",req.body)
+
+    // console.log("req.body line number 37",req.body.data.verification.person)
+    // console.log("req.body line number 38",req.body.data.verification.document)
+    // console.log("req.body line number 39",req.body.data.verification.insights)
+
     const decisionData = req.body;
     const savedDecision = await saveDecision(decisionData);
     res.status(201).json(savedDecision);
