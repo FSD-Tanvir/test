@@ -5,14 +5,14 @@ const {
 	createWithDrawRequest,
 	getWithDrawRequestByAccountNumber,
 	getAllWithDrawRequests,
-	updateWithDrawRequestById,
+	// updateWithDrawRequestById,
 	getWithDrawRequestById,
 	getApprovedAccountByNumber,
 	getAllApprovedWithDrawRequestsByEmail,
 	getPayoutRequestHandler,
 	getAllPayoutsWithDrawRequestsByEmail,
 	getAllPendingWithDrawRequestsByEmail,
-	getOrderHistoryController,
+	// getOrderHistoryController,
 	getApprovedRequestsController,
 	getPendingRequestsController,
 } = require("./withDrawRequests.controller");
@@ -22,12 +22,12 @@ const router = express.Router();
 // More specific routes should come first
 router.get('/approved-requests', getApprovedRequestsController);
 router.get('/pending-requests', getPendingRequestsController);
-router.get('/history', getOrderHistoryController);
+// router.get('/history', getOrderHistoryController);
 router.get('/check-request/:accountNumber', getPayoutRequestHandler);
-router.get('/payout/approved/:email', getAllApprovedWithDrawRequestsByEmail);
-router.get('/payout/pending/:email', getAllPendingWithDrawRequestsByEmail);
+router.get('/approved/:email', getAllApprovedWithDrawRequestsByEmail);
+router.get('/pending/:email', getAllPendingWithDrawRequestsByEmail);
 router.get('/all-payout/:email', getAllPayoutsWithDrawRequestsByEmail);
-router.get('/approved/:accountNumber', getApprovedAccountByNumber);
+router.get('/all-approved/:accountNumber', getApprovedAccountByNumber);
 
 // Generic routes come later
 router.post("/", createWithDrawRequest);
