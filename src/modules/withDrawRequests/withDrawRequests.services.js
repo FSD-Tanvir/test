@@ -16,24 +16,74 @@ const createWithDrawRequestService = async (data) => {
 		// Create a new withdrawal request
 		const withdrawRequest = new MWithDrawRequest(data);
 		const savedWithDrawRequest = await withdrawRequest.save();
-
 		// Extract relevant data from the request
 		const { accountNumber, email, name, amount } = data;
+		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #DB8112; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
+		<div style="text-align: center; margin-bottom: 15px;">
+		  <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 120px; height: auto;">
+		</div>
+		<h2 style="color: #DB8112; text-align: center; margin-bottom: 20px;">Dear ${name},</h2>
+		<p style="font-size: 16px; color: #333; text-align: center; margin-bottom: 10px;">
+		  Your payout request has been successfully submitted with the following details:
+		</p>
+		<p style="font-size: 20px; color: #333; font-weight: bold; text-align: center; margin-bottom: 20px;">
+		  Account Number: <span style="color: #DB8112; font-style: italic; font-size: 24px; text-decoration: underline dotted; font-weight: normal;">
+			${accountNumber}
+		  </span>
+		</p>
+		<p style="font-size: 16px; color: #333; text-align: center; margin-bottom: 10px;">
+		  Email: <span style="color: #DB8112; font-weight: bold;">${email}</span>
+		</p>
+		</p>
+		<p style="font-size: 16px; color: #333; margin-bottom: 5px; text-align: center;">
+		  <strong>Payout Requested Amount:</strong> <span style="color: #DB8112; font-weight: bold;">${amount}</span>
+		</p>
+		<div style="text-align: center; margin-bottom: 20px;">
+		  <a href="https://foxx-funded.com/sign-in" style="display: inline-block; padding: 12px 25px; background-color: #DB8112; color: #fff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;">
+			Login to your account and see your payout status
+		  </a>
+		</div>
+		<p style="font-size: 14px; color: #777; margin-top: 20px;">
+		  Your Payout request will be Reviewed by admin Within 72 hours business day.
+		</p>
+		<p style="font-size: 14px; color: #777; margin-top: 20px;">
+		  If you have any questions, feel free to
+		  <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+			contact our support team
+		  </a>.
+		</p>
+		<div style="margin-top: 20px; text-align: center;">
+		  <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
+			<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
+		  </a>
+		</div>
+	  </div>
+	  
+	  <style>
+		@media only screen and (max-width: 600px) {
+		  div[style] {
+			padding: 10px !important;
+		  }
+		  h2[style] {
+			font-size: 22px !important;
+		  }
+		  p[style], a[style] {
+			font-size: 16px !important;
+		  }
+		  a[style] {
+			padding: 10px 20px !important;
+		  }
+		}
+	  </style>
+	  `;
 
-		// Prepare the updated email subject and body
-		const emailSubject = `Your withdrawal request has been successfully submitted - Account ${accountNumber}`;
-		const emailBody = `
-            <p>Dear ${name ? `<span style='color: #007bff;'><strong>${name}</strong></span>` : "<span style='color: #007bff;'><Strong>Trader</Strong></span>"},</p>
-            <p>We are <strong>pleased to inform you</strong> that your <strong>withdrawal request</strong> has been <strong>successfully submitted</strong> and is currently being processed.</p>
-            <p><span style="color: #28a745;">Your payout</span> will be reviewed and processed by our team within <strong>72 hours</strong>.</p>
-            <p>We appreciate your <strong>patience and understanding</strong> during this process.</p>
-            <br>
-            <p><strong>Best regards,</strong><br><span style='color: #007bff;'>The Summit Strike Team</span></p>
-        `;
-
-		// Send the approval email
-		await sendEmailSingleRecipient(email, emailSubject, null, emailBody);
-
+		if (savedWithDrawRequest) {
+			await sendEmailSingleRecipient
+				(
+					email,
+					`Your payout request has been successfully submitted Account-Number: ${accountNumber}`,
+					htmlTemplate);
+		}
 		// Return the saved withdrawal request
 		return savedWithDrawRequest;
 	} catch (error) {
@@ -55,35 +105,35 @@ const getWithDrawRequestByAccountNumberService = async (accountNumber) => {
 
 // Fetch all withdrawal requests
 const getAllWithDrawRequestsService = async () => {
-    try {
-        // Fetch all withdrawal requests
-        const withdrawRequests = await MWithDrawRequest.find();
+	try {
+		// Fetch all withdrawal requests
+		const withdrawRequests = await MWithDrawRequest.find();
 
-        // Process each withdrawal request to fetch the productName from the User collection
-        const enrichedWithdrawRequests = await Promise.all(
-            withdrawRequests.map(async (request) => {
-                // Find the user by accountNumber
-                const user = await MUser.findOne(
-                    { "mt5Accounts.account": request.accountNumber },
-                    { "mt5Accounts.$": 1 } // Only fetch the matched mt5Account
-                );
+		// Process each withdrawal request to fetch the productName from the User collection
+		const enrichedWithdrawRequests = await Promise.all(
+			withdrawRequests.map(async (request) => {
+				// Find the user by accountNumber
+				const user = await MUser.findOne(
+					{ "mt5Accounts.account": request.accountNumber },
+					{ "mt5Accounts.$": 1 } // Only fetch the matched mt5Account
+				);
 
-                // Extract the challengeName from the user's mt5Account data
-                const productName =
-                    user?.mt5Accounts?.[0]?.challengeStageData?.challengeName || "Unknown Product";
+				// Extract the challengeName from the user's mt5Account data
+				const productName =
+					user?.mt5Accounts?.[0]?.challengeStageData?.challengeName || "Unknown Product";
 
-                // Add the productName to the withdrawal request data
-                return {
-                    ...request._doc, // Spread the withdrawal request data
-                    productName, // Add the product name
-                };
-            })
-        );
+				// Add the productName to the withdrawal request data
+				return {
+					...request._doc, // Spread the withdrawal request data
+					productName, // Add the product name
+				};
+			})
+		);
 
-        return enrichedWithdrawRequests;
-    } catch (error) {
-        throw new Error(error.message);
-    }
+		return enrichedWithdrawRequests;
+	} catch (error) {
+		throw new Error(error.message);
+	}
 };
 
 // Fetch all withdrawal requests by email
@@ -212,13 +262,11 @@ Please note, after your first withdrawal, you may request your next payout as so
 // Fetch a single withdrawal request by ID
 const getWithDrawRequestByIdService = async (id) => {
 	try {
-		// Log the ID for debugging
-		// console.log("Service fetching withdrawal request with ID:", id);
-
-		const withdrawRequest = await MWithDrawRequest.findById(id); // Use string ID directly
+	
+		const withdrawRequest = await MWithDrawRequest.findById(id); 
 		return withdrawRequest;
 	} catch (error) {
-		console.error("Database query error:", error); // Log the database error
+		console.error("Database query error:", error); 
 		throw new Error(error.message);
 	}
 };
@@ -311,7 +359,7 @@ const getAllPendingRequester = async () => {
 		const pendingRequests = await MWithDrawRequest.find({ status: 'pending' });
 		const totalPendingAmount = pendingRequests.reduce((total, request) => {
 			return total + (request.amount || 0); // Safeguard in case amount is undefined/null
-		},0);
+		}, 0);
 		return {
 			pendingRequests,
 			totalLength: pendingRequests.length,

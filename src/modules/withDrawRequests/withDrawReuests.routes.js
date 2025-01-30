@@ -31,7 +31,7 @@ router.get('/approved/:accountNumber', getApprovedAccountByNumber);
 
 // Generic routes come later
 router.post("/", createWithDrawRequest);
-router.get("/by-id/:id", getWithDrawRequestById); // Modified to avoid conflicts
+router.get("/by-id/:id", getWithDrawRequestById); 
 router.get("/:accountNumber", getWithDrawRequestByAccountNumber);
 router.get("/", getAllWithDrawRequests);
 router.patch("/:id", updateWithDrawRequestById);
