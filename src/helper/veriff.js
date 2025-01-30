@@ -10,9 +10,6 @@ const veriffAPI = async (body) => {
     const data = {
   verification: body
 }
-
-
-
   try {
     const response = await fetch(url, {
       method: 'POST',
