@@ -24,45 +24,60 @@ const createOrder = async (orderData) => {
 		//  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details 💬💬💬💬💬💬💬💬
 
 		// Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
-		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 2px solid #DB8112; border-radius: 12px; background-color: #ffffff; text-align: center;">
-    <div style="text-align: center; margin-bottom: 20px;">
-        <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 80px; height: auto;">
+		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; background-color: #ffffff; border: 2px solid #DB8112; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center;">
+    <!-- Header Section -->
+    <div style="text-align: center; margin-bottom: 25px;">
+        <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 100px; height: auto;">
     </div>
-    <h2 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 24px; font-weight: bold;">
+    <h2 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 26px; font-weight: bold;">
         Your Order Confirmation
     </h2>
     <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6;">
         Your order has been successfully created. Here are the details:
     </p>
+
+    <!-- Order ID Section -->
     <div style="background-color: #fff8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DB8112;">
-        <p style="font-size: 18px; color: #333; text-align: center; margin-bottom: 10px;">
-            Order ID: <span style="color: #DB8112; font-weight: bold;">${orderId}</span>
+        <p style="font-size: 20px; color: #333; text-align: center; margin-bottom: 10px; font-weight: bold;">
+            Order ID: <span style="color: #DB8112; font-weight: 800;">${orderId}</span>
         </p>
     </div>
-    <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6;">
-        Use the credentials below to log in and track your order:
+
+    <!-- Instruction Text -->
+    <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6; font-style: italic;">
+        To track your order, please log in with the following credentials in our dashboard:
     </p>
+
+    <!-- Credentials Section -->
     <div style="background-color: #fff8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DB8112;">
-        <p style="font-size: 16px; color: #333; margin-bottom: 10px; text-align: center;">
+        <p style="font-size: 18px; color: #333; margin-bottom: 10px; text-align: center;">
             <strong>Email:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.email}</span>
         </p>
-        <p style="font-size: 16px; color: #333; margin-bottom: 10px; text-align: center;">
+        <p style="font-size: 18px; color: #333; margin-bottom: 10px; text-align: center;">
             <strong>Password:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.password}</span>
         </p>
     </div>
+
+    <!-- Call-to-Action Button -->
     <div style="text-align: center; margin-bottom: 20px;">
         <a href="https://foxx-funded.com/login" style="display: inline-block; padding: 12px 25px; background: linear-gradient(135deg, #DB8112, #ffa64d); color: #fff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">
             Login to Track Your Order
         </a>
     </div>
+
+    <!-- Support Section -->
     <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
         Need help? <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
     </p>
+
+    <!-- Social Media Section -->
     <div style="margin-top: 20px; text-align: center;">
         <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 24px; height: 24px;">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 36px; height: 36px;">
         </a>
     </div>
+
+    <!-- Footer Section -->
     <p style="font-size: 14px; color: #777; margin-top: 20px;">
         Thank you for shopping with us!
     </p>
@@ -74,7 +89,7 @@ const createOrder = async (orderData) => {
             padding: 20px !important;
         }
         h2[style] {
-            font-size: 22px !important;
+            font-size: 24px !important;
         }
         p[style], a[style] {
             font-size: 14px !important;

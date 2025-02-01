@@ -306,7 +306,8 @@ const passingChallenge = async () => {
 			const traderProfit = Number(balance - accountSize);
 
 			// check if trading days are greater than minTradingDays and traderProfit is greater than calculatedProfitTarget
-			const checkPassed = tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
+			// const checkPassed = tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
+			const checkPassed = true; //! TODO: Remove this line after testing
 
 			if (checkPassed) {
 				// Fetch the user document from the database using userId.
@@ -323,7 +324,7 @@ const passingChallenge = async () => {
 
 				if (account) {
 					const changeGroupDetails = {
-						Group: "real\\Bin-P",
+						Group: "demo\\forex-hedge-usd-01", //! TODO : Change the group
 					};
 
 					const changeGroup = await accountUpdate(account.account, changeGroupDetails);
@@ -376,148 +377,42 @@ const passingChallenge = async () => {
 const handleNextChallengeStage = async (account, user, acc) => {
 	try {
 		const { challengeStageData, productId, challengeStage } = account;
-
-		//! Check if the user have passed the trial account
-		if (
-			challengeStage === "phase1" &&
-			account.challengeStatus === "passed" &&
-			account.accountStatus === "inActive" &&
-			challengeStageData.challengeType === "Trial"
-		) {
-			const passedHTMLTemplate = `<!DOCTYPE html>
-		<html>
-		<head>
-			<style>
-				body {
-					font-family: Arial, sans-serif;
-					background-color: #f4f4f4;
-					margin: 0;
-					padding: 20px;
-content: center;
-				}
-				.email-container {
-					background-color: #ffffff;
-					padding: 20px;
-					border-radius: 5px;
-					box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-					max-width: 600px;
-					margin: auto;
-				}
-				.header {
-					background-color: #007bff;
-					color: #ffffff;
-					padding: 10px;
-					border-radius: 5px 5px 0 0;
-					text-align: center;
-				}
-				.content {
-					padding: 20px;
-					color: #333333;
-				}
-.message-warning {
-text-align: center;
-background-color: #fff3cd;
-border: 1px solid #ffeeba;
-padding: 10px 15px;
-border-radius: 5px;
-font-family: Arial, sans-serif;
-color: #856404;
-font-size: 14px;
-line-height: 1.5;
-max-width: 450px;
-margin: 10px 0;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-
-				.highlight {
-					background-color: #e0f7fa;
-					color: #007bff;
-					border: 1px solid #007bff;
-					margin: 0px 4px;
-					padding: 8px 40px;
-					border-radius: 3px;
-					display: inline-block;
-					font-weight: bold;
-				}
-
-
-
-				.footer {
-					text-align: center;
-					font-size: 12px;
-					color: #aaaaaa;
-					margin-top: 20px;
-				}
-			</style>
-		</head>
-		<body>
-			<div class="email-container">
-				<div class="header">
-					<h2>🎉 Congratulations! 🎉</h2>
-				</div>
-				<div class="content">
-					<p>Dear User,</p>
-					<p>You have passed the  <strong>${account?.challengeStageData?.challengeName}</strong>.<br> Keep up the great work! 🌟</p>
-
-<p>Download the MT5 for Android <a href="https://download.mql5.com/cdn/mobile/mt5/android?server=HavenCapitalGroup-Server">MT5 Platform Application for Android</a></p>
-<p>Download the MT5 for iOS <a href="https://download.mql5.com/cdn/mobile/mt5/ios?server=HavenCapitalGroup-Server"> MT5 Platform Application for iOS</a></p>
-<p>Download the MT5 for Desktop <a href="https://download.mql5.com/cdn/web/haven.capital.group/mt5/havencapitalgroup5setup.exe">MT5 Platform Application for Desktop</a></p>
-				</div>
-				<div class="footer">
-<p>⚠ <strong>Warning:</strong><br>
-Please ensure that you are familiar with all the 
-<a href="https://summitstrike.com/faq" target="_blank" rel="noopener noreferrer">rules and regulations</a> of <strong>Summit Strike Capital</strong>. Failure to comply may result in breach or disqualification. Stay informed and follow the guidelines closely to ensure your progress! 🚨</p>
-<p>Thank you for choosing our services.</p>
-				</div>
-			</div>
-		</body>
-		</html>`;
-
-			await sendEmailSingleRecipient(
-				user.email,
-				`🎉 Congratulations! 🎉 for passing the challenge`,
-				"",
-				passedHTMLTemplate
-			);
-		}
-
 		const purchasedProduct = user.purchasedProducts.get(productId);
-
-		// Check if the user is moving from phase1 to phase2
 		if (
 			challengeStage === "phase1" &&
 			account.challengeStatus === "passed" &&
 			account.accountStatus === "inActive" &&
 			challengeStageData.challengeType === "twoStep"
 		) {
-			// Check if there is an existing MT5 account for phase2
 			const phase2Account = await findMT5Account(user, productId, "phase2");
-
-			// Assign a new MT5 account if phase2 account doesn't exist
 			if (!phase2Account) {
 				await assignNewMT5Account(account, user, acc, purchasedProduct, "phase1", "phase2");
 			} else {
-				// Log or handle if the account already exists and continue the loop.
-				console.log(`Phase 2 account already exists for user`);
+				console.log("Phase 2 account already exists for user");
 			}
-		}
-		// Check if the user is moving from phase2 to funded stage
-		else if (
+		} else if (
 			challengeStage === "phase2" &&
 			account.challengeStatus === "passed" &&
 			account.accountStatus === "inActive" &&
 			challengeStageData.challengeType === "twoStep"
 		) {
-			// Check if there is an existing MT5 account for funded stage
 			const fundedAccount = await findMT5Account(user, productId, "funded");
-
-			// Assign a new MT5 account if funded account doesn't exist
 			if (!fundedAccount) {
 				await assignNewMT5Account(account, user, acc, purchasedProduct, "phase2", "funded");
 			} else {
-				// Log or handle if the account already exists and continue the loop.
-				console.log(`Funded account already exists for user`);
+				console.log("Funded account already exists for user");
+			}
+		} else if (
+			challengeStage === "phase1" &&
+			account.challengeStatus === "passed" &&
+			account.accountStatus === "inActive" &&
+			challengeStageData.challengeType === "oneStep"
+		) {
+			const fundedAccount = await findMT5Account(user, productId, "funded");
+			if (!fundedAccount) {
+				await assignNewMT5Account(account, user, acc, purchasedProduct, "phase1", "funded");
+			} else {
+				console.log("Funded account already exists for user");
 			}
 		}
 	} catch (error) {
@@ -537,53 +432,21 @@ const assignNewMT5Account = async (
 	try {
 		let group = acc.group;
 
-		const isMiniChallenge =
-			account.challengeStageData &&
-			account.challengeStageData.challengeName.includes("Mini Challenge");
-		if (typeof group === "string") {
-			const isSwap = group.includes("swap");
-
-			if (isMiniChallenge && newChallengeStage === "phase2") {
-				group = isSwap ? "demo\\ecn-demo-swap-1-R1" : "demo\\ecn-demo-1-R1";
-			} else if (isMiniChallenge && newChallengeStage === "funded") {
-				group = isSwap ? "demo\\ecn-demo-swap-1-R3" : "ecn-real-3-R3";
-			} else if (
-				newChallengeStage === "phase2" &&
-				account.challengeStageData.accountSize >= 50000
-			) {
-				group = isSwap ? "demo\\ecn-demo-swap-1-R3" : "demo\\ecn-demo-1-R3"; //! group to be updated
-			} else if (newChallengeStage === "phase2" && account.challengeStageData.accountSize < 50000) {
-				group = isSwap ? "demo\\ecn-demo-swap-2" : "demo\\ecn-demo-2";
-			} else if (
-				newChallengeStage === "funded" &&
-				account.challengeStageData.accountSize >= 100000
-			) {
-				group = isSwap ? "ecn-real-swap-3-R3" : "ecn-real-3-R3"; //! group to be updated
-			} else if (
-				newChallengeStage === "funded" &&
-				account.challengeStageData.accountSize == 50000
-			) {
-				group = isSwap ? "ecn-real-swap-3-R3" : "ecn-real-3-R3"; //! group to be updated
-			} else if (newChallengeStage === "funded" && account.challengeStageData.accountSize < 50000) {
-				group = isSwap ? "ecn-real-swap-3" : "ecn-real-3";
-			}
-		}
-
 		// Prepare data for creating a new MT5 account.
 		const mt5SignUpData = {
 			EMail: user.email,
 			master_pass: generatePassword(),
 			investor_pass: generatePassword(),
 			amount: account.challengeStageData.accountSize,
-			FirstName: `summitstrike - ${
+			FirstName: `Foxx Funded - ${
 				account?.challengeStageData?.challengeName
 			} (${newChallengeStage}) ${user.first ? user.first : ""}`,
-			LastName: user.last,
-			Country: user.country,
-			Address: user.addr,
-			City: user.city,
-			ZIPCode: user.zipCode,
-			Phone: user.phone,
+			LastName: user?.last,
+			Country: user?.country,
+			Address: user?.addr,
+			City: user?.city,
+			ZIPCode: user?.zipCode,
+			Phone: user?.phone,
 			Leverage: 30,
 			Group: group,
 			Rights: newChallengeStage === "funded" && "USER_RIGHT_TRADE_DISABLED",
@@ -631,32 +494,30 @@ const assignNewMT5Account = async (
 					phase2:
 						newChallengeStage === "phase2"
 							? {
-									maxDailyDrawdown: isMiniChallenge ? 4 : 5,
-									maxDrawdown: isMiniChallenge ? 8 : 12,
-									tradingPeriod: "unlimited",
-									profitTarget: isMiniChallenge ? 4 : 5,
-									minTradingDays: isMiniChallenge ? 3 : 5,
-									newsTrading: true,
-									weekendHolding: true,
-									drawdownType: isMiniChallenge ? "Balance" : "Equity/balance",
-									consistencyRule: true,
-									leverage: 30,
+									maxDailyDrawdown: 4,
+									maxDrawdown: 8,
+									tradingPeriod: "360 Days",
+									profitTarget: 7,
+									minTradingDays: 5,
+									drawdownType: "equity-based",
+									profitSpilt: "90/10",
+									payouts: false,
+									leverage: 100,
 									stage: "phase2",
 							  }
 							: null,
 					funded:
 						newChallengeStage === "funded"
 							? {
-									maxDailyDrawdown: isMiniChallenge ? 4 : 5,
-									maxDrawdown: isMiniChallenge ? 8 : 12,
-									tradingPeriod: "unlimited",
+									maxDailyDrawdown: 4,
+									maxDrawdown: 8,
+									tradingPeriod: "Unlimited",
 									profitTarget: null,
-									minTradingDays: isMiniChallenge ? 3 : 5,
-									newsTrading: true,
-									weekendHolding: true,
-									drawdownType: isMiniChallenge ? "Balance" : "Equity/balance",
-									consistencyRule: true,
-									leverage: 30,
+									minTradingDays: 1,
+									drawdownType: "equity-based",
+									profitSpilt: "90/10",
+									payouts: true,
+									leverage: 100,
 									stage: "funded",
 							  }
 							: null,
@@ -666,101 +527,180 @@ const assignNewMT5Account = async (
 		};
 
 		const passedHTMLTemplate = `<!DOCTYPE html>
-		<html>
-		<head>
-			<style>
-				body {
-					font-family: Arial, sans-serif;
-					background-color: #f4f4f4;
-					margin: 0;
-					padding: 20px;
-content: center;
-				}
-				.email-container {
-					background-color: #ffffff;
-					padding: 20px;
-					border-radius: 5px;
-					box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-					max-width: 600px;
-					margin: auto;
-				}
-				.header {
-					background-color: #007bff;
-					color: #ffffff;
-					padding: 10px;
-					border-radius: 5px 5px 0 0;
-					text-align: center;
-				}
-				.content {
-					padding: 20px;
-					color: #333333;
-				}
-.message-warning {
-text-align: center;
-background-color: #fff3cd;
-border: 1px solid #ffeeba;
-padding: 10px 15px;
-border-radius: 5px;
-font-family: Arial, sans-serif;
-color: #856404;
-font-size: 14px;
-line-height: 1.5;
-max-width: 450px;
-margin: 10px 0;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+<html>
+<head>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f7f8fa;
+			margin: 0;
+			padding: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			min-height: 100vh;
+		}
+		.email-container {
+			background-color: #ffffff;
+			border-radius: 10px;
+			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+			max-width: 700px;
+			width: 100%;
+			border: 2px solid #DB8112;
+			overflow: hidden;
+			margin: 20px;
+		}
+		.header {
+			background-color: #ffffff;
+			padding: 40px 20px;
+			text-align: center;
+			border-bottom: 2px solid #eeeeee;
+		}
+		.header img {
+			width: 80px;
+			margin-bottom: 15px;
+		}
+		.congrats-container {
+			text-align: center;
+			margin: 20px 0;
+		}
+		.congrats-text {
+			color: #DB8112;
+			font-size: 36px;
+			font-weight: 900;
+			margin: 0;
+			text-transform: uppercase;
+			letter-spacing: 1.5px;
+			display: inline-block;
+		}
+		.congrats-text::after {
+			content: '';
+			display: block;
+			width: 50px;
+			height: 3px;
+			background-color: #DB8112;
+			margin: 10px auto 0;
+			border-radius: 2px;
+		}
+		.content {
+			padding: 30px 20px;
+			color: #333333;
+			line-height: 1.7;
+		}
+		.content p {
+			margin: 0 0 15px;
+		}
+		.highlight {
+			color: #DB8112;
+			font-weight: bold;
+		}
+		.message-warning {
+			text-align: center;
+			background-color: #fff7e6;
+			border: 1px solid #ffe0b3;
+			padding: 15px;
+			border-radius: 6px;
+			font-size: 14px;
+			color: #A35E04;
+			margin: 15px 0;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		.download-section {
+			text-align: center;
+			margin-top: 30px;
+		}
+		.download-section .download-text {
+			font-size: 18px;
+			font-weight: bold;
+			color: #333333;
+			margin-bottom: 10px;
+		}
+		.download-links a {
+			color: #DB8112;
+			text-decoration: none;
+			font-weight: bold;
+			margin: 0 15px;
+			transition: color 0.3s ease;
+		}
+		.download-links a:hover {
+			color: #bf6e0f;
+			text-decoration: underline;
+		}
+		.footer {
+			background-color: #f7f8fa;
+			padding: 20px;
+			text-align: center;
+			font-size: 12px;
+			color: #888888;
+			border-top: 1px solid #eeeeee;
+			margin-top: 20px;
+			visibility: visible;
+			display: block;
+		}
+		.footer p {
+			margin: 0 0 10px;
+			line-height: 1.5;
+		}
+		.footer p a {
+			color: #DB8112;
+			text-decoration: none;
+		}
+		a {
+			color: #DB8112;
+			text-decoration: none;
+		}
+		a:hover {
+			text-decoration: underline;
+		}
 
+		/* Responsive styling */
+		@media (max-width: 480px) {
+			.header .congrats-text {
+				font-size: 24px;
+			}
+			.content {
+				padding: 20px 15px;
+			}
+			.footer {
+				font-size: 10px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="email-container">
+		<div class="header">
+			<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
+		</div>
+		<div class="congrats-container">
+			<h2 class="congrats-text">🎉 CONGRATULATIONS! 🎉</h2>
+		</div>
+		<div class="content">
+			<p>Dear User,</p>
+			<p>You have passed the <strong>${previousChallengeStage}</strong> of <strong>${account?.challengeStageData?.challengeName}</strong>. You are now in the <strong>${newChallengeStage}</strong> of <strong>${account?.challengeStageData?.challengeName}</strong>. Keep up the great work! 🌟</p>
+			<p><strong>Account:</strong> <span class="highlight">${newMt5Account?.account}</span></p>
+			<p><strong>Password:</strong> <span class="highlight">${newMt5Account?.masterPassword}</span></p>
+			<p><strong>Platform:</strong> Match Trader</p>
+			<p><strong>Broker:</strong> Match Trader</p>
+			<p class="message-warning">Please keep this information secure and do not share it with anyone.</p>
+			<div class="download-section">
+				<div class="download-text">Download the Match Trader for:</div>
+				<div class="download-links">
+					<a href="https://platform.foxx-funded.com" target="_blank">Android</a>
+					<a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank">iOS</a>
+					<a href="https://platform.foxx-funded.com" target="_blank">Desktop</a>
 
-				.highlight {
-					background-color: #e0f7fa;
-					color: #007bff;
-					border: 1px solid #007bff;
-					margin: 0px 4px;
-					padding: 8px 40px;
-					border-radius: 3px;
-					display: inline-block;
-					font-weight: bold;
-				}
-
-
-
-				.footer {
-					text-align: center;
-					font-size: 12px;
-					color: #aaaaaa;
-					margin-top: 20px;
-				}
-			</style>
-		</head>
-		<body>
-			<div class="email-container">
-				<div class="header">
-					<h2>🎉 Congratulations! 🎉</h2>
-				</div>
-				<div class="content">
-					<p>Dear User,</p>
-					<p>You have passed the <strong>${previousChallengeStage}</strong> of <strong>${account?.challengeStageData?.challengeName}</strong>.<br>
-And you are now in the <strong>${newChallengeStage}</strong> of <strong>${account?.challengeStageData?.challengeName}</strong>.<br> Keep up the great work! 🌟</p>
-
-					<p><strong>Account:</strong> <span class="highlight">${newMt5Account?.account}</span></p>
-					<p><strong>Password:</strong> <span class="highlight">${newMt5Account?.masterPassword}</span></p>
-					<p><strong>Platform:</strong> <span class="highlight">MT5</span></p>
-					<p><strong>Server:</strong> <span class="highlight">Haven Capital Group Ltd </span></p>
-					<p class="message-warning">Please keep this information secure and do not share it with anyone.</p>
-
-<p>Download the MT5 for Android <a href="https://download.mql5.com/cdn/mobile/mt5/android?server=HavenCapitalGroup-Server">MT5 Platform Application for Android</a></p>
-<p>Download the MT5 for iOS <a href="https://download.mql5.com/cdn/mobile/mt5/ios?server=HavenCapitalGroup-Server"> MT5 Platform Application for iOS</a></p>
-<p>Download the MT5 for Desktop <a href="https://download.mql5.com/cdn/web/haven.capital.group/mt5/havencapitalgroup5setup.exe">MT5 Platform Application for Desktop</a></p>
-				</div>
-				<div class="footer">
-<p>⚠ <strong>Warning:</strong><br>
-Please ensure that you are familiar with all the 
-<a href="https://summitstrike.com/faq" target="_blank" rel="noopener noreferrer">rules and regulations</a> of <strong>Summit Strike Capital</strong>. Failure to comply may result in breach or disqualification. Stay informed and follow the guidelines closely to ensure your progress! 🚨</p>
-<p>Thank you for choosing our services.</p>
 				</div>
 			</div>
-		</body>
-		</html>`;
+		</div>
+		<div class="footer">
+			<p>⚠ <strong>Warning:</strong><br>Please ensure that you are familiar with all the <a href="https://foxx-funded.com/faqs" target="_blank" rel="noopener noreferrer">rules and regulations</a> of <strong>Foxx Funded</strong>. Failure to comply may result in breach or disqualification. Stay informed and follow the guidelines closely to ensure your progress! 🚨</p>
+			<p>Thank you for choosing our services.</p>
+		</div>
+	</div>
+</body>
+</html>
+`;
 
 		await sendEmailSingleRecipient(
 			user.email,
@@ -782,7 +722,8 @@ Please ensure that you are familiar with all the
 	}
 };
 
-setInterval(passingChallenge, 3600000); // 1 hour er= 60 * 60 * 1000 milliseconds
+// setInterval(passingChallenge, 3600000); // 1 hour er= 60 * 60 * 1000 milliseconds
+// setInterval(passingChallenge, 30000); // 1 hour er= 60 * 60 * 1000 milliseconds
 
 module.exports = {
 	getPhasedUsers,
