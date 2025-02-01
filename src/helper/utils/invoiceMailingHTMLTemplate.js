@@ -223,8 +223,8 @@ const invoiceMailingHTMLTemplate = async (order) => {
                 </div>
                 <div class="billing-address">
                     <p>${order.buyerDetails.first} ${order.buyerDetails.last}<br>
-                       ${order.buyerDetails.country}<br>
-                       ${order.buyerDetails.phone}<br>
+                       ${order.buyerDetails.country ? order?.buyerDetails.country : ""}<br>
+                       ${order.buyerDetails.phone ? order.buyerDetails.phone : ""}<br>
                        ${order.buyerDetails.email}<br>
                     </p>
                 </div>
