@@ -155,134 +155,56 @@ const disableRiskedAccount = async (account, accountDetails) => {
 			try {
 				const tickets = accountDetails.tickets.join(", ");
 				const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Breach Notification</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #e57373;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
-        .email-container {
-            background-color: #ffffff;
-            border-radius: 8px;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-            background-color: #d32f2f;
-            color: #ffffff;
-            padding: 20px;
-            border-radius: 8px 8px 0 0;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .content {
-            padding: 20px;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #444;
-        }
-        .highlight {
-            background-color: #ffebee;
-            color: #d32f2f;
-            border-left: 4px solid #d32f2f;
-            padding: 10px;
-            margin: 20px 0;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .cta-button {
-            display: inline-block;
-            background-color: #007bff;
-            color: #ffffff;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-top: 20px;
-        }
-        .cta-button:hover {
-            background-color: #0056b3;
-        }
-        .footer {
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-            margin-top: 20px;
-        }
-        .footer a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
-			.social-links {
-  			margin-top: 20px;
-  			display: flex;
-  			justify-content: center;
-  			gap: 20px;
-		}
+				<html lang="en">
+				<head>
+					<meta charset="UTF-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Account Breach Notification</title>
+				</head>
+				<body style="font-family: Arial, sans-serif; background-color: #f7f8fa; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+					<div style="background-color: #ffffff; border-radius: 10px; max-width: 800px; margin: 0 auto; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1); border: 2px solid #d32f2f; overflow: hidden;">
+						<!-- Header Section -->
+						<div style="background: linear-gradient(135deg, #d32f2f, #f44336); color: #ffffff; padding: 30px 20px; text-align: center; position: relative; border-bottom: 2px solid #eeeeee; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 10px 10px 0 0;">
+							<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Foxx Funded Logo" style="width: 70px; margin-bottom: 10px;">
+							<h1 style="font-size: 22px; font-weight: 700; margin: 0;">Your account has been disabled due to exceeding the 2% risk limit</h1>
+						</div>
+				
+						<!-- Content Section -->
+						<div style="padding: 20px; font-size: 16px; line-height: 1.6; color: #444;">
+							<p>Dear Trader,</p>
+							<p>We hope this message finds you well.</p>
+				
+							<p>We are writing to inform you that your account <strong>${account}</strong> recent trading activities <strong>${tickets}</strong> has exceeded the allowable maximum risk exposure per trade. As per our guidelines, we permit a maximum of 2% risk per trade.</p>
+				
+							<p>This breach constitutes a violation of our trading rules. You have previously received a warning (Warning 1) regarding this matter. Consequently, since this is a second violation of this rule, it resulted in a hard breach, leading to your account being permanently marked as violated.</p>
+				
+							<p>We urge you to adhere strictly to our risk management guidelines to ensure the continued success and integrity of your trading activities. Should you have any questions or require further clarification, please do not hesitate to reach out.</p>
+				
+							<p style="font-size: 14px; color: #777; margin-top: 20px;">
+								If you have any questions, feel free to
+								<a href="https://foxx-funded.com/contact-us" target="_blank" rel="noopener noreferrer" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+									contact us or contact our support team
+								</a>.
+							</p>
+							<div style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+								<a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin: 0 15px;">
+									<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
+								</a>
+							</div>
+						</div>
+				
+						<!-- Footer Section -->
+						<div style="background-color: #f7f8fa; padding: 20px; text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eeeeee; margin-top: 20px;">
+							<p>@2024 Fox Funded All Rights Reserved.</p>
+						</div>
+					</div>
+				</body>
+				</html>
+				`;
 
-		.social-links img {
-  			width: 32px;
-  			height: 32px;
-		}
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <!-- Header Section -->
-        <div class="header">
-            Your account has been disabled due to exceeding the 2% risk limit
-        </div>
-        
-        <!-- Content Section -->
-        <div class="content">
-            <p>Dear Trader,</p>
-            <p>We hope this message finds you well.</p>
-
-            <p>We are writing to inform you that your account <strong>${account}</strong> recent trading activities <strong>${tickets}</strong> has exceeded the allowable maximum risk exposure per trade. As per our guidelines, we permit a maximum of 2% risk per trade.</p>
-
-            <p>This breach constitutes a violation of our trading rules. You have previously received a warning (Warning 1) regarding this matter. Consequently, since this is a second violation of this rule, it resulted in a hard breach, leading to your account being permanently marked as violated.</p>
-
-            <p>We urge you to adhere strictly to our risk management guidelines to ensure the continued success and integrity of your trading activities. Should you have any questions or require further clarification, please do not hesitate to reach out.</p>
-
-  			<p style="font-size: 14px; color: #777; margin-top: 20px;">
-		    	If you have any questions, feel free to
-		    	<a href="https://summitstrike.com/contact" style="color: #007bff; text-decoration: none; font-weight: bold;">
-		    		contact us or contact our support team
-		    	</a>.
-		  	</p>
-			<div class="social-links">
-  				<a  href="https://t.me/summitsrikecapital">
-    				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
-  				</a>
-  				<a style="margin-left: 20px;" href="https://discord.com/invite/2NpszcabHC">
-    				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRILFgGb5Qgu-Lc9kkKFcnjKso7EI85qQcy8A&s" alt="Discord">
-  				</a>
-			</div>
-
-
-        <!-- Footer Section -->
-        <div class="footer">
-            <p>@2024 Summit Strike All Rights Reserved.</p>
-        </div>
-    </div>
-</body>
-</html>
-`;
 				await sendEmailSingleRecipient(
 					accountDetails?.email,
-					`Summit Strike Capital - Maximum risk per trade exposure Breach`,
+					`Foxx Funded - Maximum risk per trade exposure Breach`,
 					"",
 					htmlContent
 				);

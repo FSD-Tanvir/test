@@ -1,15 +1,20 @@
-const path = require('node:path');
-const logo = path.resolve(__dirname, '../../assets/LOGO.png');
+const path = require("node:path");
+const logo = path.resolve(__dirname, "../../assets/LOGO.png");
 
-const disableMailingHTMLTemplate = async(account, causeOfBreach, LossPercentage, asset,equity) => {
+const disableMailingHTMLTemplate = async (
+	account,
+	causeOfBreach,
+	LossPercentage,
+	asset,
+	equity
+) => {
+	const specificDate = new Date();
+	const day = specificDate.getDate().toString().padStart(2, "0");
+	const month = (specificDate.getMonth() + 1).toString().padStart(2, "0");
+	const year = specificDate.getFullYear();
+	const formattedDate = `${day}/${month}/${year}`;
 
-    const specificDate = new Date();
-    const day = specificDate.getDate().toString().padStart(2, '0');
-    const month = (specificDate.getMonth() + 1).toString().padStart(2, '0'); 
-    const year = specificDate.getFullYear();
-    const formattedDate = `${day}/${month}/${year}`;
-
-    return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,7 +23,7 @@ const disableMailingHTMLTemplate = async(account, causeOfBreach, LossPercentage,
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f8ff; /* Alice Blue background */
+            background-color: #fff3e0; /* Light orange background */
             color: #333;
             margin: 0;
             padding: 0;
@@ -32,22 +37,22 @@ const disableMailingHTMLTemplate = async(account, causeOfBreach, LossPercentage,
             max-width: 600px;
             width: 100%;
             padding: 20px;
-            background-color: #dbe9f4; /* Light periwinkle background */
+            background-color: #ffe0b2; /* Lighter orange for container */
             border-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow effect */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
             box-sizing: border-box;
         }
         h1 {
-            color: #0056a0; /* Deep blue for the heading */
+            color: #f57c00; /* Deep orange for the heading */
             margin-bottom: 15px;
         }
         p {
             margin: 10px 0;
         }
         .highlight {
-            background-color: #fdd9d9; /* Light blue for highlights */
-            border-left: 5px solid #0056a0; /* Deep blue border for highlights */
+            background-color: #fff3e0; /* Light orange for highlights */
+            border-left: 5px solid #f57c00; /* Deep orange border for highlights */
             padding: 10px;
             margin: 10px 0;
             text-align: left;
@@ -63,7 +68,7 @@ const disableMailingHTMLTemplate = async(account, causeOfBreach, LossPercentage,
         .thank-you, .encouragement {
             margin-top: 20px;
             font-size: 1.1em;
-            color: #004080; /* Dark blue for messages */
+            color: #f57c00; /* Deep orange for messages */
         }
         
         /* Responsive design */
@@ -95,7 +100,7 @@ const disableMailingHTMLTemplate = async(account, causeOfBreach, LossPercentage,
 </head>
 <body>
     <div class="container">
-        <p><img src=${logo} style="height: 50px; width: 150px; padding-top: 30px;" alt="Summit Strike capital logo"></p>
+        <p><img src="https://i.ibb.co/34qjbqp/Fox-Funded-Logo.png" style="height: 150px; width: 150px; padding-top: 30px;" alt="Foxx Funded Capital logo"></p>
         <h1>Account Status</h1>
         <p><strong>Account Number:</strong> ${account}</p>
         <p><strong>Message:</strong> Your account is breached due to <strong>${causeOfBreach}</strong></p>
@@ -103,12 +108,14 @@ const disableMailingHTMLTemplate = async(account, causeOfBreach, LossPercentage,
         <div class="highlight">
             <p><strong>Loss Percentage:</strong> ${LossPercentage}</p>
            ${
-            causeOfBreach === "MaxTotalLoss" ? `<p><strong>Initial Balance :</strong> ${asset}</p>` :`<p><strong>Asset :</strong> ${asset}</p>`
-           }
+							causeOfBreach === "MaxTotalLoss"
+								? `<p><strong>Initial Balance :</strong> ${asset}</p>`
+								: `<p><strong>Asset :</strong> ${asset}</p>`
+						}
             <p><strong>Equity:</strong> ${equity}</p>
         </div>
         
-        <p><strong>Date:</strong> <span>${formattedDate} </span></p>
+        <p><strong>Date:</strong> <span>${formattedDate}</span></p>
         
         <div class="thank-you">
             Thank you for being with us!
@@ -119,13 +126,12 @@ const disableMailingHTMLTemplate = async(account, causeOfBreach, LossPercentage,
         </div>
         
         <div class="footer">
-            &copy; Summit Strike Capital
+            &copy; Foxx Funded.
         </div>
     </div>
-
 </body>
 </html>
-    `
-}
+`;
+};
 
-module.exports = {disableMailingHTMLTemplate}
+module.exports = { disableMailingHTMLTemplate };
