@@ -317,105 +317,32 @@ const sendWarningEmail = async (account, accountDetails) => {
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Account Breach Notification</title>
-	<style>
-		body {
-			font-family: 'Arial', sans-serif;
-			background-color: #ffff; /* Light red background */
-			margin: 0;
-			padding: 20px;
-			color: #333;
-		}
-		.email-container {
-			background-color: #ffffff;
-			border-radius: 8px;
-			max-width: 600px;
-			margin: 0 auto;
-			padding: 20px;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-			border: 2px solid #ffa726; /* Red border for urgency */
-		}
-		.header {
-			background-color: #f57c00; /* Strong red for header */
-			color: #ffffff;
-			padding: 20px;
-			border-radius: 8px 8px 0 0;
-			text-align: center;
-			font-size: 24px;
-			font-weight: bold;
-		}
-		.content {
-			padding: 20px;
-			font-size: 16px;
-			line-height: 1.6;
-			color: #444;
-		}
-		.highlight {
-			background-color: #fce4ec; /* Subtle pink for highlights */
-			color: #d32f2f;
-			border-left: 4px solid #d32f2f;
-			padding: 10px;
-			margin: 20px 0;
-			border-radius: 4px;
-			font-weight: bold;
-		}
-		.cta-button {
-			display: inline-block;
-			background-color: #f57c00; 
-			color: #ffffff;
-			padding: 10px 20px;
-			text-decoration: none;
-			border-radius: 4px;
-			margin-top: 20px;
-		}
-		.cta-button a{
-			text-decoration: none;
-			color: #ffffff;
-		}
-		.cta-button:hover {
-			background-color: #ffb74d;
-		}
-		.footer {
-			text-align: center;
-			font-size: 12px;
-			color: #777;
-			margin-top: 20px;
-		}
-		.social-links {
-  			margin-top: 20px;
-  			display: flex;
-  			justify-content: center;
-  			gap: 20px;
-		}
-
-		.social-links img {
-  			width: 32px;
-  			height: 32px;
-		}
-	</style>
 </head>
-<body>
-	<div class="email-container">
-		<!-- Header Section -->
-		<div class="header">
-			Maximum risk per trade exposure warning
+<body style="font-family: Arial, sans-serif; background-color: #f7f8fa; margin: 0; padding: 20px; color: #333;">
+	<div style="background-color: #ffffff; border-radius: 12px; max-width: 800px; margin: 0 auto; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); border: 1px solid #e0e0e0; overflow: hidden;">
+		
+		<!-- Header Section with Gradient Background -->
+		<div style="background: linear-gradient(135deg, #f57c00, #ffa726); color: #ffffff; padding: 40px 20px; text-align: center;">
+			<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="width: 90px; height: 90px; display: block; margin: 0 auto 15px;">
+			<h1 style="font-size: 28px; font-weight: bold; margin: 0; letter-spacing: 0.5px; text-transform: uppercase;">Maximum Risk Per Trade Exposure Warning</h1>
 		</div>
 		
 		<!-- Content Section -->
-		<div class="content">
+		<div style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #444;">
 			<p>Dear Trader,</p>
 			<p>We hope this message finds you well.</p>
 			
-			<p>We are writing to inform you that your recent trading activity on your simulated trading account <strong>${account}</strong> has traits of gambling/punting. We urge you to stick within industry standards of risking no more than 1-2% of risk per trade idea. Below we'll provide you with a few examples.</p>
+			<p>We are writing to inform you that your recent trading activity on your simulated trading account <strong>${account}</strong> has traits of gambling/punting. We urge you to stick within industry standards of risking no more than 1-2% of risk per trade idea. Below we’ll provide you with a few examples:</p>
 
-			<p>
-				Taking a 1.5% risk position on the EU is considered fine.
-				<br>
-				Adding another 1.5% on GBPJPY is also fine.
-				<br>
-				However, if you proceed to open a 2.1% or higher risk on any pair/assets class, for example (XAUUSD/Gold), that is an indication of over-risking.
-				<br>
-				Lastly, splitting orders in multiple positions where the sum of the risk exceeds 2% is still considered gambling. For example, having 3 trades each with 1% risk on the same trade idea on any pair. The same trade made refers to trades opened in/around the same time and price point.
-			</p>
+			<!-- Warning Box -->
+			<div style="background-color: #fff3e0; color: #d32f2f; border-left: 4px solid #f57c00; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+				<p style="margin: 0; font-weight: bold;">
+					Taking a 1.5% risk position on the EU is considered fine.<br>
+					Adding another 1.5% on GBPJPY is also fine.<br>
+					However, if you proceed to open a 2.1% or higher risk on any pair/assets class, for example (XAUUSD/Gold), that is an indication of over-risking.<br>
+					Lastly, splitting orders in multiple positions where the sum of the risk exceeds 2% is still considered gambling. For example, having 3 trades each with 1% risk on the same trade idea on any pair. The same trade made refers to trades opened in/around the same time and price point.
+				</p>
+			</div>
 			
 			<p>Exceeding this limit constitutes a breach of our trading rules. As this is your first violation, it will be considered a soft breach.</p>
 
@@ -426,39 +353,35 @@ const sendWarningEmail = async (account, accountDetails) => {
 			<p>Thank you for your understanding and cooperation.</p>
 
 			<p>Best regards,</p>
-			<p>Summit Strike Capital Risk Team</p>
+			<p style="font-weight: bold; color: #f57c00;">Foxx Funded Team</p>
 
+			<!-- Contact Link -->
 			<p style="font-size: 14px; color: #777; margin-top: 20px;">
-		    	If you have any questions, feel free to
-		    	<a href="https://summitstrike.com/contact" style="color: #007bff; text-decoration: none; font-weight: bold;">
-		    		contact us or contact our support team
-		    	</a>.
-		  	</p>
-			<div class="social-links">
-  				<a  href="https://t.me/summitsrikecapital">
-    				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
-  				</a>
-  				<a style="margin-left: 20px;" href="https://discord.com/invite/2NpszcabHC">
-    				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRILFgGb5Qgu-Lc9kkKFcnjKso7EI85qQcy8A&s" alt="Discord">
-  				</a>
-			</div>
+				If you have any questions, feel free to
+				<a href="https://foxx-funded.com/contact-us" target="_blank" rel="noopener noreferrer" style="color: #f57c00; text-decoration: none; font-weight: bold;">
+					contact us or contact our support team
+				</a>.
+			</p>
 
-		
+			<!-- Social Links -->
+			<div style="display: flex; justify-content: center; align-items: center; margin-top: 30px;">
+				<a href="https://t.me/+2QVq5aChxiBlOWFk" style="text-decoration: none; margin: 0 15px;">
+					<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 40px; height: 40px;">
+				</a>
+			</div>
 		</div>
 		
 		<!-- Footer Section -->
-		<div class="footer">
-			<p>@2024 Summit Strike All Rights Reserved.</p>
+		<div style="background-color: #f7f8fa; padding: 20px; text-align: center; font-size: 12px; color: #777; border-top: 1px solid #eeeeee; margin-top: 20px;">
+			<p>&copy; 2024 Foxx Funded. All Rights Reserved.</p>
 		</div>
 	</div>
 </body>
-</html>
-
-`;
+</html>`;
 
 		const info = await sendEmailSingleRecipient(
 			accountDetails?.email,
-			"Summit Strike Capital - Maximum risk per trade exposure warning",
+			"Foxx Funded - Maximum risk per trade exposure warning",
 			null,
 			htmlContent
 		);
