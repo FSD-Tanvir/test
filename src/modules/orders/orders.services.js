@@ -24,67 +24,67 @@ const createOrder = async (orderData) => {
 		//  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details 💬💬💬💬💬💬💬💬
 
 		// Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
-		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #DB8112; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
-		<div style="text-align: center; margin-bottom: 15px;">
-		  <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 120px; height: auto;">
-		</div>
-		<h2 style="color: #DB8112; text-align: center; margin-bottom: 20px;">Your Order Confirmation</h2>
-		<p style="font-size: 16px; color: #333; text-align: center; margin-bottom: 10px;">
-		  Your order has been successfully created with the following details:
-		</p>
-		<p style="font-size: 20px; color: #333; font-weight: bold; text-align: center; margin-bottom: 20px;">
-		  Order ID: <span style="color: #DB8112; font-style: italic; font-size: 24px; text-decoration: underline dotted; font-weight: normal;">
-			${orderId}
-		  </span>
-		</p>
-		<p style="font-size: 16px; color: #333; text-align: center; margin-bottom: 10px;">
-		  To track your order, please log in with the following credentials in our dashboard:
-		</p>
-		<p style="font-size: 16px; color: #333; margin-bottom: 5px; text-align: center;">
-		  <strong>Email:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.email}</span>
-		</p>
-		<p style="font-size: 16px; color: #333; margin-bottom: 20px; text-align: center;">
-		  <strong>Password:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.password}</span>
-		</p>
-		<div style="text-align: center; margin-bottom: 20px;">
-		  <a href="https://foxx-funded.com/login" style="display: inline-block; padding: 12px 25px; background-color: #DB8112; color: #fff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;">
-			Login to Track Your Order
-		  </a>
-		</div>
-		<p style="font-size: 14px; color: #777; margin-top: 20px;">
-		  If you have any questions, feel free to
-		  <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-			contact our support team
-		  </a>.
-		</p>
-		<div style="margin-top: 20px; text-align: center;">
-		  <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
-			<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
-		  </a>
-		 
-		</div>
-		<p style="font-size: 14px; color: #777; margin-top: 20px;">
-		  Thank you for shopping with us!
-		</p>
-	  </div>
-	  
-	  <style>
-		@media only screen and (max-width: 600px) {
-		  div[style] {
-			padding: 10px !important;
-		  }
-		  h2[style] {
-			font-size: 22px !important;
-		  }
-		  p[style], a[style] {
-			font-size: 16px !important;
-		  }
-		  a[style] {
-			padding: 10px 20px !important;
-		  }
-		}
-	  </style>
-	  `;
+		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 2px solid #DB8112; border-radius: 12px; background-color: #ffffff; text-align: center;">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 80px; height: auto;">
+    </div>
+    <h2 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 24px; font-weight: bold;">
+        Your Order Confirmation
+    </h2>
+    <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6;">
+        Your order has been successfully created. Here are the details:
+    </p>
+    <div style="background-color: #fff8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DB8112;">
+        <p style="font-size: 18px; color: #333; text-align: center; margin-bottom: 10px;">
+            Order ID: <span style="color: #DB8112; font-weight: bold;">${orderId}</span>
+        </p>
+    </div>
+    <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6;">
+        Use the credentials below to log in and track your order:
+    </p>
+    <div style="background-color: #fff8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DB8112;">
+        <p style="font-size: 16px; color: #333; margin-bottom: 10px; text-align: center;">
+            <strong>Email:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.email}</span>
+        </p>
+        <p style="font-size: 16px; color: #333; margin-bottom: 10px; text-align: center;">
+            <strong>Password:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.password}</span>
+        </p>
+    </div>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="https://foxx-funded.com/login" style="display: inline-block; padding: 12px 25px; background: linear-gradient(135deg, #DB8112, #ffa64d); color: #fff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">
+            Login to Track Your Order
+        </a>
+    </div>
+    <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
+        Need help? <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
+    </p>
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 24px; height: 24px;">
+        </a>
+    </div>
+    <p style="font-size: 14px; color: #777; margin-top: 20px;">
+        Thank you for shopping with us!
+    </p>
+</div>
+
+<style>
+    @media only screen and (max-width: 600px) {
+        div[style] {
+            padding: 20px !important;
+        }
+        h2[style] {
+            font-size: 22px !important;
+        }
+        p[style], a[style] {
+            font-size: 14px !important;
+        }
+        a[style] {
+            padding: 10px 20px !important;
+            font-size: 14px !important;
+        }
+    }
+</style>`;
 
 		if (newOrder) {
 			await sendEmailSingleRecipient(
@@ -264,7 +264,6 @@ const updateOrder = async (id, data) => {
 			user && (await user.mt5Accounts.find((account) => account.productId === orderId));
 
 		// Prepare the HTML content for the email
-
 		const htmlContent = `<!DOCTYPE html>
 <html>
 <head>
