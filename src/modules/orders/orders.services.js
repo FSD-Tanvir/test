@@ -266,108 +266,176 @@ const updateOrder = async (id, data) => {
 		// Prepare the HTML content for the email
 
 		const htmlContent = `<!DOCTYPE html>
-							<html>
-							<head>
-								<style>
-									body {
-										font-family: Arial, sans-serif;
-										background-color: #f4f4f4;
-										margin: 0;
-										padding: 0;
-										display: flex;
-										justify-content: center;
-										align-items: center;
-										min-height: 100vh;
-									}
-									.email-container {
-										width: 100%;
-										max-width: 600px;
-										background-color: #ffffff;
-										border-radius: 8px;
-										box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-										border: 2px solid #DB8112;
-										overflow: hidden;
-										text-align: center;
-										padding: 20px;
-									}
-									.logo-container {
-										background-color: #ffffff;
-										margin-bottom: 15px;
-									}
-									.logo-container img {
-										max-width: 120px;
-										height: auto;
-									}
-									.header {
-										color: #DB8112;
-										margin-bottom: 20px;
-									}
-									.header h2 {
-										margin: 0;
-										font-size: 24px;
-										font-weight: bold;
-									}
-									.content {
-										color: #333333;
-										font-size: 16px;
-										line-height: 1.6;
-									}
-									.content p {
-										margin: 10px 0;
-									}
-									.download-links {
-										margin-top: 20px;
-									}
-									.download-links a {
-										display: inline-block;
-										color: #ffffff;
-										background-color: #DB8112;
-										text-decoration: none;
-										font-weight: bold;
-										padding: 10px 20px;
-										border-radius: 4px;
-										margin: 10px 5px;
-									}
-									.footer {
-										padding-top: 15px;
-										font-size: 14px;
-										color: #A3A7AF;
-										margin-top: 20px;
-										border-top: 1px solid #eeeeee;
-									}
-								</style>
-							</head>
-							<body>
-								<div class="email-container">
-									<div class="logo-container">
-										<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
-									</div>
-									<div class="header">
-										<h2>Your Match Trader Account Credentials</h2>
-									</div>
-									<div class="content">
-										<p>Dear User,</p>
-										<p>Your Match Trader account has been successfully created. Here are your credentials:</p>
-										<p><strong>Account: :</strong> ${matchingAccount.account}</p>
-										<p><strong>Password: :</strong> ${matchingAccount.masterPassword}</p>
-										<p><strong>Platform: :</strong> MT5 </p>
-										<p><strong>Broker: :</strong> MT5 </p>
-										<p>Please keep this information secure and do not share it with anyone.</p>
-										<div class="download-links">
-											<p>Download the MT5 for:</p>
-											<a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Android</a>
-											<a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank" rel="noopener noreferrer">iOS</a>
-											<a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Desktop</a>
-					
-										</div>
-									</div>
-									<div class="footer">
-										<p>Thank you for choosing our services.</p>
-									</div>
-								</div>
-							</body>
-							</html>
-							`;
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border: 2px solid #DB8112;
+            overflow: hidden;
+            text-align: center;
+            padding: 30px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .logo-container {
+            margin-bottom: 25px;
+        }
+        .logo-container img {
+            max-width: 150px;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+        .logo-container img:hover {
+            transform: scale(1.05);
+        }
+        .header {
+            color: #DB8112;
+            margin-bottom: 25px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            display: inline-block;
+        }
+        .header h2::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: #DB8112;
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+        .content {
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: left;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .credentials {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            border-left: 4px solid #DB8112;
+        }
+        .credentials p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #555;
+        }
+        .credentials strong {
+            color: #DB8112;
+            font-weight: bold;
+        }
+        .download-links {
+            margin-top: 25px;
+            text-align: center;
+        }
+        .download-links p {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .download-links a {
+            display: inline-block;
+            color: #ffffff;
+            background: linear-gradient(135deg, #DB8112, #ffa64d);
+            text-decoration: none;
+            font-weight: bold;
+            padding: 12px 25px;
+            border-radius: 6px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .download-links a:hover {
+            background: linear-gradient(135deg, #ffa64d, #DB8112);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .footer {
+            padding-top: 20px;
+            font-size: 14px;
+            color: #777;
+            margin-top: 25px;
+            border-top: 1px solid #eeeeee;
+            text-align: center;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                padding: 20px;
+            }
+            .header h2 {
+                font-size: 24px;
+            }
+            .download-links a {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="logo-container">
+            <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
+        </div>
+        <div class="header">
+            <h2>Your MT5 Account Credentials</h2>
+        </div>
+        <div class="content">
+            <p>Dear User,</p>
+            <p>Your MT5 account has been successfully created. Here are your credentials:</p>
+            <div class="credentials">
+                <p><strong>Account:</strong> ${matchingAccount.account}</p>
+                <p><strong>Password:</strong> ${matchingAccount.masterPassword}</p>
+                <p><strong>Platform:</strong> MT5</p>
+                <p><strong>Broker:</strong> MT5</p>
+            </div>
+            <p>Please keep this information secure and do not share it with anyone.</p>
+            <div class="download-links">
+                <p>Download the MT5 for:</p>
+                <a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Android</a>
+                <a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank" rel="noopener noreferrer">iOS</a>
+                <a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Desktop</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Thank you for choosing our services.</p>
+        </div>
+    </div>
+</body>
+</html>`;
 
 		// Send email and update order status if conditions are met
 		if (matchingAccount) {
