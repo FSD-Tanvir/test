@@ -299,12 +299,8 @@ const updateOrder = async (id, data) => {
             margin-bottom: 25px;
         }
         .logo-container img {
-            max-width: 150px;
+            max-width: 100px;
             height: auto;
-            transition: transform 0.3s ease;
-        }
-        .logo-container img:hover {
-            transform: scale(1.05);
         }
         .header {
             color: #DB8112;
