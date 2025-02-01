@@ -24,77 +24,87 @@ const createOrder = async (orderData) => {
 		//  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details 💬💬💬💬💬💬💬💬
 
 		// Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
-		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #007bff; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
-		  <h2 style="color: #007bff; text-align: center;">Your Order Confirmation</h2>
-		  <p style="font-size: 16px; color: #333; text-align: center;">
-		    Your order has been successfully created with the following details:
-		  </p>
-		  <p style="font-size: 18px; color: #007bff; font-weight: bold; text-align: center;">
-		    <span style="background-color: #e0f7fa; padding: 10px; border-radius: 5px; border: 1px solid #007bff;">
-		      Order ID: ${orderId}
-		    </span>
-		  </p>
-		  <p style="font-size: 16px; color: #333; text-align: center;">
-		    To track your order, please log in with the following credentials in our dashboard:
-		  </p>
-		  <p style="font-size: 16px; color: #333; margin-bottom: 10px; text-align: center;">
-		    <strong>Email:</strong>
-		    <span style="display: inline-block; background-color: #e0f7fa; padding: 10px; border-radius: 5px; border: 1px solid #007bff;">
-		      ${buyerDetails?.email}
-		    </span>
-		  </p>
-		  <p style="font-size: 16px; color: #333; margin-bottom: 20px; text-align: center;">
-		    <strong>Password:</strong>
-		    <span style="display: inline-block; background-color: #e0f7fa; padding: 10px; border-radius: 5px; border: 1px solid #007bff;">
-		      ${buyerDetails?.password}
-		    </span>
-		  </p>
-		  <div style="text-align: center; margin-bottom: 20px;">
-		    <a href="https://summitstrike.com/sign-in" style="display: inline-block; padding: 12px 25px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;">
-		      Login to Track Your Order
-		    </a>
-		  </div>
-		  <p style="font-size: 14px; color: #777; margin-top: 20px;">
-		    If you have any questions, feel free to
-		    <a href="https://summitstrike.com/contact" style="color: #007bff; text-decoration: none; font-weight: bold;">
-		      contact our support team
-		    </a>.
-		  </p>
-		  <div style="margin-top: 20px;">
-		    <a href="https://t.me/summitsrikecapital">
-		      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
-		    </a>
-		    <a href="https://discord.com/invite/2NpszcabHC">
-		      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRILFgGb5Qgu-Lc9kkKFcnjKso7EI85qQcy8A&s" alt="Discord" style="width: 32px; height: 32px;">
-		    </a>
-		  </div>
-		  <p style="font-size: 14px; color: #777;">
-		    Thank you for shopping with us!
-		  </p>
-		</div>
+		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; background-color: #ffffff; border: 2px solid #DB8112; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center;">
+    <!-- Header Section -->
+    <div style="text-align: center; margin-bottom: 25px;">
+        <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 100px; height: auto;">
+    </div>
+    <h2 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 26px; font-weight: bold;">
+        Your Order Confirmation
+    </h2>
+    <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6;">
+        Your order has been successfully created. Here are the details:
+    </p>
 
-		<style>
-		  @media only screen and (max-width: 600px) {
-		    div[style] {
-		      padding: 10px !important;
-		    }
-		    h2[style] {
-		      font-size: 22px !important;
-		    }
-		    p[style], a[style] {
-		      font-size: 16px !important;
-		    }
-		    a[style] {
-		      padding: 10px 20px !important;
-		    }
-		  }
-		</style>
-		`;
+    <!-- Order ID Section -->
+    <div style="background-color: #fff8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DB8112;">
+        <p style="font-size: 20px; color: #333; text-align: center; margin-bottom: 10px; font-weight: bold;">
+            Order ID: <span style="color: #DB8112; font-weight: 800;">${orderId}</span>
+        </p>
+    </div>
+
+    <!-- Instruction Text -->
+    <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6; font-style: italic;">
+        To track your order, please log in with the following credentials in our dashboard:
+    </p>
+
+    <!-- Credentials Section -->
+    <div style="background-color: #fff8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DB8112;">
+        <p style="font-size: 18px; color: #333; margin-bottom: 10px; text-align: center;">
+            <strong>Email:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.email}</span>
+        </p>
+        <p style="font-size: 18px; color: #333; margin-bottom: 10px; text-align: center;">
+            <strong>Password:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.password}</span>
+        </p>
+    </div>
+
+    <!-- Call-to-Action Button -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <a href="https://foxx-funded.com/login" style="display: inline-block; padding: 12px 25px; background: linear-gradient(135deg, #DB8112, #ffa64d); color: #fff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">
+            Login to Track Your Order
+        </a>
+    </div>
+
+    <!-- Support Section -->
+    <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
+        Need help? <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
+    </p>
+
+    <!-- Social Media Section -->
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 36px; height: 36px;">
+        </a>
+    </div>
+
+    <!-- Footer Section -->
+    <p style="font-size: 14px; color: #777; margin-top: 20px;">
+        Thank you for shopping with us!
+    </p>
+</div>
+
+<style>
+    @media only screen and (max-width: 600px) {
+        div[style] {
+            padding: 20px !important;
+        }
+        h2[style] {
+            font-size: 24px !important;
+        }
+        p[style], a[style] {
+            font-size: 14px !important;
+        }
+        a[style] {
+            padding: 10px 20px !important;
+            font-size: 14px !important;
+        }
+    }
+</style>`;
 
 		if (newOrder) {
 			await sendEmailSingleRecipient(
 				buyerDetails?.email,
-				"onboard your order",
+				"Onboard your order",
 				"Your order has been successfully created with the following details:",
 				htmlTemplate
 			);
@@ -269,84 +279,179 @@ const updateOrder = async (id, data) => {
 			user && (await user.mt5Accounts.find((account) => account.productId === orderId));
 
 		// Prepare the HTML content for the email
-		const htmlContent = `
-							<!DOCTYPE html>
-							<html>
-							<head>
-								<style>
-									body {
-										font-family: Arial, sans-serif;
-										background-color: #f4f4f4;
-										margin: 0;
-										padding: 20px;
-									}
-									.email-container {
-										background-color: #ffffff;
-										padding: 20px;
-										border-radius: 5px;
-										box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-										max-width: 600px;
-										margin: auto;
-									}
-									.header {
-										background-color: #007bff;
-										color: #ffffff;
-										padding: 10px;
-										border-radius: 5px 5px 0 0;
-										text-align: center;
-									}
-									.content {
-										padding: 20px;
-										color: #333333;
-									}
-									.highlight {
-										background-color: #e0f7fa;
-										color: #007bff;
-										border: 1px solid #007bff;
-										margin: 0px 4px;
-										padding: 8px 40px;
-										border-radius: 3px;
-										display: inline-block;
-										font-weight: bold;
-									}
-									.footer {
-										text-align: center;
-										font-size: 12px;
-										color: #aaaaaa;
-										margin-top: 20px;
-									}
-								</style>
-							</head>
-							<body>
-								<div class="email-container">
-									<div class="header">
-										<h2>Your MT5 Account Credentials</h2>
-									</div>
-									<div class="content">
-										<p>Dear User,</p>
-										<p>Your MT5 account has been successfully created. Here are your credentials:</p>
-										<p><strong>Account:</strong> <span class="highlight">${matchingAccount.account}</span></p>
-										<p><strong>Password:</strong> <span class="highlight">${matchingAccount.masterPassword}</span></p>
-										<p><strong>Platform:</strong> <span class="highlight">MT5</span></p>
-										<p><strong>Server:</strong> <span class="highlight">Haven Capital Group Ltd </span></p>
-										<p>Please keep this information secure and do not share it with anyone.</p>
-                    <p>Download the MT5 for Android <a href=" https://download.mql5.com/cdn/mobile/mt5/android?server=HavenCapitalGroup-Server">h https://download.mql5.com/cdn/mobile/mt5/android?server=HavenCapitalGroup-Server</a></p>
-					<p>Download the MT5 for iOS <a href=" https://download.mql5.com/cdn/mobile/mt5/ios?server=HavenCapitalGroup-Server"> https://download.mql5.com/cdn/mobile/mt5/ios?server=HavenCapitalGroup-Server</a></p>
-					<p>Download the MT5 for Desktop <a href="https://download.mql5.com/cdn/web/haven.capital.group/mt5/havencapitalgroup5setup.exe">https://download.mql5.com/cdn/web/haven.capital.group/mt5/havencapitalgroup5setup.exe</a></p>
-									</div>
-									<div class="footer">
-										<p>Thank you for choosing our services.</p>
-									</div>
-								</div>
-							</body>
-							</html>
-							`;
+		const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border: 2px solid #DB8112;
+            overflow: hidden;
+            text-align: center;
+            padding: 30px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .logo-container {
+            margin-bottom: 25px;
+        }
+        .logo-container img {
+            max-width: 100px;
+            height: auto;
+        }
+        .header {
+            color: #DB8112;
+            margin-bottom: 25px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            display: inline-block;
+        }
+        .header h2::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 3px;
+            background-color: #DB8112;
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+        .content {
+            color: #333333;
+            font-size: 16px;
+            line-height: 1.6;
+            text-align: left;
+        }
+        .content p {
+            margin: 15px 0;
+        }
+        .credentials {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            border-left: 4px solid #DB8112;
+        }
+        .credentials p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #555;
+        }
+        .credentials strong {
+            color: #DB8112;
+            font-weight: bold;
+        }
+        .download-links {
+            margin-top: 25px;
+            text-align: center;
+        }
+        .download-links p {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .download-links a {
+            display: inline-block;
+            color: #ffffff;
+            background: linear-gradient(135deg, #DB8112, #ffa64d);
+            text-decoration: none;
+            font-weight: bold;
+            padding: 12px 25px;
+            border-radius: 6px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .download-links a:hover {
+            background: linear-gradient(135deg, #ffa64d, #DB8112);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .footer {
+            padding-top: 20px;
+            font-size: 14px;
+            color: #777;
+            margin-top: 25px;
+            border-top: 1px solid #eeeeee;
+            text-align: center;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                padding: 20px;
+            }
+            .header h2 {
+                font-size: 24px;
+            }
+            .download-links a {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="logo-container">
+            <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
+        </div>
+        <div class="header">
+            <h2>Your MT5 Account Credentials</h2>
+        </div>
+        <div class="content">
+            <p>Dear User,</p>
+            <p>Your MT5 account has been successfully created. Here are your credentials:</p>
+            <div class="credentials">
+                <p><strong>Account:</strong> ${matchingAccount.account}</p>
+                <p><strong>Password:</strong> ${matchingAccount.masterPassword}</p>
+                <p><strong>Platform:</strong> MT5</p>
+                <p><strong>Broker:</strong> MT5</p>
+            </div>
+            <p>Please keep this information secure and do not share it with anyone.</p>
+            <div class="download-links">
+                <p>Download the MT5 for:</p>
+                <a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Android</a>
+                <a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank" rel="noopener noreferrer">iOS</a>
+                <a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Desktop</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Thank you for choosing our services.</p>
+        </div>
+    </div>
+</body>
+</html>`;
 
 		// Send email and update order status if conditions are met
 		if (matchingAccount) {
 			const info = await sendEmailSingleRecipient(
 				user.email,
-				"Your MT5 Account Credentials From SSC",
+				"Your MT5 Account Credentials From Foxx Funded",
 				`Your MT5 account: ${matchingAccount.account} and password: ${matchingAccount.masterPassword}`,
 				htmlContent
 			);

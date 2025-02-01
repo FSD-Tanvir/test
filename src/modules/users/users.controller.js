@@ -12,16 +12,6 @@ const userService = require("./users.services.js");
 const createMt5Account = async (req, res) => {
 	try {
 		const mt5Account = await userService.handleMt5AccountCreate(req.body);
-		console.log("mt5Account", mt5Account);
-		res.status(200).json(mt5Account);
-	} catch (error) {
-		res.status(500).json({ error: error.message });
-	}
-};
-
-const createMt5TrialAccount = async (req, res) => {
-	try {
-		const mt5Account = await userService.handleMt5TrialAccountCreate(req.body);
 		res.status(200).json(mt5Account);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -227,9 +217,9 @@ const forgotPassword = async (req, res) => {
  * @param {Object} res - Express response object
  */
 const verifyOtp = async (req, res) => {
-	const { Email, otp } = req.body;
+	const { email, otp } = req.body;
 	try {
-		const valid = await userService.verifyOtp(Email, otp);
+		const valid = await userService.verifyOtp(email, otp);
 		if (valid) {
 			res.status(200).send({ message: "OTP verified. You can now reset your password." }); // Respond with success message
 		} else {
@@ -396,9 +386,18 @@ const getFundedUsers = async (req, res) => {
 	}
 };
 
+const manualChallengePassHandler = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const result = await userService.manualChallengePass(id);
+		res.status(200).json(result);
+	} catch (error) {
+		res.status(400).json({ error });
+	}
+};
+
 module.exports = {
 	createMt5Account,
-	createMt5TrialAccount,
 	getUserById,
 	forgotPassword,
 	verifyOtp,
@@ -417,4 +416,5 @@ module.exports = {
 	changePasswordController,
 	updateMt5AccountStatusHandler,
 	getFundedUsers,
+	manualChallengePassHandler,
 };

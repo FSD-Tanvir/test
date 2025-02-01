@@ -4,8 +4,8 @@ const { sendMailForOTP, sendEmailSingleRecipient } = require("../../helper/maili
 const { generateToken } = require("../../helper/utils/tokenUtils.js");
 
 const config = require("../../config/config.js"); // Assuming config is in this path
-const MUser = require("../users/users.schema.js"); // Assuming the MUser model is in this path
-const { MOrder } = require("../orders/orders.schema.js");
+const MUser = require("./users.schema.js"); // Assuming the MUser model is in this path
+// const { MOrder } = require("../orders/orders.schema.js");
 const StoreDataModel = require("../breach/breach.schema.js");
 const {
 	connectManager,
@@ -24,6 +24,7 @@ const {
 } = require("../../helper/utils/dateUtils.js");
 const { console } = require("node:inspector");
 const generatePassword = require("../../helper/utils/generatePasswordForMt5.js");
+const { handleNextChallengeStage } = require("../challengePass/challengePass.services.js");
 
 /**
  * Handle the creation of a new user including MT5 account and database entry
@@ -38,10 +39,10 @@ const handleMt5AccountCreate = async (userDetails) => {
 		const createMt5Account = await accountCreateAndDeposit(userDetails);
 		const amount = userDetails.amount;
 
-		// Find the last created document and update it by pushing a new entry into the dailyData array
 		const result = await StoreDataModel.findOneAndUpdate(
-			{}, // Empty filter to select all documents
+			{}, // Empty filter to match all documents
 			{
+				// Push a new entry into the `dailyData` array
 				$push: {
 					dailyData: {
 						mt5Account: createMt5Account?.login,
@@ -54,224 +55,16 @@ const handleMt5AccountCreate = async (userDetails) => {
 				},
 			},
 			{
-				sort: { _id: -1 }, // Sort by _id in descending order to get the last document
+				sort: { _id: -1 }, // Sort by `_id` in descending order to get the last document
 				new: true, // Return the updated document
+				// upsert: true, // Create a new document if none exists
+				// setDefaultsOnInsert: true, // Set default values if inserting a new document
 			}
 		);
 
 		return createMt5Account;
 	} catch (error) {
 		console.log(error);
-	}
-};
-
-const handleMt5TrialAccountCreate = async (userDetails) => {
-	try {
-		// Define 30-day threshold
-		const thirtyDaysAgo = new Date();
-		thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-		// Step 1: Check if the user already has a trial account
-
-		const existingTrialAccount = await MUser.findOne({
-			email: userDetails?.EMail,
-			$or: [{ hasUsedTrial: true }, { "mt5Accounts.isTrialAccount": true }],
-		});
-
-		if (existingTrialAccount) {
-			if (existingTrialAccount.hasUsedTrial) {
-				return {
-					success: false,
-					message: `Trial account has already been used for the user with email: ${userDetails?.EMail}.`,
-				};
-			}
-
-			if (existingTrialAccount.mt5Accounts.some((account) => account.isTrialAccount)) {
-				return {
-					success: false,
-					message: `Trial MT5 account already exists for the user with email: ${userDetails?.EMail}.`,
-				};
-			}
-		}
-
-		// Step 2: Check the number of trial accounts created in the last 30 days
-		const trialAccountsInLast30Days = await MUser.aggregate([
-			{ $unwind: "$mt5Accounts" },
-			{
-				$match: {
-					"mt5Accounts.isTrialAccount": true,
-					"mt5Accounts.createdAt": { $gte: thirtyDaysAgo },
-				},
-			},
-			{ $count: "total" },
-		]);
-
-		const trialAccountsCount =
-			trialAccountsInLast30Days.length > 0 ? trialAccountsInLast30Days[0].total : 0;
-
-		// Step 3: Restrict account creation if trial account limit exceeds 1000
-		if (trialAccountsCount >= 1000) {
-			return {
-				success: false,
-				message: "Trial account creation limit exceeded. Please try again later.",
-			};
-		}
-
-		// Step 4: Create an MT5 account with the provided details
-		const mt5Data = {
-			...userDetails,
-		};
-
-		const createMt5Account = await accountCreateAndDeposit(mt5Data);
-
-		if (!createMt5Account?.login) {
-			throw new Error("MT5 account creation failed.");
-		}
-
-		const amount = userDetails.amount;
-
-		// Step 5: Update the last created document by adding the new trial account to the `dailyData` array
-		const result = await StoreDataModel.findOneAndUpdate(
-			{}, // Empty filter to select all documents
-			{
-				$push: {
-					dailyData: {
-						mt5Account: createMt5Account.login,
-						asset: amount,
-						dailyStartingBalance: amount,
-						dailyStartingEquity: amount,
-						createdAt: new Date(),
-						updatedAt: new Date(),
-					},
-				},
-			},
-			{
-				sort: { _id: -1 }, // Sort by _id in descending order to get the last document
-				new: true, // Return the updated document
-			}
-		);
-
-		// TODO Step 6: TODO - Send email with MT5 account details
-
-		const htmlContent = `
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<style>
-				body {
-					font-family: Arial, sans-serif;
-					background-color: #f4f4f4;
-					margin: 0;
-					padding: 20px;
-				}
-				.email-container {
-					background-color: #ffffff;
-					padding: 20px;
-					border-radius: 5px;
-					box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-					max-width: 600px;
-					margin: auto;
-				}
-				.header {
-					background-color: #007bff;
-					color: #ffffff;
-					padding: 10px;
-					border-radius: 5px 5px 0 0;
-					text-align: center;
-				}
-				.content {
-					padding: 20px;
-					color: #333333;
-				}
-				.highlight {
-					background-color: #e0f7fa;
-					color: #007bff;
-					border: 1px solid #007bff;
-					margin: 0px 4px;
-					padding: 8px 40px;
-					border-radius: 3px;
-					display: inline-block;
-					font-weight: bold;
-				}
-				.footer {
-					text-align: center;
-					font-size: 12px;
-					color: #aaaaaa;
-					margin-top: 20px;
-				}
-			</style>
-		</head>
-		<body>
-			<div class="email-container">
-				<div class="header">
-					<h2>Your Account Credentials</h2>
-				</div>
-				<div class="content">
-					<p>Dear User,</p>
-					<p>Your accounts have been successfully created. Below are your credentials:</p>
-		
-					<h3>Dashboard Credentials</h3>
-					<p><strong>Email:</strong> <span class="highlight">${mt5Data?.EMail}</span></p>
-					<p><strong>Password:</strong> <span class="highlight">${mt5Data?.password}</span></p>
-		
-					<h3>MT5 Account Credentials</h3>
-					<p><strong>Account:</strong> <span class="highlight">${createMt5Account.login}</span></p>
-					<p><strong>Password:</strong> <span class="highlight">${createMt5Account.master_pass}</span></p>
-					<p><strong>Platform:</strong> <span class="highlight">MT5</span></p>
-					<p><strong>Server:</strong> <span class="highlight">Haven Capital Group Ltd</span></p>
-					<p>Please keep this information secure and do not share it with anyone.</p>
-				  
-		<h3 style="margin-top: 20px;">Download MT5:</h3>
-		<ul style="list-style-type: none; padding: 0; margin: 10px 0; font-size: 12px; line-height: 1.8;">
-			<li>
-				<a href="https://download.mql5.com/cdn/mobile/mt5/android?server=HavenCapitalGroup-Server" 
-				   style="text-decoration: none; color: #007bff;">
-				   MT5 for Android
-				</a>
-			</li>
-			<li>
-				<a href="https://download.mql5.com/cdn/mobile/mt5/ios?server=HavenCapitalGroup-Server" 
-				   style="text-decoration: none; color: #007bff;">
-				   MT5 for iOS
-				</a>
-			</li>
-			<li>
-				<a href="https://download.mql5.com/cdn/web/haven.capital.group/mt5/havencapitalgroup5setup.exe" 
-				   style="text-decoration: none; color: #007bff;">
-				   MT5 for Desktop
-				</a>
-			</li>
-		</ul>
-		
-		
-				</div>
-				<div class="footer">
-					<p>Thank you for choosing our services.</p>
-				</div>
-			</div>
-		</body>
-		</html>
-		`;
-
-		await sendEmailSingleRecipient(
-			mt5Data?.EMail,
-			"Your MT5 Account Credentials From SSC",
-			`Your MT5 account: ${createMt5Account.login} and password: ${createMt5Account.master_pass}`,
-			htmlContent
-		);
-
-		return {
-			success: true,
-			message: "Trial account created successfully.",
-			data: createMt5Account,
-		};
-	} catch (error) {
-		console.error("Error in handleMt5TrialAccountCreate:", error.message);
-		return {
-			success: false,
-			message: "An error occurred during trial account creation.",
-			error: error.message,
-		};
 	}
 };
 
@@ -406,7 +199,6 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 		const skip = (page - 1) * limit;
 
 		// Create the match query
-		// biome-ignore lint/style/useConst: <explanation>
 		let matchQuery = {};
 
 		// Filter based on searchQuery
@@ -462,7 +254,6 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 				},
 			},
 			{ $skip: skip }, // Skip documents for pagination
-			// biome-ignore lint/style/useNumberNamespace: <explanation>
 			{ $limit: parseInt(limit) }, // Limit the number of documents
 		];
 
@@ -470,10 +261,8 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 
 		return {
 			total, // Total count before skip and limit
-			// biome-ignore lint/style/useNumberNamespace: <explanation>
 			page: parseInt(page),
 
-			// biome-ignore lint/style/useNumberNamespace: <explanation>
 			limit: parseInt(limit),
 			usersWithMt5Accounts,
 		};
@@ -553,7 +342,6 @@ const updateUserRole = async (email, newRole) => {
 		}
 		return updatedUser;
 	} catch (error) {
-		// biome-ignore lint/complexity/noUselessCatch: <explanation>
 		throw error;
 	}
 };
@@ -612,7 +400,6 @@ const updateUser = async (id, userData) => {
 		}
 		return updatedUser;
 	} catch (error) {
-		// biome-ignore lint/complexity/noUselessCatch: <explanation>
 		throw error;
 	}
 };
@@ -731,7 +518,7 @@ const sendOtp = async (email) => {
 
 // Function to verify OTP for password reset
 const verifyOtp = async (Email, otp) => {
-	const record = await MOtp.findOne({ Email, otp });
+	const record = await MOtp.findOne({ email: Email, otp });
 	if (record && record.expiresAt > new Date()) {
 		await MOtp.deleteOne({ _id: record._id });
 		return true;
@@ -793,7 +580,6 @@ const findUserWithEmail = async (email) => {
 		const user = await MUser.findOne({ email: email });
 		return user;
 	} catch (error) {
-		// biome-ignore lint/complexity/noUselessCatch: <explanation>
 		throw error;
 	}
 };
@@ -801,7 +587,6 @@ const findUserWithEmail = async (email) => {
 const normalRegister = async (data) => {
 	try {
 		const { email } = data;
-		console.log("🚀 ~ normalRegister ~ data:", email);
 
 		if (email) {
 			// Attempt to find an existing user in the database by email
@@ -813,7 +598,6 @@ const normalRegister = async (data) => {
 			const user = new MUser(data);
 
 			const res = await user.save();
-			console.log(res);
 
 			return user;
 		}
@@ -874,7 +658,6 @@ const updatePurchasedProducts = async (userId, productData) => {
 			throw new Error(
 				`Product with ID ${productData.productId} is already purchased and cannot be updated.`
 			);
-			// biome-ignore lint/style/noUselessElse: <explanation>
 		} else {
 			// Proceed to update only if the product does not exist
 			const updatedUser = await MUser.findByIdAndUpdate(
@@ -998,7 +781,6 @@ const updatePassword = async (account, newPassword) => {
 		const result = await changePasswordInMt5(account, newPassword);
 		return result;
 	} catch (error) {
-		// biome-ignore lint/style/useTemplate: <explanation>
 		throw new Error("Service failed to change password: " + error.message);
 	}
 };
@@ -1031,11 +813,157 @@ const findFundedUsers = async () => {
 	}
 };
 
-// TODO: Add a function (automation) to make the trial account inActive after 14 days
+const manualChallengePass = async (id) => {
+	try {
+		// Convert the id to a number
+		const accountId = Number(id);
+
+		// Find users with the specified account ID
+		const users = await MUser.find(
+			{
+				"mt5Accounts.account": accountId,
+				mt5Accounts: {
+					$elemMatch: {
+						account: accountId,
+						challengeStage: { $ne: "funded" },
+						challengeStatus: { $ne: "passed" },
+						accountStatus: { $eq: "active" },
+					},
+				},
+			},
+			{
+				mt5Accounts: 1,
+				email: 1,
+				_id: 1,
+			}
+		).exec();
+
+		// Extract the specific account
+		const singleAccount = users.flatMap((user) =>
+			user.mt5Accounts
+				.filter((account) => {
+					const match =
+						account.account === accountId &&
+						account.challengeStage !== "funded" &&
+						account.challengeStatus !== "passed" &&
+						account.accountStatus === "active";
+
+					return match;
+				})
+				.map((account) => ({
+					...account.toObject(),
+					email: user.email,
+					userId: user._id,
+				}))
+		)[0]; // Get the first matched account.
+
+		console.log(singleAccount);
+
+		// Handle case where no account is found
+		if (!singleAccount) {
+			console.error("No matching accounts found for processing.");
+			return {
+				success: false,
+				status: 404,
+				message: "No matching accounts found for processing.",
+			};
+		}
+
+		const { challengeStage, challengeStageData, userId, account } = singleAccount;
+
+		if (!account) {
+			console.log("Account number is missing, skipping this account.");
+			return {
+				success: false,
+				status: 400,
+				message: "Account number is missing.",
+			};
+		}
+
+		if (
+			!challengeStageData ||
+			!challengeStageData.challengeStages ||
+			!challengeStageData.challengeStages[challengeStage]
+		) {
+			return {
+				success: false,
+				status: 400,
+				message: "Invalid challenge stage data.",
+			};
+		}
+
+		const user = await MUser.findById(userId);
+
+		if (!user) {
+			console.error(`User not found for userId: ${userId}`);
+			return {
+				success: false,
+				status: 404,
+				message: `User not found for userId: ${userId}.`,
+			};
+		}
+
+		const matchingAccount = user.mt5Accounts.find((a) => a.account === account);
+
+		if (matchingAccount) {
+			const changeGroupDetails = {
+				Group: "demo\\forex-hedge-usd-01", //! TODO : Change the group
+			};
+
+			const changeGroup = await accountUpdate(matchingAccount.account, changeGroupDetails);
+
+			if (changeGroup === "OK") {
+				matchingAccount.group = changeGroupDetails.Group;
+
+				await user.save();
+
+				// Disable trading rights for the MT5 account.
+				const userDisableDetails = {
+					// Rights: "USER_RIGHT_TRADE_DISABLED",
+					Rights: "USER_RIGHT_TRADE_DISABLED",
+					enabled: true,
+				};
+
+				// API call to disable MT5 account and verify the response.
+				const disableMT5Account = await accountUpdate(matchingAccount.account, userDisableDetails);
+
+				if (disableMT5Account === "OK") {
+					matchingAccount.challengeStatus = "passed";
+					matchingAccount.accountStatus = "inActive";
+					matchingAccount.passedClaimed = true;
+					await user.save();
+
+					console.log(user);
+
+					// Check if the user needs to be assigned a new MT5 account based on their challenge progress.
+					await handleNextChallengeStage(matchingAccount, user, matchingAccount);
+				}
+			}
+		} else {
+			return {
+				success: false,
+				status: 404,
+				message: `Account not found for account number: ${account}.`,
+			};
+		}
+
+		return {
+			success: true,
+			status: 200,
+			message: `Challenge passed for account ${account}`,
+		};
+	} catch (error) {
+		return {
+			success: false,
+			status: 500,
+			message: "An internal error occurred while processing the manual challenge pass.",
+			error: error,
+		};
+	}
+};
 
 module.exports = {
 	handleMt5AccountCreate,
-	handleMt5TrialAccountCreate,
 	findUserWithMt5Details,
 	sendOtp,
 	verifyOtp,
@@ -1055,4 +983,5 @@ module.exports = {
 	updatePassword,
 	updateMt5AccountStatus,
 	findFundedUsers,
+	manualChallengePass,
 };

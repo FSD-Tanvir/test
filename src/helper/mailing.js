@@ -22,7 +22,7 @@ const transporter = nodemailer.createTransport({
  */
 const sendMailForOTP = async (to, subject, text, html = "") => {
 	const mailOptions = {
-		from: "themarketingteam@summitstrike.com", // Sender address
+		from: "Contact@foxx-funded.com", // Sender address
 		// from: process.env.user, // Sender address
 
 		to, // Recipient address
@@ -46,7 +46,7 @@ const sendMailForOTP = async (to, subject, text, html = "") => {
 
 const sendEmailSingleRecipient = async (to, subject, text, html = "") => {
 	const mailOptions = {
-		from: "themarketingteam@summitstrike.com", // sender address
+		from: "Contact@foxx-funded.com", // sender address
 		// from: process.env.user, // Sender address
 		to, // list of receivers
 		subject, // Subject line
@@ -65,15 +65,9 @@ const sendEmailSingleRecipient = async (to, subject, text, html = "") => {
 	}
 };
 
-const sendEmailWithAttachment = async (
-	to,
-	subject,
-	text,
-	html = "",
-	attachments = [],
-) => {
+const sendEmailWithAttachment = async (to, subject, text, html = "", attachments = []) => {
 	const mailOptions = {
-		from: "themarketingteam@summitstrike.com", // Sender address
+		from: "Contact@foxx-funded.com", // Sender address
 		to, // List of receivers
 		subject, // Subject line
 		text, // Plain text body
@@ -96,7 +90,7 @@ const sendEmailWithPdf = async (to, subject, textContent) => {
 
 		// Define email options
 		const mailOptions = {
-			from: "themarketingteam@summitstrike.com", // Sender address
+			from: "Contact@foxx-funded.com", // Sender address
 			// from: process.env.user, // Sender address
 			to: to, // list of receivers
 			subject: subject, // Subject line

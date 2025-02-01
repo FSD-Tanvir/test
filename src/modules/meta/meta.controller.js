@@ -5,7 +5,6 @@ const {
 	getAccountsOverTime,
 	getMetaSales,
 	getSpecificChallengeSalesMeta,
-	getSpecificTotalChallengeSalesMeta,
 } = require("./meta.services");
 
 const getMt5MetaDataHandler = async (req, res) => {
@@ -103,31 +102,10 @@ const getSpecificChallengeSalesMetaHandler = async (req, res) => {
 	}
 };
 
-const getSpecificTotalChallengeSalesMetaHandler = async (req, res) => {
-	try {
-		// Extract optional startDate and endDate from query parameters
-		const { startDate, endDate } = req.query;
-
-		// Pass startDate and endDate to getSpecificChallengeSalesMeta
-		const data = await getSpecificTotalChallengeSalesMeta(startDate, endDate);
-
-		return res.status(200).json({
-			success: true,
-			data,
-		});
-	} catch (error) {
-		return res.status(500).json({
-			success: false,
-			message: error.message,
-		});
-	}
-};
-
 module.exports = {
 	getMt5MetaDataHandler,
 	getAccountsOverTimeHandler,
 	getOrdersOverTimeHandler,
 	getMetaSalesHandler,
 	getSpecificChallengeSalesMetaHandler,
-	getSpecificTotalChallengeSalesMetaHandler,
 };

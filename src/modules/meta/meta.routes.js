@@ -25,7 +25,4 @@ router.get("/db/meta-sales", getMetaSalesHandler);
 // Route for getting the number of Orders created over time (mainly for graph)
 router.get("/db/specific-challenge-sales-meta", getSpecificChallengeSalesMetaHandler);
 
-// Route for getting the number of Orders for specific challenge
-router.get("/db/specific-challenge-total-sales-meta", getSpecificTotalChallengeSalesMetaHandler);
-
 module.exports = router;

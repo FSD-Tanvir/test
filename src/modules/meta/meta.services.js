@@ -117,13 +117,27 @@ const getMt5MetaData = async () => {
 							],
 						},
 					},
-					standardChallenges: {
+					oneStepChallenges: {
 						$sum: {
 							$cond: [
 								{
 									$regexMatch: {
 										input: "$mt5Accounts.challengeStageData.challengeName",
-										regex: "Standard Challenge",
+										regex: "oneStep",
+									},
+								},
+								1,
+								0,
+							],
+						},
+					},
+					twoStepChallenges: {
+						$sum: {
+							$cond: [
+								{
+									$regexMatch: {
+										input: "$mt5Accounts.challengeStageData.challengeName",
+										regex: "twoStep",
 									},
 								},
 								1,
@@ -251,7 +265,8 @@ const getMt5MetaData = async () => {
 					phase2Challenges: 0,
 					fundedChallenges: 0,
 					instantFundingChallenges: 0,
-					standardChallenges: 0,
+					oneStepChallenges: 0,
+					twoStepChallenges: 0,
 					accountsChangeFromLastMonth: 0,
 					usersChangeFromLastMonth: 0,
 					signupChangeFromYesterday: 0, // Default value if no results
@@ -376,7 +391,7 @@ const getAccountsOverTime = async (startDate, endDate) => {
 /* -------------------------------------------------------------------------- */
 const getOrdersOverTime = async (startDate, endDate) => {
 	try {
-		// Define the matching stage for date filtering
+		// Aggregating the order count by the created date
 		const matchStage = {
 			orderStatus: "Delivered",
 			paymentStatus: "Paid",
@@ -403,7 +418,8 @@ const getOrdersOverTime = async (startDate, endDate) => {
 
 		const ordersOverTime = await MOrder.aggregate([
 			{
-				$match: matchStage, // Apply the filtering by date and other conditions
+				// If matchStage has filtering, it will apply it, otherwise, no filtering by date
+				$match: matchStage,
 			},
 			{
 				// Extract the date part (year, month, day) from the createdAt field
@@ -415,7 +431,7 @@ const getOrdersOverTime = async (startDate, endDate) => {
 				},
 			},
 			{
-				// Group the results by the date and calculate order count and sum of totalPrice
+				// Group the results by the date and count the number of orders
 				$group: {
 					_id: "$date",
 					count: { $sum: 1 },
@@ -435,26 +451,26 @@ const getOrdersOverTime = async (startDate, endDate) => {
 				$sort: { _id: 1 },
 			},
 			{
-				// Rename fields and format the output
+				// Rename _id to createdDate
 				$project: {
-					_id: 0,
-					createdDay: "$_id",
-					count: 1,
-					totalSum: 1,
+					_id: 0, // Remove the _id field
+					createdDay: "$_id", // Rename _id to createdDate
+					count: 1, // Keep the count field
+					totalSum: 1, // Keep the totalSum field
 				},
 			},
 		]);
 
-		// Calculate the total count and total sum of orders in the selected date range
+		// Calculate the total count of orders in the selected date range
 		const totalCount = ordersOverTime.reduce((total, entry) => total + entry.count, 0);
 		const totalSum = ordersOverTime.reduce((total, entry) => total + entry.totalSum, 0);
 
-		// Return the aggregated results with totalCount and totalSum
+		// Return the same structure but add the total count to the data array
 		return {
 			success: true,
 			data: ordersOverTime,
-			totalCount: totalCount, // Total count of orders
-			totalSum: totalSum, // Total sum of totalPrice
+			totalCount: totalCount,
+			totalSum: totalSum,
 		};
 	} catch (error) {
 		throw new Error("Failed to retrieve order data: " + error.message);
@@ -463,19 +479,19 @@ const getOrdersOverTime = async (startDate, endDate) => {
 
 const getMetaSales = async () => {
 	try {
-		// Helper function to round numbers to two decimal places
+		// Helper function to round numbers to two decimal places without converting to string
 		const roundToTwo = (num) => Math.round(num * 100) / 100;
 
-		// Pre-calculate date boundaries once
+		// Get the current date and time for reuse
 		const now = new Date();
 		const startOfToday = new Date(now.setHours(0, 0, 0, 0));
 		const endOfToday = new Date(now.setHours(23, 59, 59, 999));
-		const startOfYesterday = new Date(startOfToday.getTime() - 86400000); // 24 hours in ms
+		const startOfYesterday = new Date(startOfToday.getTime() - 86400000); // 24 hours in milliseconds
 		const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 		const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 		const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-		// Aggregation pipeline optimization: $match comes first, $project only necessary fields
+		// Define the pipeline for total sales, today's sales, etc.
 		const totalSalesPipeline = [
 			{
 				$match: {
@@ -485,109 +501,141 @@ const getMetaSales = async () => {
 				},
 			},
 			{ $group: { _id: null, totalSales: { $sum: "$totalPrice" } } },
-			{ $project: { _id: 0, totalSales: 1 } },
 		];
 
-		const dateBasedPipeline = (startDate, endDate) => [
+		const todaySalesPipeline = [
 			{
 				$match: {
-					createdAt: { $gte: startDate, $lt: endDate },
 					paymentStatus: "Paid",
 					orderStatus: "Delivered",
 					$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
+					createdAt: { $gte: startOfToday, $lt: endOfToday },
 				},
 			},
-			{ $group: { _id: null, totalSales: { $sum: "$totalPrice" } } },
-			{ $project: { _id: 0, totalSales: 1 } },
+			{ $group: { _id: null, totalSalesToday: { $sum: "$totalPrice" } } },
 		];
 
-		const ordersByCountryPipeline = [
+		const yesterdaySalesPipeline = [
 			{
 				$match: {
-					createdAt: { $gte: startOfLastMonth },
+					paymentStatus: "Paid",
+					orderStatus: "Delivered",
 					$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
-					// paymentStatus: "Paid",
-					// orderStatus: "Delivered",
+					createdAt: { $gte: startOfYesterday, $lt: startOfToday },
 				},
-			}, // Modified to filter from last month to future
+			},
+			{ $group: { _id: null, totalSalesYesterday: { $sum: "$totalPrice" } } },
+		];
+
+		const lastMonthSalesPipeline = [
+			{
+				$match: {
+					paymentStatus: "Paid",
+					orderStatus: "Delivered",
+					$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
+					createdAt: { $gte: startOfLastMonth, $lt: startOfCurrentMonth },
+				},
+			},
 			{
 				$group: {
-					_id: { $toLower: { $trim: { input: "$buyerDetails.country" } } },
-					count: { $sum: 1 },
+					_id: null,
+					totalSalesLastMonth: { $sum: "$totalPrice" },
+					totalOrdersLastMonth: { $sum: 1 },
 				},
 			},
-			{ $group: { _id: "$_id", count: { $sum: "$count" } } }, // Group again to combine repeated countries
+		];
+
+		const currentMonthSalesPipeline = [
 			{
-				$project: {
-					country: {
-						$concat: [
-							{ $toUpper: { $substrCP: ["$_id", 0, 1] } },
-							{ $substrCP: ["$_id", 1, { $strLenCP: "$_id" }] },
-						],
-					},
-					count: 1,
-					_id: 0,
+				$match: {
+					paymentStatus: "Paid",
+					orderStatus: "Delivered",
+					$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
+					createdAt: { $gte: startOfCurrentMonth, $lt: startOfNextMonth },
+				},
+			},
+			{
+				$group: {
+					_id: null,
+					totalSalesCurrentMonth: { $sum: "$totalPrice" },
+					totalOrdersCurrentMonth: { $sum: 1 },
 				},
 			},
 		];
 
-		// Optimize concurrent executions by batching non-dependent queries
-		const aggregationPipelines = [
-			MOrder.aggregate(totalSalesPipeline),
-			MOrder.aggregate(dateBasedPipeline(startOfToday, endOfToday)),
-			MOrder.aggregate(dateBasedPipeline(startOfYesterday, startOfToday)),
-			MOrder.aggregate(dateBasedPipeline(startOfLastMonth, startOfCurrentMonth)),
-			MOrder.aggregate(dateBasedPipeline(startOfCurrentMonth, startOfNextMonth)),
-			MOrder.aggregate(ordersByCountryPipeline),
+		const lastMonthOrdersPipeline = [
+			{ $match: { createdAt: { $gte: startOfLastMonth, $lt: startOfCurrentMonth } } },
+			{ $group: { _id: null, totalOrdersLastMonth: { $sum: 1 } } },
 		];
 
+		const currentMonthOrdersPipeline = [
+			{ $match: { createdAt: { $gte: startOfCurrentMonth, $lt: startOfNextMonth } } },
+			{ $group: { _id: null, totalOrdersCurrentMonth: { $sum: 1 } } },
+		];
+
+		// New Pipeline: Orders by Country
+		const ordersByCountryPipeline = [
+			{ $group: { _id: "$buyerDetails.country", count: { $sum: 1 } } },
+			{ $project: { country: "$_id", count: 1, _id: 0 } },
+		];
+
+		// Count all the orders in the collection with filters
+		const totalOrdersResult = await MOrder.countDocuments();
+
+		// Run all aggregation pipelines concurrently
 		const [
 			totalSalesResult,
 			todaySalesResult,
 			yesterdaySalesResult,
 			lastMonthSalesResult,
 			currentMonthSalesResult,
-			ordersByCountryResult,
-		] = await Promise.all(aggregationPipelines);
-
-		// Check if aggregation results are missing
-		if (
-			!totalSalesResult ||
-			!todaySalesResult ||
-			!yesterdaySalesResult ||
-			!lastMonthSalesResult ||
-			!currentMonthSalesResult ||
-			!ordersByCountryResult
-		) {
-			throw new Error("Incomplete data returned from aggregation");
-		}
+			lastMonthOrdersResult,
+			currentMonthOrdersResult,
+			ordersByCountryResult, // New Aggregation Result
+		] = await Promise.all([
+			MOrder.aggregate(totalSalesPipeline),
+			MOrder.aggregate(todaySalesPipeline),
+			MOrder.aggregate(yesterdaySalesPipeline),
+			MOrder.aggregate(lastMonthSalesPipeline),
+			MOrder.aggregate(currentMonthSalesPipeline),
+			MOrder.aggregate(lastMonthOrdersPipeline),
+			MOrder.aggregate(currentMonthOrdersPipeline),
+			MOrder.aggregate(ordersByCountryPipeline), // Execute New Pipeline
+		]);
 
 		// Extract sales data
 		const totalSales = totalSalesResult[0]?.totalSales || 0;
-		const todaySales = todaySalesResult[0]?.totalSales || 0;
-		const yesterdaySales = yesterdaySalesResult[0]?.totalSales || 0;
-		const lastMonthSales = lastMonthSalesResult[0]?.totalSales || 0;
-		const currentMonthSales = currentMonthSalesResult[0]?.totalSales || 0;
+		const lastMonthSales = lastMonthSalesResult[0]?.totalSalesLastMonth || 0;
+		const currentMonthSales = currentMonthSalesResult[0]?.totalSalesCurrentMonth || 0;
+		const yesterdaySales = yesterdaySalesResult[0]?.totalSalesYesterday || 0;
 
-		const totalOrdersResult = await MOrder.countDocuments({
-			$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
+		const today = new Date("2024-10-14T00:00:00Z");
+
+		const futureOrders = await MOrder.find({
+			createdAt: { $gte: today }, // Only filter by date
 		});
 
-		// Convert orders by country to desired format with percentages
-		const totalOrdersFromToday = ordersByCountryResult.reduce(
-			(sum, country) => sum + country.count,
-			0
-		);
-		const ordersWithPercentage = ordersByCountryResult.map(({ country, count }) => {
-			if (!country) {
-				return { country: "Unknown", count, percentage: 0 };
+		const totalOrdersFromToday = futureOrders.length;
+
+		const ordersByCountry = futureOrders.reduce((acc, order) => {
+			const country = order.buyerDetails.country?.toLowerCase(); // Normalize to lowercase
+			if (!country) return acc; // Skip if country is undefined
+
+			if (!acc[country]) {
+				acc[country] = { count: 0 };
 			}
-			return {
-				country: country.charAt(0).toUpperCase() + country.slice(1).toLowerCase(),
-				count,
-				percentage: totalOrdersFromToday ? roundToTwo((count / totalOrdersFromToday) * 100) : 0,
-			};
-		});
+			acc[country].count++;
+			return acc;
+		}, {});
+
+		// Convert to the desired format
+		const ordersWithPercentage = Object.entries(ordersByCountry).map(([country, data]) => ({
+			country: country.charAt(0).toUpperCase() + country.slice(1), // Capitalize the first letter for display
+			count: data.count,
+			percentage: totalOrdersFromToday
+				? Math.round((data.count / totalOrdersFromToday) * 10000) / 100
+				: 0,
+		}));
 
 		// Determine the top country
 		const topCountry = ordersWithPercentage.reduce((max, country) => {
@@ -596,45 +644,43 @@ const getMetaSales = async () => {
 
 		return {
 			totalSales: roundToTwo(totalSales),
-			todaySales: roundToTwo(todaySales),
+			todaySales: roundToTwo(todaySalesResult[0]?.totalSalesToday || 0),
 			yesterdaySales: roundToTwo(yesterdaySales),
 			lastMonthSales: roundToTwo(lastMonthSales),
 			currentMonthSales: roundToTwo(currentMonthSales),
-			totalOrders: totalOrdersResult,
-			ordersByCountry: ordersWithPercentage,
-			topCountry,
+			lastMonthOrders: lastMonthOrdersResult[0]?.totalOrdersLastMonth || 0,
+			currentMonthOrders: currentMonthOrdersResult[0]?.totalOrdersCurrentMonth || 0,
+			totalOrders: totalOrdersResult || 0,
+			ordersByCountry: ordersWithPercentage, // Include Orders by Country with Percentages
+			topCountry, // Include the Top Country
 		};
 	} catch (error) {
 		console.error("Error calculating order sales:", error.message);
-		return {
-			success: false,
-			message: "Failed to calculate order sales",
-		};
+		throw new Error("Failed to calculate order sales");
 	}
 };
-
 const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 	try {
 		const challenges = {
-			SC2Point5K: "2.5K Standard Challenge",
-			SC5K: "5K Standard Challenge",
-			SC10K: "10K Standard Challenge",
-			SC25K: "25K Standard Challenge",
-			SC50K: "50K Standard Challenge",
-			SC100K: "100K Standard Challenge",
-			SC200K: "200K Standard Challenge",
-			IF2Point5K: "2.5K Instant Funding",
-			IF5K: "5K Instant Funding",
-			IF10K: "10K Instant Funding",
-			IF25K: "25K Instant Funding",
-			IF50K: "50K Instant Funding",
-			IF100K: "100K Instant Funding",
-			Mini2Point5K: "2.5K Mini Challenge",
-			Mini5K: "5K Mini Challenge",
-			Mini10K: "10K Mini Challenge",
-			Mini15K: "15K Mini Challenge",
-			Mini20K: "20K Mini Challenge",
-			Mini30K: "30K Mini Challenge",
+			FF5KOneStep: "Foxx Funded 5k oneStep",
+			FF10KOneStep: "Foxx Funded 10k oneStep",
+			FF25KOneStep: "Foxx Funded 25k oneStep",
+			FF50KOneStep: "Foxx Funded 50k oneStep",
+			FF100KOneStep: "Foxx Funded 100k oneStep",
+			FF200KOneStep: "Foxx Funded 200k oneStep",
+			FF300KOneStep: "Foxx Funded 300k oneStep",
+			FF5KTwoStep: "Foxx Funded 5k twoStep",
+			FF10KTwoStep: "Foxx Funded 10k twoStep",
+			FF25KTwoStep: "Foxx Funded 25k twoStep",
+			FF50KTwoStep: "Foxx Funded 50k twoStep",
+			FF100KTwoStep: "Foxx Funded 100k twoStep",
+			FF200KTwoStep: "Foxx Funded 200k twoStep",
+			FF300KTwoStep: "Foxx Funded 300k twoStep",
+			FFIF5K: "Foxx Funded 5k Instant Funding",
+			FFIF10K: "Foxx Funded 10k Instant Funding",
+			FFIF25K: "Foxx Funded 25k Instant Funding",
+			FFIF50K: "Foxx Funded 50k Instant Funding",
+			FFIF100K: "Foxx Funded 100k Instant Funding",
 		};
 
 		// Step 1: Fetch counts for challenges
@@ -744,84 +790,10 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 	}
 };
 
-/* -------------------------------------------------------------------------- */
-/*                        //! This api will not be used                        */
-/* --------------------------------------------------------------------------  */
-const getSpecificTotalChallengeSalesMeta = async (startDate, endDate) => {
-	try {
-		// Define challenge names
-		const challenges = [
-			"5K Standard Challenge",
-			"10K Standard Challenge",
-			"25K Standard Challenge",
-			"50K Standard Challenge",
-			"100K Standard Challenge",
-			"200K Standard Challenge",
-			"5K Instant Funding",
-			"10K Instant Funding",
-			"25K Instant Funding",
-			"50K Instant Funding",
-			"100K Instant Funding",
-		];
-
-		// Build the match stage for aggregation
-		const matchStage = {
-			orderStatus: "Delivered",
-			paymentStatus: "Paid",
-			"orderItems.challengeName": { $in: challenges },
-		};
-
-		if (startDate) {
-			matchStage.createdAt = { $gte: new Date(startDate) };
-		}
-
-		if (endDate) {
-			matchStage.createdAt = matchStage.createdAt
-				? { ...matchStage.createdAt, $lte: new Date(endDate) }
-				: { $lte: new Date(endDate) };
-		}
-
-		// Aggregation pipeline
-		const pipeline = [
-			{ $match: matchStage },
-			{ $unwind: "$orderItems" },
-			{
-				$match: {
-					"orderItems.challengeName": { $in: challenges },
-				},
-			},
-			{
-				$group: {
-					_id: "$orderItems.challengeName",
-					totalSales: { $sum: "$totalPrice" },
-				},
-			},
-		];
-
-		// Execute the aggregation
-		const result = await MOrder.aggregate(pipeline);
-
-		// Transform result to match expected format
-		const challengeSales = challenges.reduce((acc, name) => {
-			acc[name] = 0;
-			return acc;
-		}, {});
-
-		result.forEach(({ _id, totalSales }) => {
-			challengeSales[_id] = totalSales;
-		});
-
-		return { challengeSales };
-	} catch (error) {
-		throw new Error(`Failed to calculate total sales: ${error.message}`);
-	}
-};
-
 module.exports = {
 	getMt5MetaData,
 	getAccountsOverTime,
 	getOrdersOverTime,
 	getMetaSales,
 	getSpecificChallengeSalesMeta,
-	getSpecificTotalChallengeSalesMeta,
 };
