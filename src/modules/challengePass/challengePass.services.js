@@ -307,7 +307,6 @@ const passingChallenge = async () => {
 
 			// check if trading days are greater than minTradingDays and traderProfit is greater than calculatedProfitTarget
 			const checkPassed = tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
-			console.log("🚀 ~ passingChallenge ~ checkPassed:", checkPassed);
 
 			if (checkPassed) {
 				// Fetch the user document from the database using userId.
