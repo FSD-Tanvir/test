@@ -24,6 +24,7 @@ const {
 } = require("../../helper/utils/dateUtils.js");
 const { console } = require("node:inspector");
 const generatePassword = require("../../helper/utils/generatePasswordForMt5.js");
+const { handleNextChallengeStage } = require("../challengePass/challengePass.services.js");
 
 /**
  * Handle the creation of a new user including MT5 account and database entry
@@ -812,6 +813,155 @@ const findFundedUsers = async () => {
 	}
 };
 
+const manualChallengePass = async (id) => {
+	try {
+		// Convert the id to a number
+		const accountId = Number(id);
+
+		// Find users with the specified account ID
+		const users = await MUser.find(
+			{
+				"mt5Accounts.account": accountId,
+				mt5Accounts: {
+					$elemMatch: {
+						account: accountId,
+						challengeStage: { $ne: "funded" },
+						challengeStatus: { $ne: "passed" },
+						accountStatus: { $eq: "active" },
+					},
+				},
+			},
+			{
+				mt5Accounts: 1,
+				email: 1,
+				_id: 1,
+			}
+		).exec();
+
+		// Extract the specific account
+		const singleAccount = users.flatMap((user) =>
+			user.mt5Accounts
+				.filter((account) => {
+					const match =
+						account.account === accountId &&
+						account.challengeStage !== "funded" &&
+						account.challengeStatus !== "passed" &&
+						account.accountStatus === "active";
+
+					return match;
+				})
+				.map((account) => ({
+					...account.toObject(),
+					email: user.email,
+					userId: user._id,
+				}))
+		)[0]; // Get the first matched account.
+
+		console.log(singleAccount);
+
+		// Handle case where no account is found
+		if (!singleAccount) {
+			console.error("No matching accounts found for processing.");
+			return {
+				success: false,
+				status: 404,
+				message: "No matching accounts found for processing.",
+			};
+		}
+
+		const { challengeStage, challengeStageData, userId, account } = singleAccount;
+
+		if (!account) {
+			console.log("Account number is missing, skipping this account.");
+			return {
+				success: false,
+				status: 400,
+				message: "Account number is missing.",
+			};
+		}
+
+		if (
+			!challengeStageData ||
+			!challengeStageData.challengeStages ||
+			!challengeStageData.challengeStages[challengeStage]
+		) {
+			return {
+				success: false,
+				status: 400,
+				message: "Invalid challenge stage data.",
+			};
+		}
+
+		const user = await MUser.findById(userId);
+
+		if (!user) {
+			console.error(`User not found for userId: ${userId}`);
+			return {
+				success: false,
+				status: 404,
+				message: `User not found for userId: ${userId}.`,
+			};
+		}
+
+		const matchingAccount = user.mt5Accounts.find((a) => a.account === account);
+
+		if (matchingAccount) {
+			const changeGroupDetails = {
+				Group: "demo\\forex-hedge-usd-01", //! TODO : Change the group
+			};
+
+			const changeGroup = await accountUpdate(matchingAccount.account, changeGroupDetails);
+
+			if (changeGroup === "OK") {
+				matchingAccount.group = changeGroupDetails.Group;
+
+				await user.save();
+
+				// Disable trading rights for the MT5 account.
+				const userDisableDetails = {
+					// Rights: "USER_RIGHT_TRADE_DISABLED",
+					Rights: "USER_RIGHT_TRADE_DISABLED",
+					enabled: true,
+				};
+
+				// API call to disable MT5 account and verify the response.
+				const disableMT5Account = await accountUpdate(matchingAccount.account, userDisableDetails);
+
+				if (disableMT5Account === "OK") {
+					matchingAccount.challengeStatus = "passed";
+					matchingAccount.accountStatus = "inActive";
+					matchingAccount.passedClaimed = true;
+					await user.save();
+
+					console.log(user);
+
+					// Check if the user needs to be assigned a new MT5 account based on their challenge progress.
+					await handleNextChallengeStage(matchingAccount, user, matchingAccount);
+				}
+			}
+		} else {
+			return {
+				success: false,
+				status: 404,
+				message: `Account not found for account number: ${account}.`,
+			};
+		}
+
+		return {
+			success: true,
+			status: 200,
+			message: `Challenge passed for account ${account}`,
+		};
+	} catch (error) {
+		return {
+			success: false,
+			status: 500,
+			message: "An internal error occurred while processing the manual challenge pass.",
+			error: error,
+		};
+	}
+};
+
 module.exports = {
 	handleMt5AccountCreate,
 	findUserWithMt5Details,
@@ -833,4 +983,5 @@ module.exports = {
 	updatePassword,
 	updateMt5AccountStatus,
 	findFundedUsers,
+	manualChallengePass,
 };

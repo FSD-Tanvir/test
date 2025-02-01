@@ -306,8 +306,8 @@ const passingChallenge = async () => {
 			const traderProfit = Number(balance - accountSize);
 
 			// check if trading days are greater than minTradingDays and traderProfit is greater than calculatedProfitTarget
-			// const checkPassed = tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
-			const checkPassed = true; //! TODO: Remove this line after testing
+			const checkPassed = tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
+			console.log("🚀 ~ passingChallenge ~ checkPassed:", checkPassed);
 
 			if (checkPassed) {
 				// Fetch the user document from the database using userId.
@@ -530,6 +530,23 @@ const assignNewMT5Account = async (
 <html>
 <head>
 	<style>
+		/* Basic reset for email clients */
+		body, table, td, a {
+			-webkit-text-size-adjust: 100%;
+			-ms-text-size-adjust: 100%;
+		}
+		table, td {
+			mso-table-lspace: 0pt;
+			mso-table-rspace: 0pt;
+		}
+		img {
+			-ms-interpolation-mode: bicubic;
+			border: 0;
+			height: auto;
+			line-height: 100%;
+			outline: none;
+			text-decoration: none;
+		}
 		body {
 			font-family: Arial, sans-serif;
 			background-color: #f7f8fa;
@@ -542,19 +559,20 @@ const assignNewMT5Account = async (
 		}
 		.email-container {
 			background-color: #ffffff;
-			border-radius: 10px;
-			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-			max-width: 700px;
+			border-radius: 12px;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+			max-width: 600px;
 			width: 100%;
-			border: 2px solid #DB8112;
 			overflow: hidden;
 			margin: 20px;
+			border: 1px solid #e0e0e0;
 		}
 		.header {
-			background-color: #ffffff;
+			background: #DB8112; /* Fallback for older email clients */
+			background: linear-gradient(135deg, #DB8112, #ffa64d);
 			padding: 40px 20px;
 			text-align: center;
-			border-bottom: 2px solid #eeeeee;
+			color: #ffffff;
 		}
 		.header img {
 			width: 80px;
@@ -566,65 +584,64 @@ const assignNewMT5Account = async (
 		}
 		.congrats-text {
 			color: #DB8112;
-			font-size: 36px;
-			font-weight: 900;
+			font-size: 32px;
+			font-weight: 700;
 			margin: 0;
 			text-transform: uppercase;
-			letter-spacing: 1.5px;
-			display: inline-block;
-		}
-		.congrats-text::after {
-			content: '';
-			display: block;
-			width: 50px;
-			height: 3px;
-			background-color: #DB8112;
-			margin: 10px auto 0;
-			border-radius: 2px;
+			letter-spacing: 1px;
 		}
 		.content {
-			padding: 30px 20px;
+			padding: 30px;
 			color: #333333;
-			line-height: 1.7;
+			line-height: 1.6;
 		}
 		.content p {
 			margin: 0 0 15px;
 		}
 		.highlight {
 			color: #DB8112;
-			font-weight: bold;
+			font-weight: 600;
 		}
 		.message-warning {
 			text-align: center;
 			background-color: #fff7e6;
 			border: 1px solid #ffe0b3;
 			padding: 15px;
-			border-radius: 6px;
+			border-radius: 8px;
 			font-size: 14px;
 			color: #A35E04;
-			margin: 15px 0;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			margin: 20px 0;
 		}
 		.download-section {
 			text-align: center;
-			margin-top: 30px;
+			margin-top: 25px;
 		}
-		.download-section .download-text {
+		.download-text {
 			font-size: 18px;
-			font-weight: bold;
+			font-weight: 600;
 			color: #333333;
-			margin-bottom: 10px;
+			margin-bottom: 15px;
+		}
+		.download-links {
+			text-align: center;
 		}
 		.download-links a {
-			color: #DB8112;
+			display: inline-block;
+			color: #ffffff;
 			text-decoration: none;
-			font-weight: bold;
-			margin: 0 15px;
-			transition: color 0.3s ease;
+			font-weight: 600;
+			padding: 10px 20px;
+			border-radius: 6px;
+			background: #DB8112; /* Fallback for older email clients */
+			background: linear-gradient(135deg, #DB8112, #ffa64d);
+			transition: all 0.3s ease;
+			margin: 5px;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		}
 		.download-links a:hover {
-			color: #bf6e0f;
-			text-decoration: underline;
+			background: #bf6e0f; /* Fallback for older email clients */
+			background: linear-gradient(135deg, #bf6e0f, #e68a2e);
+			box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 		}
 		.footer {
 			background-color: #f7f8fa;
@@ -634,32 +651,33 @@ const assignNewMT5Account = async (
 			color: #888888;
 			border-top: 1px solid #eeeeee;
 			margin-top: 20px;
-			visibility: visible;
-			display: block;
 		}
 		.footer p {
 			margin: 0 0 10px;
 			line-height: 1.5;
 		}
-		.footer p a {
+		.footer a {
 			color: #DB8112;
 			text-decoration: none;
+			font-weight: 600;
 		}
-		a {
-			color: #DB8112;
-			text-decoration: none;
-		}
-		a:hover {
+		.footer a:hover {
 			text-decoration: underline;
 		}
 
 		/* Responsive styling */
 		@media (max-width: 480px) {
-			.header .congrats-text {
+			.congrats-text {
 				font-size: 24px;
 			}
 			.content {
-				padding: 20px 15px;
+				padding: 20px;
+			}
+			.download-links a {
+				display: block;
+				width: 100%;
+				box-sizing: border-box;
+				margin: 5px 0;
 			}
 			.footer {
 				font-size: 10px;
@@ -669,38 +687,45 @@ const assignNewMT5Account = async (
 </head>
 <body>
 	<div class="email-container">
-		<div class="header">
-			<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
+		<!-- Header with Gradient Background -->
+		<div class="header" style="background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); padding: 40px 20px; text-align: center; color: #ffffff;">
+			<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="width: 80px; margin-bottom: 15px;">
 		</div>
+
+		<!-- Congratulations Section -->
 		<div class="congrats-container">
-			<h2 class="congrats-text">🎉 CONGRATULATIONS! 🎉</h2>
+			<h2 class="congrats-text" style="color: #DB8112; font-size: 32px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 1px;">🎉 Congratulations! 🎉</h2>
 		</div>
-		<div class="content">
+
+		<!-- Content Section -->
+		<div class="content" style="padding: 30px; color: #333333; line-height: 1.6;">
 			<p>Dear User,</p>
 			<p>You have passed the <strong>${previousChallengeStage}</strong> of <strong>${account?.challengeStageData?.challengeName}</strong>. You are now in the <strong>${newChallengeStage}</strong> of <strong>${account?.challengeStageData?.challengeName}</strong>. Keep up the great work! 🌟</p>
-			<p><strong>Account:</strong> <span class="highlight">${newMt5Account?.account}</span></p>
-			<p><strong>Password:</strong> <span class="highlight">${newMt5Account?.masterPassword}</span></p>
-			<p><strong>Platform:</strong> Match Trader</p>
-			<p><strong>Broker:</strong> Match Trader</p>
-			<p class="message-warning">Please keep this information secure and do not share it with anyone.</p>
-			<div class="download-section">
-				<div class="download-text">Download the Match Trader for:</div>
-				<div class="download-links">
-					<a href="https://platform.foxx-funded.com" target="_blank">Android</a>
-					<a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank">iOS</a>
-					<a href="https://platform.foxx-funded.com" target="_blank">Desktop</a>
+			<p><strong>Account:</strong> <span class="highlight" style="color: #DB8112; font-weight: 600;">${newMt5Account?.account}</span></p>
+			<p><strong>Password:</strong> <span class="highlight" style="color: #DB8112; font-weight: 600;">${newMt5Account?.masterPassword}</span></p>
+			<p><strong>Platform:</strong> MT5</p>
+			<p><strong>Broker:</strong> MT5</p>
+			<p class="message-warning" style="text-align: center; background-color: #fff7e6; border: 1px solid #ffe0b3; padding: 15px; border-radius: 8px; font-size: 14px; color: #A35E04; margin: 20px 0;">Please keep this information secure and do not share it with anyone.</p>
 
+			<!-- Download Section with Gradient Buttons -->
+			<div class="download-section" style="text-align: center; margin-top: 25px;">
+				<div class="download-text" style="font-size: 18px; font-weight: 600; color: #333333; margin-bottom: 15px;">Download the MT5 for:</div>
+				<div class="download-links" style="text-align: center;">
+					<a href="https://platform.foxx-funded.com" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">Android</a>
+					<a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">iOS</a>
+					<a href="https://platform.foxx-funded.com" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">Desktop</a>
 				</div>
 			</div>
 		</div>
-		<div class="footer">
-			<p>⚠ <strong>Warning:</strong><br>Please ensure that you are familiar with all the <a href="https://foxx-funded.com/faqs" target="_blank" rel="noopener noreferrer">rules and regulations</a> of <strong>Foxx Funded</strong>. Failure to comply may result in breach or disqualification. Stay informed and follow the guidelines closely to ensure your progress! 🚨</p>
+
+		<!-- Footer Section -->
+		<div class="footer" style="background-color: #f7f8fa; padding: 20px; text-align: center; font-size: 12px; color: #888888; border-top: 1px solid #eeeeee; margin-top: 20px;">
+			<p>⚠ <strong>Warning:</strong><br>Please ensure that you are familiar with all the <a href="https://foxx-funded.com/faqs" target="_blank" rel="noopener noreferrer" style="color: #DB8112; text-decoration: none; font-weight: 600;">rules and regulations</a> of <strong>Foxx Funded</strong>. Failure to comply may result in breach or disqualification. Stay informed and follow the guidelines closely to ensure your progress! 🚨</p>
 			<p>Thank you for choosing our services.</p>
 		</div>
 	</div>
 </body>
-</html>
-`;
+</html>`;
 
 		await sendEmailSingleRecipient(
 			user.email,
@@ -722,11 +747,11 @@ const assignNewMT5Account = async (
 	}
 };
 
-// setInterval(passingChallenge, 3600000); // 1 hour er= 60 * 60 * 1000 milliseconds
-// setInterval(passingChallenge, 30000); // 1 hour er= 60 * 60 * 1000 milliseconds
+setInterval(passingChallenge, 3600000); // 1 hour er= 60 * 60 * 1000 milliseconds
 
 module.exports = {
 	getPhasedUsers,
 	passingChallenge,
 	passingChallengeUsingAPI,
+	handleNextChallengeStage,
 };

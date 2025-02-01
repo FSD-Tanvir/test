@@ -45,6 +45,7 @@ const mt5Account = new Schema(
 			default: "running",
 		},
 		challengeStageData: { type: Object, required: true },
+		passedClaimed: { type: Boolean, default: false },
 	},
 	{ timestamps: true }
 );

@@ -19,6 +19,7 @@ const {
 	changePasswordController,
 	updateMt5AccountStatusHandler,
 	getFundedUsers,
+	manualChallengePassHandler,
 } = require("./users.controller.js");
 // Route to create a new user in database and in mt5 manager
 router.post("/create-user", createMt5Account);
@@ -44,6 +45,9 @@ router.get("/:id", getUserById);
 
 // get only user data, not mt5 data
 router.get("/single-user/:id", getOnlyUserHandler);
+
+// manually pass user
+router.get("/pass-user/:id", manualChallengePassHandler);
 
 // router.get("/", authMiddleware, getAllUsers);
 router.get("/", getAllUsers);
