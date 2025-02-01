@@ -30,9 +30,9 @@ const drive = google.drive({
 const uploadContractController = async (req, res) => {
   try {
     const { email, account } = req.body;
-    const filePath = req.file.path; // Directly use req.file.path
+    const filePath = req.file.path;
 
-    
+
 
     const response = await drive.files.create({
       requestBody: {
@@ -59,7 +59,7 @@ const uploadContractController = async (req, res) => {
 
     const file = await uploadContractServices(fileData);
 
-    
+
     res.json(file);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -68,7 +68,7 @@ const uploadContractController = async (req, res) => {
 
 const generateURLContractController = async (req, res) => {
   try {
-    const {fileId} = req.body;
+    const { fileId } = req.body;
     await drive.permissions.create({
       fileId: fileId,
       requestBody: {
@@ -81,6 +81,7 @@ const generateURLContractController = async (req, res) => {
       fileId: fileId,
       fields: 'webViewLink, webContentLink',
     });
+    console.log(result, 'result');
     res.status(200).json(result.data);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -88,9 +89,9 @@ const generateURLContractController = async (req, res) => {
 };
 
 
-const getAllContractController = async (req, res)=>{
+const getAllContractController = async (req, res) => {
 
-   try {
+  try {
     const contracts = await MContract.find();
     res.status(200).json(contracts);
   } catch (err) {
@@ -100,7 +101,7 @@ const getAllContractController = async (req, res)=>{
 }
 
 
-const updateStatus = async (req, res)=>{
+const updateStatus = async (req, res) => {
 
   try {
     const { fileId } = req.params;
@@ -144,21 +145,23 @@ const getSingleContractController = async (req, res) => {
 const deleteSingleContractController = async (req, res) => {
   try {
     const { account } = req.params;
-    const contract = await MContract.findOneAndDelete({ account });
-    res.status(200).json(contract);
+    await MContract.findOneAndDelete({ account });
+    res.status(200).json({
+      message: 'Contract deleted successfully'
+    });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete contract' });
   }
 }
 
-module.exports ={
-    uploadContractController,
-    generateURLContractController,
-    getAllContractController,
-    updateStatus,
-    getAllContractControllerWithEmail,
-    getSingleContractController,
-    deleteSingleContractController
+module.exports = {
+  uploadContractController,
+  generateURLContractController,
+  getAllContractController,
+  updateStatus,
+  getAllContractControllerWithEmail,
+  getSingleContractController,
+  deleteSingleContractController
 }
 
 

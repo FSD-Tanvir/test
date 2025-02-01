@@ -5,14 +5,18 @@ const {
 	getAllAffiliatePayouts,
 	updateAffiliatePayoutById,
 	getAllAffiliatePayoutsWithEmailHandler,
+	getAllAffiliatePayoutsController
 } = require("./affiliatePayout.controller");
 const router = express.Router();
 
 // POST request to create a new payout
 router.post("/payout", createAffiliatePayout);
 
+// GET request to retrieve all affiliate payouts
+router.get('/', getAllAffiliatePayoutsController);
+
 // GET request to retrieve all payouts
-router.get("/payouts", getAllAffiliatePayouts);
+router.get("/approved/payouts", getAllAffiliatePayouts);
 
 router.get("/all-payouts/:email", getAllAffiliatePayoutsWithEmailHandler);
 
