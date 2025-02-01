@@ -41,44 +41,14 @@ const fetchWithTimeout = async (url, options = {}, timeout = 20000, retries = 3)
 };
 
 // Function to store daily data fetched from an external API
+
 const storeDataDaily = async () => {
 	try {
 		const userDetails = await allUserDetails(); // Fetch all user details
-		// console.log(userDetails);
-
-		const getAllMiniChallengeAccounts = async () => {
-			try {
-				// Optimized MongoDB query with elemMatch to filter challengeName and project only necessary fields
-				const users = await MUser.find(
-					{
-						"mt5Accounts.challengeStageData.challengeName": /Mini Challenge/i,
-					},
-					{
-						"mt5Accounts.account": 1, // Only fetch account numbers
-						"mt5Accounts.challengeStageData.challengeName": 1, // Only fetch challengeName for filtering
-					}
-				);
-
-				// Convert the result into a Set for O(1) lookup
-				const mt5AccountNumbers = new Set();
-
-				for (const user of users) {
-					for (const account of user.mt5Accounts) {
-						if (account.challengeStageData.challengeName.includes("Mini")) {
-							mt5AccountNumbers.add(account.account); // Add account numbers to the Set
-						}
-					}
-				}
-
-				return mt5AccountNumbers;
-			} catch (error) {
-				console.error("Error fetching mt5Accounts with Mini Challenge:", error);
-			}
-		};
+		console.log(userDetails);
 
 		// Use a loop instead of `map` for better readability when using async/await
 		const storeData = [];
-		const miniChallengeAccounts = await getAllMiniChallengeAccounts();
 		for (const userDetail of userDetails) {
 			const userRights = userDetail.rights;
 			const account = userDetail.login;
@@ -86,26 +56,17 @@ const storeDataDaily = async () => {
 			// Check if the user rights allow for processing
 			if (typeof userRights === "string" && !userRights.includes("USER_RIGHT_TRADE_DISABLED")) {
 				const accountDetail = await accountDetails(account);
-
-				if (accountDetail && miniChallengeAccounts.has(accountDetail?.login)) {
-					const asset = accountDetail.balance;
-					const dailyStartingBalance = accountDetail.balance;
-					const dailyStartingEquity = accountDetail.equity;
-					console.log(storeData);
-					storeData.push({
-						mt5Account: accountDetail.login,
-						asset: asset,
-						dailyStartingBalance: dailyStartingBalance,
-						dailyStartingEquity: dailyStartingEquity,
-					});
-				} else if (accountDetail) {
+				if (accountDetail) {
 					const asset =
 						accountDetail.balance >= accountDetail.equity
 							? accountDetail.balance
 							: accountDetail.equity;
+
 					const dailyStartingBalance = accountDetail.balance;
 					const dailyStartingEquity = accountDetail.equity;
+
 					console.log(storeData);
+
 					storeData.push({
 						mt5Account: accountDetail.login,
 						asset: asset,
