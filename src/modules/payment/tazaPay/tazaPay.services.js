@@ -2,14 +2,19 @@ const axios = require("axios");
 const MTazaPay = require("./tazaPay.schema");
 const { MOrder } = require("../../orders/orders.schema");
 const MUser = require("../../users/users.schema");
-
-const baseUrl = "https://service.tazapay.com/v3/checkout";
-const hostedSecretKey =
-	"Basic YWtfSFNLUFJUOEw0SVNLRzY1REpGQlE6c2tfOXRMUEc2bHpjWjVqbnBzRDViTmFMcTFDN0pHQTNZa3BlNEtzNXYyeTNOWTJJUWF6QkJiOUpvTEVIcHp3dVdINHRXemlNTUhxdURnRmlSWnUzNDd5UzY5V2xQdzJtS2lDb3V2M2tZNmxxdGNPaWhMdkpreVQ4anM5cUdTdkg4VXQ=";
+const config = require("../../../config/config");
 
 const sandboxURL = "https://service-sandbox.tazapay.com/v3/checkout";
 const sandboxSecretKey =
 	"Basic YWtfdGVzdF9NRlI3WkdKNDFRQ1lPTDBISlpMQjpza190ZXN0X215aE5zYmFmRXVpaFY4c0VVVXdBaVBod0dIZHdhVGdTZk9EVGtyRVBtZnpESlNkbUNmNEJFSnF6R2w2eDI0R0FvbEl6MnhPMUNVVEx6a1owSzNQZ3o1NGxUTVlEQUp6YWhWdzdFcERNOXExcWhjcjBvNXJxSXpaaVUzMHRqOGxE";
+
+// const tazaPayURL = config.tazapay_base_url;
+// const tazaPaySecretKey = config.tazapay_secret_key;
+
+/* --------------------------------------- //! For Sandbox -------------------------------------- */
+
+const tazaPayURL = sandboxURL;
+const tazaPaySecretKey = sandboxSecretKey;
 
 // Function to make the Tazapay API request
 const createTazaPayCheckout = async (transactionData) => {
@@ -30,11 +35,11 @@ const createTazaPayCheckout = async (transactionData) => {
 
 	const options = {
 		method: "POST",
-		url: sandboxURL,
+		url: tazaPayURL,
 		headers: {
 			accept: "application/json",
 			"content-type": "application/json",
-			authorization: sandboxSecretKey,
+			authorization: tazaPaySecretKey,
 		},
 		data: {
 			customer_details: {
@@ -107,11 +112,11 @@ const getTazaPayCheckout = async (orderId) => {
 		// Define request options for the API
 		const options = {
 			method: "GET",
-			url: `${sandboxURL}/${paymentId}`, // Use template literals directly
+			url: `${tazaPayURL}/${paymentId}`, // Use template literals directly
 			headers: {
 				accept: "application/json",
 				"content-type": "application/json",
-				authorization: sandboxSecretKey,
+				authorization: tazaPaySecretKey,
 			},
 			timeout: 5000, // Set a timeout for the request
 		};
