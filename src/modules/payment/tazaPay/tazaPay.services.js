@@ -50,7 +50,8 @@ const createTazaPayCheckout = async (transactionData) => {
 			invoice_currency: invoiceCurrency, // Default to 'USD' if not provided
 			amount: amountInCents,
 			transaction_description: transactionDescription,
-			success_url: `http://localhost:5173/tazaPay/payment-success/${updatedOrderId}`, //! TODO ~ Change this URL Later
+			// success_url: `http://localhost:5173/tazaPay/payment-success/${updatedOrderId}`,
+			success_url: `https://foxx-funded.com/tazaPay/payment-success/${updatedOrderId}`,
 			cancel_url: "http://foxx-funded.com",
 		},
 	};
