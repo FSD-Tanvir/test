@@ -24,13 +24,14 @@ const createOrder = async (orderData) => {
 		//  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details 💬💬💬💬💬💬💬💬
 
 		// Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
+
 		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; background-color: #ffffff; border: 2px solid #DB8112; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center;">
     <!-- Header Section -->
     <div style="text-align: center; margin-bottom: 25px;">
         <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 100px; height: auto;">
     </div>
     <h2 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 26px; font-weight: bold;">
-        Your Order Confirmation
+        Your customer portal has been created
     </h2>
     <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6;">
         Your order has been successfully created. Here are the details:
