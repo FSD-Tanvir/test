@@ -30,7 +30,7 @@ const createOrder = async (orderData) => {
         <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 100px; height: auto;">
     </div>
     <h2 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 26px; font-weight: bold;">
-        Your Order Confirmation
+        Your customer portal has been created
     </h2>
     <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6;">
         Your order has been successfully created. Here are the details:
