@@ -428,8 +428,8 @@ const updateOrder = async (id, data) => {
             <p>Dear User,</p>
             <p>Your MT5 account has been successfully created. Here are your credentials:</p>
             <div class="credentials">
-                <p><strong>Account:</strong> ${matchingAccount.account}</p>
-                <p><strong>Password:</strong> ${matchingAccount.masterPassword}</p>
+                <p><strong>Account:</strong> ${matchingAccount?.account}</p>
+                <p><strong>Password:</strong> ${matchingAccount?.masterPassword}</p>
                 <p><strong>Platform:</strong> MT5</p>
                 <p><strong>Broker:</strong> MT5</p>
             </div>
@@ -470,6 +470,7 @@ const updateOrder = async (id, data) => {
 		// Return the updated order if no email was sent
 		return { updatedOrder };
 	} catch (error) {
+		console.log("🚀 ~ updateOrder ~ error:", error);
 		// Return the error in the response
 		return { error: `Error updating order: ${error.message}` };
 	}
