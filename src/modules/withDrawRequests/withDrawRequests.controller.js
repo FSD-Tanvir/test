@@ -17,7 +17,7 @@ const {
 
 // Handle POST request to create a new withdrawal request
 const createWithDrawRequest = async (req, res) => {
-	// console.log(req.body);
+	console.log(req.body);
 	try {
 		const {
 			email,
@@ -42,19 +42,18 @@ const createWithDrawRequest = async (req, res) => {
 
 		// Call service to create the request
 		const newWithDrawRequest = await createWithDrawRequestService(req.body);
-		// console.log(newWithDrawRequest);
 
 		// Check if the request was created successfully
 		if (newWithDrawRequest && newWithDrawRequest._id) {
 			const id = newWithDrawRequest._id;
 			const updatedData = newWithDrawRequest;
-			const updatedWithdrawRequest = await updateWithDrawRequestByIdService(
-				id,
-				updatedData,
-			);
+			// const updatedWithdrawRequest = await updateWithDrawRequestByIdService(
+			// 	id,
+			// 	updatedData,
+			// );
 
 			return res.status(201).json({
-				data: updatedWithdrawRequest,
+				data: updatedData,
 			});
 		} else {
 			return res
