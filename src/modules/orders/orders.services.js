@@ -24,6 +24,7 @@ const createOrder = async (orderData) => {
 		//  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details 💬💬💬💬💬💬💬💬
 
 		// Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
+
 		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; background-color: #ffffff; border: 2px solid #DB8112; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center;">
     <!-- Header Section -->
     <div style="text-align: center; margin-bottom: 25px;">
