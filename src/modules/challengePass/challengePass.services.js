@@ -151,7 +151,7 @@ const passingChallengeUsingAPI = async (mt5Account) => {
 
 				if (account) {
 					const changeGroupDetails = {
-						Group: "real\\Bin-P",
+						Group: "demo\\forex-hedge-usd-01",
 					};
 
 					const changeGroup = await accountUpdate(account.account, changeGroupDetails);
@@ -163,10 +163,8 @@ const passingChallengeUsingAPI = async (mt5Account) => {
 
 						// Disable trading rights for the MT5 account.
 						const userDisableDetails = {
-							// Rights: "USER_RIGHT_TRADE_DISABLED",
 							Rights: "USER_RIGHT_TRADE_DISABLED",
 							enabled: true,
-							// Group: "demo\\real\\Bin-P",
 						};
 
 						// API call to disable MT5 account and verify the response.
@@ -429,7 +427,8 @@ const assignNewMT5Account = async (
 	newChallengeStage
 ) => {
 	try {
-		let group = acc.group;
+		// let group = acc.group;
+		let group = "demo\\forex-hedge-usd-01"; //! TODO : Change the group
 
 		// Prepare data for creating a new MT5 account.
 		const mt5SignUpData = {
