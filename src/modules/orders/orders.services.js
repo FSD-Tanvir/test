@@ -697,88 +697,93 @@ const sendingFollowUpUnPaidEmail = async () => {
 				const buyerDetails = order.buyerDetails;
 
 				const htmlTemplate = `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); text-align: center; line-height: 1.6;">
-  <!-- Header Section -->
-  <div style="margin-bottom: 25px;">
-    <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 120px; height: auto;">
-  </div>
-
-  <!-- Greeting Section -->
-  <p style="font-size: 18px; color: #333; margin-bottom: 15px;">
-    Hi ${buyerDetails.first ? buyerDetails.first : ""} ${
-					buyerDetails.last ? buyerDetails.last : ""
-				},
-  </p>
-
-  <!-- Order ID Section -->
-  <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-    <p style="font-size: 20px; color: #333; font-weight: bold; margin: 0;">
-      Order ID: <span style="color: #DB8112; font-style: italic; text-decoration: underline dotted;">
-      ${order.orderId}
-      </span>
-    </p>
-  </div>
-
-  <!-- Main Message Section -->
-  <p style="font-size: 16px; color: #555; margin-bottom: 20px;">
-    We noticed that you haven’t completed your purchase on our website. At Foxx Funded, we’re excited to help you on your trading journey!
-  </p>
-  <p style="font-size: 16px; color: #555; margin-bottom: 25px;">
-    You can finalize your purchase now by clicking the button below:
-  </p>
-
-  <!-- Down Arrow Emoji -->
-  <div style="font-size: 30px; margin-bottom: 20px;">
-    👇
-  </div>
-
-  <!-- Call-to-Action Button -->
-  <div style="margin-bottom: 30px;">
-    <a href="https://foxx-funded.com/login" style="display: inline-block; padding: 14px 35px; background-color: #DB8112; color: #fff; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); transition: background-color 0.3s ease;">
-      Complete Your Purchase
-    </a>
-  </div>
-
-  <!-- Support Section -->
-  <p style="font-size: 14px; color: #777; margin-top: 10px;">
-    If you have any questions, feel free to
-    <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-      contact our support team.
-    </a>
-    Our team is here to help. Don’t hesitate to reach out to us at any time.
-  </p>
-
-  <!-- Social Media Section -->
-  <div style="margin-top: 25px;">
-    <p style="font-size: 14px; color: #777; margin-bottom: 10px;">
-      Connect with us on:
-    </p>
-    <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 15px; display: inline-block;">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 36px; height: 36px;">
-    </a>
-  </div>
-
-  <!-- Footer Section -->
-  <p style="font-size: 14px; color: #777; margin-top: 25px;">
-    Thank you for shopping with us!
-  </p>
-</div>
-
-<!-- Responsive Styles -->
-<style>
-  @media only screen and (max-width: 600px) {
-    div[style] {
-      padding: 15px !important;
-    }
-    p[style], a[style] {
-      font-size: 14px !important;
-    }
-    a[style] {
-      padding: 12px 25px !important;
-    }
-  }
-</style>
-`;
+				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); text-align: center; line-height: 1.6;">
+				  <!-- Header Section -->
+				  <div style="margin-bottom: 25px;">
+					<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 120px; height: auto;">
+				  </div>
+				
+				  <!-- Greeting Section -->
+				  <p style="font-size: 18px; color: #333; margin-bottom: 15px;">
+					Hi ${buyerDetails.first ? buyerDetails.first : ""} ${buyerDetails.last ? buyerDetails.last : ""},
+				  </p>
+				
+				  <!-- Order ID Section -->
+				  <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+					<p style="font-size: 20px; color: #333; font-weight: bold; margin: 0;">
+					  Order ID: <span style="color: #DB8112; font-style: italic; text-decoration: underline dotted;">
+					  ${order.orderId}
+					  </span>
+					</p>
+				  </div>
+				
+				  <!-- Main Message Section -->
+				  <p style="font-size: 16px; color: #555; margin-bottom: 20px;">
+					We noticed that you haven’t completed your purchase on our website. At Foxx Funded, we’re excited to help you on your trading journey!
+				  </p>
+				  <p style="font-size: 16px; color: #555; margin-bottom: 25px;">
+					You can finalize your purchase now by clicking the button below:
+				  </p>
+				
+				  <!-- Down Arrow Emoji -->
+				  <div style="font-size: 30px; margin-bottom: 20px;">
+					👇
+				  </div>
+				
+				  <!-- Call-to-Action Button -->
+				  <div style="margin-bottom: 30px;">
+					<a href="https://foxx-funded.com/login" style="display: inline-block; padding: 14px 35px; background: linear-gradient(45deg, #DB8112, #FFA726); color: #fff; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); transition: all 0.3s ease;">
+					  Complete Your Purchase
+					</a>
+				  </div>
+				
+				  <!-- Support Section -->
+				  <p style="font-size: 14px; color: #777; margin-top: 10px;">
+					If you have any questions, feel free to
+					<a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+					  contact our support team.
+					</a>
+					Our team is here to help. Don’t hesitate to reach out to us at any time.
+				  </p>
+				
+				  <!-- Social Media Section -->
+				  <div style="margin-top: 25px;">
+					<p style="font-size: 14px; color: #777; margin-bottom: 10px;">
+					  Connect with us on:
+					</p>
+					<a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 15px; display: inline-block;">
+					  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 36px; height: 36px;">
+					</a>
+				  </div>
+				
+				  <!-- Footer Section -->
+				  <p style="font-size: 14px; color: #777; margin-top: 25px;">
+					Thank you for shopping with us!
+				  </p>
+				</div>
+				
+				<!-- Responsive Styles -->
+				<style>
+				  @media only screen and (max-width: 600px) {
+					div[style] {
+					  padding: 15px !important;
+					}
+					p[style], a[style] {
+					  font-size: 14px !important;
+					}
+					a[style] {
+					  padding: 12px 25px !important;
+					}
+				  }
+				
+				  /* Hover Effect for Button */
+				  a[href="https://foxx-funded.com/login"]:hover {
+					background: linear-gradient(45deg, #FFA726, #DB8112) !important;
+					box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+					transform: translateY(-2px);
+				  }
+				</style>
+				`;
 
 				// Add email-sending logic here
 				await sendEmailSingleRecipient(
