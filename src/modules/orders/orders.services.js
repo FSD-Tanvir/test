@@ -68,7 +68,7 @@ const createOrder = async (orderData) => {
 
     <!-- Support Section -->
     <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
-        Need help? <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
+        Need help? <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
     </p>
 
     <!-- Social Media Section -->
