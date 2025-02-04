@@ -102,21 +102,15 @@ const createOrder = async (orderData) => {
     }
 </style>`;
 
-		// Delay email sending by 6 minutes (360000 ms)
-		setTimeout(async () => {
-			try {
-				await sendEmailSingleRecipient(
-					buyerDetails?.email,
-					"Onboard your order",
-					"Your order has been successfully created with the following details:",
-					htmlTemplate
-				);
-				console.log("Email sent successfully after 6 minutes.");
-			} catch (emailError) {
-				console.error("Failed to send email:", emailError);
-			}
-		}, 2 * 60 * 1000); // 6 minutes
-
+		if (newOrder) {
+			await sendEmailSingleRecipient(
+				buyerDetails?.email,
+				"Onboard your Order",
+				"Your order has been successfully created with the following details:",
+				htmlTemplate
+			);
+		}
+		// 🧲🧲🧲🧲🧲🧲🧲🧲🧲
 		return newOrder;
 	} catch (error) {
 		console.error(error);
