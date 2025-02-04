@@ -740,7 +740,7 @@ const sendingFollowUpUnPaidEmail = async () => {
 				  <!-- Support Section -->
 				  <p style="font-size: 14px; color: #777; margin-top: 10px;">
 					If you have any questions, feel free to
-					<a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+					<a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
 					  contact our support team.
 					</a>
 					Our team is here to help. Don’t hesitate to reach out to us at any time.
