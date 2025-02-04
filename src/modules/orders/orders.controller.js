@@ -11,15 +11,6 @@ const createOrder = async (req, res) => {
 	}
 };
 
-const multipleSameChallengeSalesHandler = async (req, res) => {
-	try {
-		const newOrder = await ordersService.multipleSameChallengeSales();
-		res.status(200).json(newOrder);
-	} catch (error) {
-		res.status(500).json({ error: error.message });
-	}
-};
-
 const allOrders = async (req, res) => {
 	try {
 		const {
@@ -164,5 +155,4 @@ module.exports = {
 	getOrderById,
 	fetchOrdersByReferralCode,
 	fetchOrdersByReferralAndStatus,
-	multipleSameChallengeSalesHandler,
 };
