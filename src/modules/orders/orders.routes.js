@@ -11,7 +11,6 @@ const {
 	getOrderById,
 	fetchOrdersByReferralCode,
 	fetchOrdersByReferralAndStatus,
-	multipleSameChallengeSalesHandler,
 } = require("./orders.controller"); // Replace 'your-controller-file' with the actual file name
 
 // Route to handle POST requests for creating an order
@@ -19,9 +18,6 @@ router.post("/create-order", createOrder);
 
 // Route to handle GET requests for all orders
 router.get("/", allOrders);
-
-// Route to handle GET requests for multiple same challenge sales for same user
-router.get("/multiple-same-challenge-sales", multipleSameChallengeSalesHandler);
 
 // Route to handle GET requests for the total sales and today's sales of all orders
 router.get("/total-sales", totalOrderSales);

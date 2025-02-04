@@ -102,15 +102,21 @@ const createOrder = async (orderData) => {
     }
 </style>`;
 
-		if (newOrder) {
-			await sendEmailSingleRecipient(
-				buyerDetails?.email,
-				"Onboard your order",
-				"Your order has been successfully created with the following details:",
-				htmlTemplate
-			);
-		}
-		// 🧲🧲🧲🧲🧲🧲🧲🧲🧲
+		// Delay email sending by 6 minutes (360000 ms)
+		setTimeout(async () => {
+			try {
+				await sendEmailSingleRecipient(
+					buyerDetails?.email,
+					"Onboard your order",
+					"Your order has been successfully created with the following details:",
+					htmlTemplate
+				);
+				console.log("Email sent successfully after 6 minutes.");
+			} catch (emailError) {
+				console.error("Failed to send email:", emailError);
+			}
+		}, 2 * 60 * 1000); // 6 minutes
+
 		return newOrder;
 	} catch (error) {
 		console.error(error);
@@ -665,57 +671,133 @@ const getOrdersByReferralAndStatus = async () => {
 	}
 };
 
-const multipleSameChallengeSales = async () => {
+/* ---------------------------------------------------------------------------------------------- */
+/*                 //~ FETCH ORDERS WITH PAYMENT STATUS 'UNPAID' AND MATCHING EMAIL                 */
+/* ---------------------------------------------------------------------------------------------- */
+
+// const orders = await MOrder.find({
+// 	paymentStatus: "Unpaid",
+// 	"buyerDetails.email": "clashking1545@gmail.com",
+// });
+
+const sendingFollowUpUnPaidEmail = async () => {
 	try {
-		const challenges = [
-			"100K Standard Challenge",
-			"200K Standard Challenge",
-			"100K Instant Funding",
-		];
+		// Fetch all orders with paymentStatus 'Unpaid'
+		const orders = await MOrder.find({ paymentStatus: "Unpaid" });
 
-		// Access the Order collection
-		const orders = await MOrder.find({
-			"orderItems.challengeName": { $in: challenges }, // Match challenges from the array
-		}).lean(); // Use lean for performance if modification is not required.
+		if (orders.length === 0) {
+			console.log("No unpaid orders found.");
+			return;
+		}
 
-		// Group by email and count challenge occurrences
-		const groupedResults = orders.reduce((acc, order) => {
-			const userEmail = order.buyerDetails.email;
+		const currentTime = new Date();
+		const twoHoursAgo = new Date(currentTime.getTime() - 2 * 60 * 60 * 1000); // 2 hours ago
+		const oneHourAgo = new Date(currentTime.getTime() - 1 * 60 * 60 * 1000); // 1 hour ago
 
-			// Initialize the group for this email if it doesn't exist
-			if (!acc[userEmail]) {
-				acc[userEmail] = {};
+		// Process each order
+		for (const order of orders) {
+			const orderCreationTime = new Date(order.createdAt); // Ensure it's a Date object
+
+			// Check if the order was created between 2 hours ago and 1 hour ago
+			if (orderCreationTime >= twoHoursAgo && orderCreationTime < oneHourAgo) {
+				const buyerDetails = order.buyerDetails;
+
+				const htmlTemplate = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); text-align: center; line-height: 1.6;">
+  <!-- Header Section -->
+  <div style="margin-bottom: 25px;">
+    <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 120px; height: auto;">
+  </div>
+
+  <!-- Greeting Section -->
+  <p style="font-size: 18px; color: #333; margin-bottom: 15px;">
+    Hi ${buyerDetails.first ? buyerDetails.first : ""} ${
+					buyerDetails.last ? buyerDetails.last : ""
+				},
+  </p>
+
+  <!-- Order ID Section -->
+  <div style="background-color: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+    <p style="font-size: 20px; color: #333; font-weight: bold; margin: 0;">
+      Order ID: <span style="color: #DB8112; font-style: italic; text-decoration: underline dotted;">
+      ${order.orderId}
+      </span>
+    </p>
+  </div>
+
+  <!-- Main Message Section -->
+  <p style="font-size: 16px; color: #555; margin-bottom: 20px;">
+    We noticed that you haven’t completed your purchase on our website. At Foxx Funded, we’re excited to help you on your trading journey!
+  </p>
+  <p style="font-size: 16px; color: #555; margin-bottom: 25px;">
+    You can finalize your purchase now by clicking the button below:
+  </p>
+
+  <!-- Down Arrow Emoji -->
+  <div style="font-size: 30px; margin-bottom: 20px;">
+    👇
+  </div>
+
+  <!-- Call-to-Action Button -->
+  <div style="margin-bottom: 30px;">
+    <a href="https://foxx-funded.com/login" style="display: inline-block; padding: 14px 35px; background-color: #DB8112; color: #fff; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); transition: background-color 0.3s ease;">
+      Complete Your Purchase
+    </a>
+  </div>
+
+  <!-- Support Section -->
+  <p style="font-size: 14px; color: #777; margin-top: 10px;">
+    If you have any questions, feel free to
+    <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+      contact our support team.
+    </a>
+    Our team is here to help. Don’t hesitate to reach out to us at any time.
+  </p>
+
+  <!-- Social Media Section -->
+  <div style="margin-top: 25px;">
+    <p style="font-size: 14px; color: #777; margin-bottom: 10px;">
+      Connect with us on:
+    </p>
+    <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 15px; display: inline-block;">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 36px; height: 36px;">
+    </a>
+  </div>
+
+  <!-- Footer Section -->
+  <p style="font-size: 14px; color: #777; margin-top: 25px;">
+    Thank you for shopping with us!
+  </p>
+</div>
+
+<!-- Responsive Styles -->
+<style>
+  @media only screen and (max-width: 600px) {
+    div[style] {
+      padding: 15px !important;
+    }
+    p[style], a[style] {
+      font-size: 14px !important;
+    }
+    a[style] {
+      padding: 12px 25px !important;
+    }
+  }
+</style>
+`;
+
+				// Add email-sending logic here
+				await sendEmailSingleRecipient(
+					buyerDetails?.email,
+					"Complete Your Signup and Start Trading with Foxx Funded 🚀",
+					null,
+					htmlTemplate
+				);
+				console.log("Follow-up email sent successfully to:", buyerDetails.email);
 			}
-
-			// Count occurrences of each challenge name
-			order.orderItems
-				.filter((item) => challenges.includes(item.challengeName))
-				.forEach((item) => {
-					if (!acc[userEmail][item.challengeName]) {
-						acc[userEmail][item.challengeName] = 0;
-					}
-					acc[userEmail][item.challengeName] += 1;
-				});
-
-			return acc;
-		}, {});
-
-		// Filter for emails with the same challenge purchased more than once
-		const result = Object.entries(groupedResults)
-			.filter(([email, challengeCounts]) =>
-				Object.values(challengeCounts).some((count) => count > 1)
-			)
-			.map(([email, challengeCounts]) => ({
-				email,
-				repeatedChallenges: Object.entries(challengeCounts)
-					.filter(([, count]) => count > 1)
-					.map(([challengeName]) => challengeName),
-			}));
-
-		return result;
+		}
 	} catch (error) {
-		console.error("Error fetching orders:", error);
-		throw error;
+		console.error("Error fetching or processing orders:", error);
 	}
 };
 
@@ -729,5 +811,5 @@ module.exports = {
 	getOrderById,
 	getOrdersByReferralCode,
 	getOrdersByReferralAndStatus,
-	multipleSameChallengeSales,
+	sendingFollowUpUnPaidEmail,
 };
