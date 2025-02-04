@@ -48,7 +48,7 @@ const createWithDrawRequestService = async (data) => {
 		</p>
 		<p style="font-size: 14px; color: #777; margin-top: 20px;">
 		  If you have any questions, feel free to
-		  <a href="https://foxx-funded.com/contact" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+		  <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
 			contact our support team
 		  </a>.
 		</p>
@@ -78,11 +78,11 @@ const createWithDrawRequestService = async (data) => {
 	  `;
 
 		if (savedWithDrawRequest) {
-			await sendEmailSingleRecipient
-				(
-					email,
-					`Your payout request has been successfully submitted Account-Number: ${accountNumber}`,
-					htmlTemplate);
+			await sendEmailSingleRecipient(
+				email,
+				`Your payout request has been successfully submitted Account-Number: ${accountNumber}`,
+				htmlTemplate
+			);
 		}
 		// Return the saved withdrawal request
 		return savedWithDrawRequest;
@@ -261,15 +261,12 @@ const getAllWithDrawRequestsByEmailService = async (email) => {
 
 // Fetch a single withdrawal request by ID
 
-
-
 const getWithDrawRequestByIdService = async (id) => {
 	try {
-	
-		const withdrawRequest = await MWithDrawRequest.findById(id); 
+		const withdrawRequest = await MWithDrawRequest.findById(id);
 		return withdrawRequest;
 	} catch (error) {
-		console.error("Database query error:", error); 
+		console.error("Database query error:", error);
 		throw new Error(error.message);
 	}
 };
@@ -302,11 +299,7 @@ const getAllPendingWithDrawRequestsByEmailService = async (email) => {
 };
 
 // Fetch all withdrawal requests by email and status 'approved'
-const getAllPayoutsWithDrawRequestsByEmailService = async (
-	email,
-	page,
-	limit,
-) => {
+const getAllPayoutsWithDrawRequestsByEmailService = async (email, page, limit) => {
 	try {
 		// Calculate pagination details
 		const skip = (page - 1) * limit;
@@ -342,7 +335,7 @@ const getAllPayoutsWithDrawRequestsByEmailService = async (
 
 const getAllApprovedRequester = async () => {
 	try {
-		const approvedRequests = await MWithDrawRequest.find({ status: 'approved' });
+		const approvedRequests = await MWithDrawRequest.find({ status: "approved" });
 		// Calculate the total amount of approved withdrawal requests
 		const totalApprovedAmount = approvedRequests.reduce((total, request) => {
 			return total + (request.amount || 0); // Safeguard in case amount is undefined/null
@@ -351,27 +344,27 @@ const getAllApprovedRequester = async () => {
 		return {
 			approvedRequests,
 			totalLength: approvedRequests.length,
-			totalApprovedAmount
+			totalApprovedAmount,
 		};
 	} catch (error) {
-		throw new Error('Error fetching approved withdrawal requests: ' + error.message);
+		throw new Error("Error fetching approved withdrawal requests: " + error.message);
 	}
-}
+};
 const getAllPendingRequester = async () => {
 	try {
-		const pendingRequests = await MWithDrawRequest.find({ status: 'pending' });
+		const pendingRequests = await MWithDrawRequest.find({ status: "pending" });
 		const totalPendingAmount = pendingRequests.reduce((total, request) => {
 			return total + (request.amount || 0); // Safeguard in case amount is undefined/null
 		}, 0);
 		return {
 			pendingRequests,
 			totalLength: pendingRequests.length,
-			totalPendingAmount
+			totalPendingAmount,
 		};
 	} catch (error) {
-		throw new Error('Error fetching pending withdrawal requests: ' + error.message);
+		throw new Error("Error fetching pending withdrawal requests: " + error.message);
 	}
-}
+};
 
 module.exports = {
 	createWithDrawRequestService,
@@ -385,5 +378,5 @@ module.exports = {
 	getAllPendingWithDrawRequestsByEmailService,
 	// getOrderHistory,
 	getAllApprovedRequester,
-	getAllPendingRequester
+	getAllPendingRequester,
 };
