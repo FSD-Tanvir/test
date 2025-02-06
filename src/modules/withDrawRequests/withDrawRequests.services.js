@@ -9,6 +9,8 @@ const { sendEmailSingleRecipient } = require("../../helper/mailing");
 // } = require("../breach/breach.services");
 const MWithDrawRequest = require("./withDrawRequests.schema");
 const MUser = require("../users/users.schema");
+const { userDetails, balanceDepositAndWithdrawal } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
+const { updateLastDailyDataByMt5Account } = require("../breach/breach.services");
 
 // Create a new withdrawal request
 const createWithDrawRequestService = async (data) => {
@@ -146,118 +148,118 @@ const getAllWithDrawRequestsByEmailService = async (email) => {
 	}
 };
 
-// const updateWithDrawRequestByIdService = async (id, updateData) => {
-// 	// console.log(updateData);
-// 	try {
-// 		// Find the withdrawal request by _id
-// 		const withdrawRequest = await MWithDrawRequest.findById(id);
+const updateWithDrawRequestByIdService = async (id, updateData) => {
+	// console.log(updateData);
+	try {
+		// Find the withdrawal request by _id
+		const withdrawRequest = await MWithDrawRequest.findById(id);
 
-// 		if (!withdrawRequest) {
-// 			throw new Error("Withdrawal request not found.");
-// 		}
+		if (!withdrawRequest) {
+			throw new Error("Withdrawal request not found.");
+		}
 
-// 		// Check if the status is being updated to "approved" from "pending"
-// 		if (updateData.status === "approved") {
-// 			const currentBalance = updateData.amount;
-// 			// Assuming balanceDepositAndWithdrawal is defined elsewhere
-// 			const accountData = await balanceDepositAndWithdrawal(
-// 				withdrawRequest.accountNumber,
-// 				-currentBalance,
-// 			);
+		// Check if the status is being updated to "approved" from "pending"
+		if (updateData.status === "approved") {
+			const currentBalance = updateData.amount;
+			// Assuming balanceDepositAndWithdrawal is defined elsewhere
+			const accountData = await balanceDepositAndWithdrawal(
+				withdrawRequest.accountNumber,
+				-currentBalance,
+			);
 
-// 			// Check if accountData is a number
-// 			if (typeof accountData === "number") {
-// 				const userDetail = await userDetails(withdrawRequest.accountNumber); // Fetch user details
-// 				const balance = userDetail.balance;
-// 				await updateLastDailyDataByMt5Account(
-// 					withdrawRequest.accountNumber,
-// 					balance,
-// 					balance,
-// 					balance,
-// 				);
+			// Check if accountData is a number
+			if (typeof accountData === "number") {
+				const userDetail = await userDetails(withdrawRequest.accountNumber); // Fetch user details
+				const balance = userDetail.balance;
+				await updateLastDailyDataByMt5Account(
+					withdrawRequest.accountNumber,
+					balance,
+					balance,
+					balance,
+				);
 
-// 				// Update the withdraw request with the new status
-// 				withdrawRequest.status = "approved"; // Setting status to approved
-// 			} else {
-// 				throw new Error("Failed to update balance.");
-// 			}
-// 		}
+				// Update the withdraw request with the new status
+				withdrawRequest.status = "approved"; // Setting status to approved
+			} else {
+				throw new Error("Failed to update balance.");
+			}
+		}
 
-// 		// Update other fields regardless of the status update
-// 		Object.assign(withdrawRequest, updateData);
+		// Update other fields regardless of the status update
+		Object.assign(withdrawRequest, updateData);
 
-// 		// Save the updated withdrawal request back to the database
-// 		const updatedWithDrawRequest = await withdrawRequest.save();
+		// Save the updated withdrawal request back to the database
+		const updatedWithDrawRequest = await withdrawRequest.save();
 
-// 		const { name, email, traderSplit, paymentMethod, comment } =
-// 			updatedWithDrawRequest;
-// 		if (updatedWithDrawRequest.status === "approved") {
-// 			const emailSubject = `Withdrawal Request Approved - Account ${withdrawRequest.accountNumber}`;
-// 			const emailBody = `
-//                             <p>Dear ${name},</p>
-//                             <p>Congratulations! We are pleased to inform you that your withdrawal has been approved!</p>
-//                             <p><strong>Payout details here:</strong></p>
-//                             <ul>
-//                                 <li><strong>Date Requested:</strong> ${new Date(
-// 				updatedWithDrawRequest.createdAt
-// 			).toUTCString()}</li>
-//                                 <li><strong>MetaTrader Account:</strong> ${withdrawRequest.accountNumber
-// 				}</li>
-//                                 <li><strong>Withdrawn Amount:</strong> $${traderSplit.toFixed(
-// 					2
-// 				)}</li>
-//                                 <li><strong>Status:</strong> Approved</li>
-//                             </ul>
-//                             <p>While your trading account is currently disabled, we would appreciate it if you could upload your payout proof on our Discord or any social media, after which your account will be re-enabled for trading.
-// As a broker-backed prop firm, we’re excited to offer a new feature: you can now directly deposit your SSC payout into our own broker, Haven Capital, instantly. Enjoy the benefits of trading with our broker’s top-tier conditions, designed to enhance your trading experience.
-// Please note, after your first withdrawal, you may request your next payout as soon as you place your next trade. For more details, please visit your account dashboard.  </p>
-//                             <br>
-//                             <p>Please note, after your first withdrawal, you can request your next withdrawal 14 days after your    next trade is placed. To check your trading and withdrawal history, please visit your account dashboard.</p>
-//                             <p>Thank you for choosing Summit Strike!</p>
-//                             <p>Best regards,<br>The Summit Strike Team</p>
-//                         `;
-// 			// Send the approval email
-// 			await sendEmailSingleRecipient(
+		const { name, email, amount, paymentMethod, comment } =
+			updatedWithDrawRequest;
+		if (updatedWithDrawRequest.status === "approved") {
+			const emailSubject = `Withdrawal Request Approved - Account ${withdrawRequest.accountNumber}`;
+			const emailBody = `
+                            <p>Dear ${name},</p>
+                            <p>Congratulations! We are pleased to inform you that your withdrawal has been approved!</p>
+                            <p><strong>Payout details here:</strong></p>
+                            <ul>
+                                <li><strong>Date Requested:</strong> ${new Date(
+				updatedWithDrawRequest.createdAt
+			).toUTCString()}</li>
+                                <li><strong>MetaTrader Account:</strong> ${withdrawRequest.accountNumber
+				}</li>
+                                <li><strong>Withdrawn Amount:</strong> $${amount.toFixed(
+					2
+				)}</li>
+                                <li><strong>Status:</strong> Approved</li>
+                            </ul>
+                            <p>While your trading account is currently disabled, we would appreciate it if you could upload your payout proof on our Discord or any social media, after which your account will be re-enabled for trading.
+As a broker-backed prop firm, we’re excited to offer a new feature: you can now directly deposit your SSC payout into our own broker, Haven Capital, instantly. Enjoy the benefits of trading with our broker’s top-tier conditions, designed to enhance your trading experience.
+Please note, after your first withdrawal, you may request your next payout as soon as you place your next trade. For more details, please visit your account dashboard.  </p>
+                            <br>
+                            <p>Please note, after your first withdrawal, you can request your next withdrawal 14 days after your    next trade is placed. To check your trading and withdrawal history, please visit your account dashboard.</p>
+                            <p>Thank you for choosing Summit Strike!</p>
+                            <p>Best regards,<br>The Summit Strike Team</p>
+                        `;
+			// Send the approval email
+			await sendEmailSingleRecipient(
 
-// 				email,
-// 				emailSubject,
-// 				"Your withdrawal request has been approved",
-// 				emailBody,
-// 			);
-// 		} else if (updatedWithDrawRequest.status === "rejected") {
-// 			const emailSubject = `Withdrawal Request Rejected - Account ${withdrawRequest.accountNumber}`;
-// 			const emailBody = `
-//                             <p>Dear ${name},</p>
-//                             <p>We regret to inform you that your withdrawal request has been rejected due to the following reason:</p>
-//                             <p><strong>Reason:</strong> ${comment}</p>
-//                             <p><strong>Withdrawal Details:</strong></p>
-//                             <ul>
-//                                 <li><strong>Date Requested:</strong> ${new Date(updatedWithDrawRequest.createdAt).toUTCString()}</li>
-//                                 <li><strong>MetaTrader Account:</strong> ${withdrawRequest.accountNumber}</li>
-//                                 <li><strong>Withdrawn Amount:</strong> $${traderSplit.toFixed(2)}</li>
-//                                 <li><strong>Payout Method:</strong> ${paymentMethod}</li>
-//                                 <li><strong>Status:</strong> Rejected</li>
-//                             </ul>
-//                             <p>Please correct the issue noted above, and you can either resubmit your withdrawal or continue trading.</p>
-//                             <p>If you have any questions, feel free to reach out to <a href="mailto:support@summitstrike.com">support@summitstrike.com</a>.</p>
-//                             <p>Best regards,<br>The Summit Strike Team</p>
-//                         `;
+				email,
+				emailSubject,
+				"Your withdrawal request has been approved",
+				emailBody,
+			);
+		} else if (updatedWithDrawRequest.status === "rejected") {
+			const emailSubject = `Withdrawal Request Rejected - Account ${withdrawRequest.accountNumber}`;
+			const emailBody = `
+                            <p>Dear ${name},</p>
+                            <p>We regret to inform you that your withdrawal request has been rejected due to the following reason:</p>
+                            <p><strong>Reason:</strong> ${comment}</p>
+                            <p><strong>Withdrawal Details:</strong></p>
+                            <ul>
+                                <li><strong>Date Requested:</strong> ${new Date(updatedWithDrawRequest.createdAt).toUTCString()}</li>
+                                <li><strong>MetaTrader Account:</strong> ${withdrawRequest.accountNumber}</li>
+                                <li><strong>Withdrawn Amount:</strong> $${traderSplit.toFixed(2)}</li>
+                                <li><strong>Payout Method:</strong> ${paymentMethod}</li>
+                                <li><strong>Status:</strong> Rejected</li>
+                            </ul>
+                            <p>Please correct the issue noted above, and you can either resubmit your withdrawal or continue trading.</p>
+                            <p>If you have any questions, feel free to reach out to <a href="mailto:support@summitstrike.com">support@summitstrike.com</a>.</p>
+                            <p>Best regards,<br>The Summit Strike Team</p>
+                        `;
 
-// 			// Send the rejection email
-// 			await sendEmailSingleRecipient(
-// 				email,
-// 				emailSubject,
-// 				"Your withdrawal request has been rejected",
-// 				emailBody,
-// 			);
-// 		}
+			// Send the rejection email
+			await sendEmailSingleRecipient(
+				email,
+				emailSubject,
+				"Your withdrawal request has been rejected",
+				emailBody,
+			);
+		}
 
-// 		return updatedWithDrawRequest;
-// 	} catch (error) {
-// 		// Handle errors
-// 		throw new Error(error.message);
-// 	}
-// };
+		return updatedWithDrawRequest;
+	} catch (error) {
+		// Handle errors
+		throw new Error(error.message);
+	}
+};
 
 // Fetch a single withdrawal request by ID
 
@@ -371,7 +373,7 @@ module.exports = {
 	getWithDrawRequestByAccountNumberService,
 	getAllWithDrawRequestsService,
 	getAllWithDrawRequestsByEmailService,
-	// updateWithDrawRequestByIdService,
+	updateWithDrawRequestByIdService,
 	getWithDrawRequestByIdService,
 	getAllApprovedWithDrawRequestsByEmailService,
 	getAllPayoutsWithDrawRequestsByEmailService,
