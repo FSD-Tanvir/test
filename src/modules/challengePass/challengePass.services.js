@@ -427,8 +427,12 @@ const assignNewMT5Account = async (
 	newChallengeStage
 ) => {
 	try {
-		// let group = acc.group;
-		let group = "demo\\forex-hedge-usd-01"; //! TODO : Change the group
+		let group = acc.group;
+		if (newChallengeStage === "phase2") {
+			group = "demo\\phase2";
+		} else if (newChallengeStage === "funded") {
+			group = "demo\\phase3";
+		}
 
 		// Prepare data for creating a new MT5 account.
 		const mt5SignUpData = {
