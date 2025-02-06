@@ -120,7 +120,7 @@ const disableRiskedAccount = async (account, accountDetails) => {
 		};
 
 		const changeGroupDetails = {
-			Group: "real\\Bin-B",
+			Group: "demo\\BIN",
 		};
 
 		const [disableMT5Account, orderCloseAll, updateAccGroup] = await Promise.all([
