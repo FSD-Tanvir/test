@@ -907,7 +907,7 @@ const manualChallengePass = async (id) => {
 
 		if (matchingAccount) {
 			const changeGroupDetails = {
-				Group: "demo\\forex-hedge-usd-01", //! TODO : Change the group
+				Group: "demo\\Evpassed", //! TODO : Change the group
 			};
 
 			const changeGroup = await accountUpdate(matchingAccount.account, changeGroupDetails);
