@@ -222,7 +222,7 @@ const invoiceMailingHTMLTemplate = async (order) => {
                     </tr>
                     <tr>
                         <td colspan="2">Discount:</td>
-                        <td>- $${Discount}</td>
+                        <td>- $${order.discountPrice}</td>
                     </tr>
                     <tr>
                         <td colspan="2">Payment method:</td>
