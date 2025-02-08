@@ -4,13 +4,13 @@ const jwt = require("jsonwebtoken");
 const { challengeSchema } = require("../challenge/challenges.schema.js");
 
 // generate random password
-const generateRandomPassword = () => {
-	const length = 8;
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$!%*?&";
-	let password = "";
-	for (let i = 0; i < length; i++) {
-		const randomIndex = Math.floor(Math.random() * charset.length);
-		password += charset[randomIndex];
+// Generate a random password with the first character as an alphabet
+const generateRandomPassword = (length = 8) => {
+	const alphabets = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	const charset = alphabets + "0123456789@$!%*?&";
+	let password = alphabets[Math.floor(Math.random() * alphabets.length)]; // Ensure first character is an alphabet
+	for (let i = 1; i < length; i++) {
+		password += charset[Math.floor(Math.random() * charset.length)];
 	}
 	return password;
 };
@@ -86,6 +86,14 @@ const UserSchema = new Schema(
 // Virtual for full name
 UserSchema.virtual("fullName").get(function () {
 	return `${this.first || ""} ${this.last || ""}`.trim();
+});
+
+// Middleware to generate password before saving a new user
+UserSchema.pre("save", function (next) {
+	if (!this.password) {
+		this.password = generateRandomPassword();
+	}
+	next();
 });
 
 // Method to generate JWT token for user authentication
