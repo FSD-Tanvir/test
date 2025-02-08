@@ -436,9 +436,9 @@ const updateOrder = async (id, data) => {
             <p>Please keep this information secure and do not share it with anyone.</p>
             <div class="download-links">
                 <p>Download the MT5 for:</p>
-                <a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Android</a>
+                <a href="https://play.google.com/store/apps/details?id=net.metaquotes.metatrader5" target="_blank" rel="noopener noreferrer">Android</a>
                 <a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank" rel="noopener noreferrer">iOS</a>
-                <a href="https://platform.foxx-funded.com" target="_blank" rel="noopener noreferrer">Desktop</a>
+                <a href="https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/metatrader5.apk?utm_source=www.metatrader5.com&utm_campaign=install.metaquotes" target="_blank" rel="noopener noreferrer">Desktop</a>
             </div>
         </div>
         <div class="footer">
