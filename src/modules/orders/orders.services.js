@@ -431,7 +431,7 @@ const updateOrder = async (id, data) => {
                 <p><strong>Account:</strong> ${matchingAccount?.account}</p>
                 <p><strong>Password:</strong> ${matchingAccount?.masterPassword}</p>
                 <p><strong>Platform:</strong> MT5</p>
-                <p><strong>Broker:</strong> MT5</p>
+                <p><strong>Broker:</strong> BizzTrade</p>
             </div>
             <p>Please keep this information secure and do not share it with anyone.</p>
             <div class="download-links">
