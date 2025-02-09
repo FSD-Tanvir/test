@@ -4,15 +4,15 @@ const { sendingFollowUpUnPaidEmail } = require("../modules/orders/orders.service
 
 const runAllFunctions = () => {
 	storeDailyDataController();
-	(async () => {
-		console.log("Starting follow-up unpaid email service...");
-		await sendingFollowUpUnPaidEmail();
+	// (async () => {
+	// 	console.log("Starting follow-up unpaid email service...");
+	// 	await sendingFollowUpUnPaidEmail();
 
-		// Schedule it to run every hour
-		setInterval(async () => {
-			console.log("Running scheduled follow-up unpaid email service...");
-			await sendingFollowUpUnPaidEmail();
-		}, 1000 * 60 * 60); // 1 hour in milliseconds
-	})();
+	// 	// Schedule it to run every hour
+	// 	setInterval(async () => {
+	// 		console.log("Running scheduled follow-up unpaid email service...");
+	// 		await sendingFollowUpUnPaidEmail();
+	// 	}, 1000 * 60 * 60); // 1 hour in milliseconds
+	// })();
 };
 module.exports = { runAllFunctions };
