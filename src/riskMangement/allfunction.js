@@ -9,7 +9,7 @@ const runAllFunctions = () => {
 	// 	console.log("Starting follow-up unpaid email service...");
 	// 	await sendingFollowUpUnPaidEmail();
 
-	// Schedule it to run every hour using node-cron
+	// //Schedule it to run every hour using node-cron
 	// 	cron.schedule("0 * * * *", async () => {
 	// 		console.log("Running scheduled follow-up unpaid email service...");
 	// 		await sendingFollowUpUnPaidEmail();
