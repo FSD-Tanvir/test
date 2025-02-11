@@ -706,16 +706,16 @@ const assignNewMT5Account = async (
 			<p><strong>Account:</strong> <span class="highlight" style="color: #DB8112; font-weight: 600;">${newMt5Account?.account}</span></p>
 			<p><strong>Password:</strong> <span class="highlight" style="color: #DB8112; font-weight: 600;">${newMt5Account?.masterPassword}</span></p>
 			<p><strong>Platform:</strong> MT5</p>
-			<p><strong>Broker:</strong> MT5</p>
+			<p><strong>Broker:</strong> BizzTrade</p>
 			<p class="message-warning" style="text-align: center; background-color: #fff7e6; border: 1px solid #ffe0b3; padding: 15px; border-radius: 8px; font-size: 14px; color: #A35E04; margin: 20px 0;">Please keep this information secure and do not share it with anyone.</p>
 
 			<!-- Download Section with Gradient Buttons -->
 			<div class="download-section" style="text-align: center; margin-top: 25px;">
 				<div class="download-text" style="font-size: 18px; font-weight: 600; color: #333333; margin-bottom: 15px;">Download the MT5 for:</div>
 				<div class="download-links" style="text-align: center;">
-					<a href="https://platform.foxx-funded.com" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">Android</a>
-					<a href="https://apps.apple.com/fr/app/foxx-funded/id6738425107" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">iOS</a>
-					<a href="https://platform.foxx-funded.com" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">Desktop</a>
+					<a href="https://play.google.com/store/apps/details?id=net.metaquotes.metatrader5" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">Android</a>
+					<a href="https://apps.apple.com/us/app/metatrader-5/id413251709" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">iOS</a>
+					<a href="https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/metatrader5.apk?utm_source=www.metatrader5.com&utm_campaign=install.metaquotes" target="_blank" style="display: inline-block; color: #ffffff; text-decoration: none; font-weight: 600; padding: 10px 20px; border-radius: 6px; background: #DB8112; background: linear-gradient(135deg, #DB8112, #ffa64d); transition: all 0.3s ease; margin: 5px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">Desktop</a>
 				</div>
 			</div>
 		</div>
