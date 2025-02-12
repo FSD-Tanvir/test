@@ -14,7 +14,6 @@ const createVeriffSessionService = async (data) => {
 };
 
 const saveDecision = async (decisionData) => {
-	console.log(decisionData, "line 17 verification.services");
 	const decision = new MVeriffDecision(decisionData);
 	return await decision.save();
 };

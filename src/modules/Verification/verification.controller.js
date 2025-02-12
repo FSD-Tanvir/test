@@ -11,7 +11,6 @@ const {
 } = require("./verification.services");
 
 const createVeriffSessionController = async (req, res) => {
-  // console.log(req.body)
   try {
     // Validate the request body against the Mongoose schema
     const verificationData = await MVeriffModel.create(req.body);
@@ -40,7 +39,6 @@ const createVeriffSessionController = async (req, res) => {
 };
 
 const handleVeriffWebhook = async (req, res) => {
-  console.log("handleVeriffWebhook-decision-controller", req.body);
 
   try {
     const decisionData = req.body;
@@ -52,7 +50,6 @@ const handleVeriffWebhook = async (req, res) => {
 };
 
 const handleEventWebhook = async (req, res) => {
-  console.log("handleEventWebhook- handleEvent-controller", req.body);
   try {
     const eventData = req.body;
     const savedEvent = await saveEvent(eventData);
