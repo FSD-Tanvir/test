@@ -1,24 +1,35 @@
-const {removeIds, resolveNestedPromises} = require("../../helper/cleanerFunctionVeriff");
+const {
+  removeIds,
+  resolveNestedPromises,
+} = require("../../helper/cleanerFunctionVeriff");
 const MVeriffModel = require("./verification.schema");
-const { createVeriffSessionService, saveDecision, saveEvent, verifiedUser } = require("./verification.services");
+const {
+  createVeriffSessionService,
+  saveDecision,
+  saveEvent,
+  verifiedUser,
+} = require("./verification.services");
 
 const createVeriffSessionController = async (req, res) => {
-    // console.log(req.body)
+  // console.log(req.body)
   try {
     // Validate the request body against the Mongoose schema
-    const verificationData = await MVeriffModel.create(req.body)
+    const verificationData = await MVeriffModel.create(req.body);
     const documentId = verificationData._id;
     // const projectedData = await MVeriffModel.findById(documentId).select('-person.email').exec();
-    const projectedData = await MVeriffModel.findById(documentId).select('-person.email -person.sessionId').exec();
+    const projectedData = await MVeriffModel.findById(documentId)
+      .select("-person.email -person.sessionId")
+      .exec();
     const plainData = projectedData.toObject();
-    const resolvedData = await resolveNestedPromises(plainData);  
-      // Remove the _id field from the object
+    const resolvedData = await resolveNestedPromises(plainData);
+    // Remove the _id field from the object
     const clearData = await removeIds(resolvedData);
     // Call the service to create a Veriff session
     const response = await createVeriffSessionService(clearData);
     //Find and update the document with the sessionId
-    await MVeriffModel.findByIdAndUpdate(documentId, { "person.sessionId": response.verification.id });
-    
+    await MVeriffModel.findByIdAndUpdate(documentId, {
+      "person.sessionId": response.verification.id,
+    });
 
     // Send the response back to the client
     res.status(201).json(response);
@@ -28,35 +39,34 @@ const createVeriffSessionController = async (req, res) => {
   }
 };
 
-
-
 const handleVeriffWebhook = async (req, res) => {
-  
-  // console.log("In handleVeriffWebhook")
+  console.log("handleVeriffWebhook-decision-controller", req.body);
+
   try {
-    // console.log("req.body line number 36",req.body)
-
-    // console.log("req.body line number 37",req.body.data.verification.person)
-    // console.log("req.body line number 38",req.body.data.verification.document)
-    // console.log("req.body line number 39",req.body.data.verification.insights)
-
     const decisionData = req.body;
     const savedDecision = await saveDecision(decisionData);
     res.status(201).json(savedDecision);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-
 const handleEventWebhook = async (req, res) => {
-    try {
-        const eventData = req.body;
-        const savedEvent = await saveEvent(eventData);
-        res.status(200).json({ message: 'Webhook event received', event: savedEvent });
-    } catch (error) {
-        res.status(500).json({ message: 'Failed to process webhook event', error: error.message });
-    }
+  console.log("handleEventWebhook- handleEvent-controller", req.body);
+  try {
+    const eventData = req.body;
+    const savedEvent = await saveEvent(eventData);
+    res
+      .status(200)
+      .json({ message: "Webhook event received", event: savedEvent });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        message: "Failed to process webhook event",
+        error: error.message,
+      });
+  }
 };
 
 const verifiedUserController = async (req, res) => {
@@ -86,7 +96,6 @@ const verifiedUserController = async (req, res) => {
       .json({ message: "Internal server error.", error: error.message });
   }
 };
-
 
 module.exports = {
   createVeriffSessionController,
