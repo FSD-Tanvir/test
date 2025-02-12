@@ -60,7 +60,7 @@ const UserSchema = new Schema(
 			unique: true,
 			match: [/^\S+@\S+\.\S+$/, "Email is invalid"],
 		},
-		password: { type: String, default: generateRandomPassword() },
+		password: { type: String, default: generateRandomPassword },
 		first: { type: String },
 		last: { type: String },
 		country: { type: String },
@@ -83,11 +83,6 @@ const UserSchema = new Schema(
 	},
 	{ timestamps: true }
 );
-
-// Virtual for full name
-UserSchema.virtual("fullName").get(function () {
-	return `${this.first || ""} ${this.last || ""}`.trim();
-});
 
 // Middleware to generate password before saving a new user
 UserSchema.pre("save", function (next) {
