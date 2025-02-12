@@ -5,12 +5,13 @@ const { challengeSchema } = require("../challenge/challenges.schema.js");
 
 // generate random password
 // Generate a random password with the first character as an alphabet
-const generateRandomPassword = (length = 8) => {
-	const alphabets = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	const charset = alphabets + "0123456789@$!%*?&";
-	let password = alphabets[Math.floor(Math.random() * alphabets.length)]; // Ensure first character is an alphabet
-	for (let i = 1; i < length; i++) {
-		password += charset[Math.floor(Math.random() * charset.length)];
+const generateRandomPassword = () => {
+	const length = 8;
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$!%*?&";
+	let password = "";
+	for (let i = 0; i < length; i++) {
+		const randomIndex = Math.floor(Math.random() * charset.length);
+		password += charset[randomIndex];
 	}
 	return password;
 };
