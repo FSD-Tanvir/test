@@ -30,8 +30,4 @@ const generatePassword = () => {
 	return password;
 };
 
-setInterval(() => {
-	console.log(generatePassword());
-}, 1000);
-
 module.exports = generatePassword;
