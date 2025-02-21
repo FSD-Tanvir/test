@@ -88,6 +88,7 @@ mongoose
 // replace db connection code by tanvir
 const startServer = async () => {
     try {
+	console.log("DB Connection String:", config.dbConnection);
         await mongoose.connect(config.dbConnection, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
