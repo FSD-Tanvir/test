@@ -71,6 +71,7 @@ runAllFunctions();
 app.use(errorHandler);
 
 // Database connection
+/*
 mongoose
 	.connect(config.dbConnection)
 	.then(() => {
@@ -83,6 +84,28 @@ mongoose
 	.catch((error) => {
 		console.error("Error connecting to MongoDB", error);
 	});
+*/
+// replace db connection code by tanvir
+const startServer = async () => {
+    try {
+        await mongoose.connect(config.dbConnection, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+
+        console.log("Mongoose connected successfully");
+
+        // Start the server only after successful DB connection
+        app.listen(config.port, () => {
+            console.log(`Server is running on port ${config.port}`);
+        });
+    } catch (error) {
+        console.error("Error connecting to MongoDB", error);
+        process.exit(1); // Exit process if DB connection fails
+    }
+};
+
+startServer();
 
 // Test route to check if server is running
 app.get("/", (req, res) => {
