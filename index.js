@@ -91,20 +91,20 @@ app.get("/", (req, res) => {
 	res.send("Foxx-Funded-server-v2-backend is running");
 });
 
-// // Graceful error handling
-// process.on("uncaughtException", (error) => {
-// 	console.error("Uncaught Exception:", error);
-// 	// Optionally perform cleanup
+// Graceful error handling
+process.on("uncaughtException", (error) => {
+	console.error("Uncaught Exception:", error);
+	// Optionally perform cleanup
 
-// 	// Exit the process with a non-zero status code
-// 	process.exit(1);
-// });
+	// Exit the process with a non-zero status code
+	process.exit(1);
+});
 
-// process.on("unhandledRejection", (reason, promise) => {
-// 	console.error("Unhandled Rejection at:", promise, "reason:", reason);
-// 	// Optionally perform cleanup
-// 	// Exit the process with a non-zero status code
-// 	process.exit(1);
-// });
+process.on("unhandledRejection", (reason, promise) => {
+	console.error("Unhandled Rejection at:", promise, "reason:", reason);
+	// Optionally perform cleanup
+	// Exit the process with a non-zero status code
+	process.exit(1);
+});
 
 module.exports = app;
