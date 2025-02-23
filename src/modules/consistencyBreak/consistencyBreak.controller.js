@@ -1,4 +1,7 @@
-const { getConsistencyBreakData } = require("./consistencyBreak.services");
+const {
+    getConsistencyBreakData,
+    disableConsistencyBreakAccount,
+} = require("./consistencyBreak.services");
 
 const getConsistencyBreakDataHandler = async (req, res) => {
     try {
@@ -20,6 +23,36 @@ const getConsistencyBreakDataHandler = async (req, res) => {
     }
 };
 
+const disableConsistencyBreakAccountHandler = async (req, res) => {
+    try {
+        const { account } = req.params;
+        const accountDetails = req.body;
+
+        const disabledAccountResult = await disableConsistencyBreakAccount(account, accountDetails);
+
+        res.status(200).json(disabledAccountResult);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+const sendConsistencyBreakWarningEmailHandler = async (req, res) => {
+    try {
+        const { account } = req.params;
+        const accountDetails = req.body;
+
+        const disabledAccountResult = await sendConsistencyBreakWarningEmail(
+            account,
+            accountDetails
+        );
+
+        res.status(200).json(disabledAccountResult);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     getConsistencyBreakDataHandler,
+    disableConsistencyBreakAccountHandler,
+    sendConsistencyBreakWarningEmailHandler,
 };
