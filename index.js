@@ -38,6 +38,7 @@ const banEmail = require("./src/modules/banEmail/banEmail.routes.js");
 const consistencyBreakRoutes = require("./src/modules/consistencyBreak/consistencyBreak.routes.js");
 const newsTradingRiskRoutes = require("./src/modules/newsTradingRisk/newsTradingRisk.routes.js");
 const stopLossRiskRoutes = require("./src/modules/stopLossRisk/stopLossRisk.routes.js");
+const lotSizeRiskRoutes = require("./src/modules/lotSizeRisk/lotSizeRisk.routes.js");
 
 // Route middleware
 app.use("/api/foxx-funded/v1/challenges", challengesRoutes);
@@ -64,6 +65,7 @@ app.use("/api/foxx-funded/v1/banEmail", banEmail);
 app.use("/api/foxx-funded/v1/newsTradingRisk", newsTradingRiskRoutes);
 app.use("/api/foxx-funded/v1/stopLossRisk", stopLossRiskRoutes);
 app.use("/api/foxx-funded/v1/consistencyBreak", consistencyBreakRoutes);
+app.use("/api/foxx-funded/v1/lotSizeRisk", lotSizeRiskRoutes);
 
 runAllFunctions();
 
