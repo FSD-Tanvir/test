@@ -161,6 +161,8 @@ const getConsistencyBreakData = async (openDate, account, page = 1, limit = 10) 
                     _id: "$account", // Group by account
                     email: { $first: "$email" }, // Store email for reference
                     accountSize: { $first: "$accountSize" }, // Store account size
+                    isDisabled: { $first: "$isDisabled" }, // Store isDisabled for reference
+                    emailSent: { $first: "$emailSent" }, // Store emailSent for reference
                     accounts: { $push: "$$ROOT" }, // Push the entire document into accounts array
                     count: { $sum: 1 }, // Count how many records for each account
                     totalProfit: { $sum: "$profit" }, // Sum total profit for this account
@@ -189,6 +191,8 @@ const getConsistencyBreakData = async (openDate, account, page = 1, limit = 10) 
                     profitPercentage: Number(trade.profitPercentage.toFixed(4)), // Convert to number
                     profitDifference: Number(trade.profitDifference.toFixed(4)), // Convert to number
                     profitLimit: Number(trade.profitLimit.toFixed(4)), // Convert to number
+                    emailSent: trade.emailSent,
+                    isDisabled: trade.isDisabled,
                     createdAt: trade.createdAt,
                 })),
             };
