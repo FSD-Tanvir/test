@@ -1,9 +1,11 @@
 const cron = require("node-cron");
 const { storeDailyDataController } = require("../modules/breach/breach.controller");
 const { sendingFollowUpUnPaidEmail } = require("../modules/orders/orders.services");
+const { consistencyBreak } = require("../modules/consistencyBreak/consistencyBreak.services");
 
 const runAllFunctions = () => {
 	storeDailyDataController();
+	consistencyBreak();
 
 	// (async () => {
 	// 	console.log("Starting follow-up unpaid email service...");
