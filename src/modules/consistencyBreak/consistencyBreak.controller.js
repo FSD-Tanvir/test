@@ -1,6 +1,7 @@
 const {
     getConsistencyBreakData,
     disableConsistencyBreakAccount,
+    sendConsistencyBreakWarningEmail,
 } = require("./consistencyBreak.services");
 
 const getConsistencyBreakDataHandler = async (req, res) => {
