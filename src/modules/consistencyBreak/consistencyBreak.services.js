@@ -11,15 +11,15 @@ const consistencyBreak = async () => {
                     $filter: {
                         input: "$mt5Accounts",
                         as: "account",
-                        cond: { $eq: ["$$account.accountStatus", "active"] }
-                    }
-                }
+                        cond: { $eq: ["$$account.accountStatus", "active"] },
+                    },
+                },
             },
         },
         { $unwind: "$mt5Accounts" },
         {
             $addFields: {
-                accountString: { $toString: "$mt5Accounts.account" }
+                accountString: { $toString: "$mt5Accounts.account" },
             },
         },
         {
@@ -27,12 +27,12 @@ const consistencyBreak = async () => {
                 from: "disableaccounts",
                 localField: "accountString",
                 foreignField: "mt5Account",
-                as: "disabledAccount"
+                as: "disabledAccount",
             },
         },
         {
             $match: {
-                disabledAccount: { $eq: [] }
+                disabledAccount: { $eq: [] },
             },
         },
         {
@@ -41,12 +41,11 @@ const consistencyBreak = async () => {
                     email: "$email",
                     account: "$mt5Accounts.account",
                     accountStatus: "$mt5Accounts.accountStatus",
-                    accountSize: "$mt5Accounts.challengeStageData.accountSize"
+                    accountSize: "$mt5Accounts.challengeStageData.accountSize",
                 },
             },
         },
     ]);
-    
 
     const startDate = "1970-01-01T00:00:00";
     const endDate = "2100-01-01T00:00:00";
@@ -56,7 +55,7 @@ const consistencyBreak = async () => {
 
     const processBatch = async (accounts, batchNumber) => {
         console.log(`Processing batch number ${batchNumber}`);
-        
+
         const allGroupedOrders = await Promise.all(
             accounts.map(async (account) => {
                 try {
@@ -69,8 +68,10 @@ const consistencyBreak = async () => {
 
                     orderHistory.forEach((order) => {
                         const profit = order.profit;
-                        const profitPercentage = (profit / accountSize) * 100;
-                        const profitDifference = profit - profitLimit;
+                        const profitPercentage = parseFloat(
+                            ((profit / accountSize) * 100).toFixed(4)
+                        );
+                        const profitDifference = parseFloat((profit - profitLimit).toFixed(4));
 
                         if (profitPercentage > 1.5 && !storedTicketSet.has(order.ticket)) {
                             highRiskTrades.push({
@@ -117,8 +118,86 @@ const consistencyBreak = async () => {
     return allResults;
 };
 
+const getConsistencyBreakData = async (openDate, account, page = 1, limit = 10) => {
+    try {
+        const skip = (page - 1) * limit;
 
+        // Build the query object
+        const query = {};
 
+        if (account) {
+            query.account = Number(account);
+        }
 
-module.exports = { consistencyBreak };
+        if (openDate) {
+            const parsedDate = new Date(openDate);
 
+            // Start of the day
+            const startOfDay = new Date(parsedDate.setHours(0, 0, 0, 0));
+
+            // End of the day
+            const endOfDay = new Date(parsedDate.setHours(23, 59, 59, 999));
+
+            // Query to filter between start and end of the day
+            query.createdAt = {
+                $gte: startOfDay,
+                $lt: endOfDay,
+            };
+        }
+
+        // Aggregation pipeline to group by account and sort
+        const groupedData = await ConsistencyBreakModel.aggregate([
+            { $match: query }, // Apply the query filter
+            {
+                $group: {
+                    _id: "$account", // Group by account
+                    email: { $first: "$email" }, // Store email for reference
+                    accountSize: { $first: "$accountSize" }, // Store account size
+                    accounts: { $push: "$$ROOT" }, // Push the entire document into accounts array
+                    count: { $sum: 1 }, // Count how many records for each account
+                    totalProfit: { $sum: "$profit" }, // Sum total profit for this account
+                },
+            },
+            { $sort: { "accounts.createdAt": -1 } }, // Sort in descending order based on createdAt
+        ]);
+
+        // Total count is the length of the grouped data
+        const totalCount = groupedData.length;
+
+        // Paginate the grouped data
+        const paginatedData = groupedData.slice(skip, skip + limit);
+
+        // Process data for unique close times
+        const processedData = paginatedData.map((group) => {
+            return {
+                account: group._id,
+                email: group.email,
+                accountSize: group.accountSize,
+                totalProfit: Number(group.totalProfit.toFixed(4)), // Convert to number
+                totalTrades: group.count,
+                trades: group.accounts.map((trade) => ({
+                    ticket: trade.ticket,
+                    profit: Number(trade.profit.toFixed(4)), // Convert to number
+                    profitPercentage: Number(trade.profitPercentage.toFixed(4)), // Convert to number
+                    profitDifference: Number(trade.profitDifference.toFixed(4)), // Convert to number
+                    profitLimit: Number(trade.profitLimit.toFixed(4)), // Convert to number
+                    createdAt: trade.createdAt,
+                })),
+            };
+        });
+
+        return {
+            data: processedData,
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+        };
+    } catch (error) {
+        console.log(error);
+        throw new Error("Failed to fetch consistency break data");
+    }
+};
+
+module.exports = { consistencyBreak, getConsistencyBreakData };
+
+// commit message: 📈 Added consistency break service and controller functions

@@ -4,18 +4,17 @@ const { sendingFollowUpUnPaidEmail } = require("../modules/orders/orders.service
 const { consistencyBreak } = require("../modules/consistencyBreak/consistencyBreak.services");
 
 const runAllFunctions = () => {
-	storeDailyDataController();
-	consistencyBreak();
+    storeDailyDataController();
 
-	// (async () => {
-	// 	console.log("Starting follow-up unpaid email service...");
-	// 	await sendingFollowUpUnPaidEmail();
+    // (async () => {
+    // 	console.log("Starting follow-up unpaid email service...");
+    // 	await sendingFollowUpUnPaidEmail();
 
-	// //Schedule it to run every hour using node-cron
-	// 	cron.schedule("0 * * * *", async () => {
-	// 		console.log("Running scheduled follow-up unpaid email service...");
-	// 		await sendingFollowUpUnPaidEmail();
-	// 	});
-	// })();
+    // //Schedule it to run every hour using node-cron
+    // 	cron.schedule("0 * * * *", async () => {
+    // 		console.log("Running scheduled follow-up unpaid email service...");
+    // 		await sendingFollowUpUnPaidEmail();
+    // 	});
+    // })();
 };
 module.exports = { runAllFunctions };
