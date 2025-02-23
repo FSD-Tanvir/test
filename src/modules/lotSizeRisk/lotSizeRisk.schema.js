@@ -27,7 +27,6 @@ const lotSizeRiskSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-
         lotSizeLimit: {
             type: Number,
             required: true,
