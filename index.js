@@ -35,9 +35,8 @@ const metaRoutes = require("./src/modules/meta/meta.routes.js");
 const orderHistory = require("./src/modules/withDrawRequests/withDrawReuests.routes.js");
 const affiliatePayout = require("./src/modules/affiliatePayout/affiliatePayout.routes.js");
 const banEmail = require("./src/modules/banEmail/banEmail.routes.js");
-
+const consistencyBreakRoutes = require("./src/modules/consistencyBreak/consistencyBreak.routes.js");
 const newsTradingRiskRoutes = require("./src/modules/newsTradingRisk/newsTradingRisk.routes.js");
-
 const stopLossRiskRoutes = require("./src/modules/stopLossRisk/stopLossRisk.routes.js");
 
 // Route middleware
@@ -64,47 +63,47 @@ app.use("/api/foxx-funded/v1/affiliatePayout", affiliatePayout);
 app.use("/api/foxx-funded/v1/banEmail", banEmail);
 app.use("/api/foxx-funded/v1/newsTradingRisk", newsTradingRiskRoutes);
 app.use("/api/foxx-funded/v1/stopLossRisk", stopLossRiskRoutes);
+app.use("/api/foxx-funded/v1/consistencyBreak", consistencyBreakRoutes);
 
 runAllFunctions();
 
 // Use the error handler middleware 💚💚💚 Global Error Handler
 app.use(errorHandler);
 
-
 // Database connection
 
 mongoose
-	.connect(config.dbConnection)
-	.then(() => {
-		console.log("Mongoose connected successfully");
-		// Start the server only after successfully connecting to MongoDB
-		app.listen(config.port, () => {
-			console.log(`Server is running on port ${config.port}`);
-		});
-	})
-	.catch((error) => {
-		console.error("Error connecting to MongoDB", error);
-	});
+    .connect(config.dbConnection)
+    .then(() => {
+        console.log("Mongoose connected successfully");
+        // Start the server only after successfully connecting to MongoDB
+        app.listen(config.port, () => {
+            console.log(`Server is running on port ${config.port}`);
+        });
+    })
+    .catch((error) => {
+        console.error("Error connecting to MongoDB", error);
+    });
 
 // Test route to check if server is running
 app.get("/", (req, res) => {
-	res.send("Foxx-Funded-server-v2-backend is running");
+    res.send("Foxx-Funded-server-v2-backend is running");
 });
 
 // Graceful error handling
 process.on("uncaughtException", (error) => {
-	console.error("Uncaught Exception:", error);
-	// Optionally perform cleanup
+    console.error("Uncaught Exception:", error);
+    // Optionally perform cleanup
 
-	// Exit the process with a non-zero status code
-	process.exit(1);
+    // Exit the process with a non-zero status code
+    process.exit(1);
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-	console.error("Unhandled Rejection at:", promise, "reason:", reason);
-	// Optionally perform cleanup
-	// Exit the process with a non-zero status code
-	process.exit(1);
+    console.error("Unhandled Rejection at:", promise, "reason:", reason);
+    // Optionally perform cleanup
+    // Exit the process with a non-zero status code
+    process.exit(1);
 });
 
 module.exports = app;
