@@ -1,4 +1,8 @@
-const { getLotSizeRiskData, disableLotRiskedAccount } = require("./lotSizeRisk.services");
+const {
+    getLotSizeRiskData,
+    disableLotRiskedAccount,
+    sendLotSizeWarningEmail,
+} = require("./lotSizeRisk.services");
 
 const getLotSizeRiskDataHandler = async (req, res) => {
     try {

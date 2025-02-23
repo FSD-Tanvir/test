@@ -482,22 +482,16 @@ const disableLotRiskedAccount = async (account, accountDetails) => {
 
 const sendLotSizeWarningEmail = async (account, accountDetails) => {
     try {
-        const tickets = accountDetails.trades
-            .map(
-                (trade) =>
-                    `Ticket: ${trade.ticket}, Profit: ${trade.profit} (${trade.profitPercentage}%)`
-            )
-            .join(", ");
         const htmlContent = `<!DOCTYPE html>
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Account Breach Notification</title>
+                <title>Lot Size Risk Breach Notification</title>
                 <style>
                     body {
                         font-family: 'Arial', sans-serif;
-                        background-color: #ffff; /* Light red background */
+                        background-color: #fff3cd; /* Light yellow background */
                         margin: 0;
                         padding: 20px;
                         color: #333;
@@ -509,10 +503,10 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
                         margin: 0 auto;
                         padding: 20px;
                         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                        border: 2px solid #ffa726; /* Red border for urgency */
+                        border: 2px solid #f57c00; /* Strong orange border for risk */
                     }
                     .header {
-                        background-color: #f57c00; /* Strong red for header */
+                        background-color: #f57c00; /* Orange header for emphasis */
                         color: #ffffff;
                         padding: 20px;
                         border-radius: 8px 8px 0 0;
@@ -531,9 +525,9 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
                         color: #444;
                     }
                     .highlight {
-                        background-color: #fff3cd; /* Light orange background for warning */
-                        color: #856404;           /* Dark orange text */
-                        border-left: 4px solid #ffc107; /* Bright orange border */
+                        background-color: #FAD5A5; 
+                        color: #000; 
+                        border-left: 4px solid #f57c00; 
                         padding: 10px;
                         margin: 20px 0;
                         border-radius: 4px;
@@ -562,14 +556,14 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
                         margin-top: 20px;
                     }
                     .social-links {
-                          margin-top: 20px;
-                          display: flex;
-                          justify-content: center;
-                          gap: 20px;
+                        margin-top: 20px;
+                        display: flex;
+                        justify-content: center;
+                        gap: 20px;
                     }
                     .social-links img {
-                          width: 32px;
-                          height: 32px;
+                        width: 32px;
+                        height: 32px;
                     }
                 </style>
             </head>
@@ -579,7 +573,7 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
                     <div class="header">
                         <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo">
                         <br>
-                        1.5% Consistency Rule Breach Notification
+                        Lot Size Risk Breach Notification
                     </div>
                     
                     <!-- Content Section -->
@@ -587,31 +581,32 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
                         <p>Dear Trader,</p>
                         <p>We hope this email finds you well. We are writing to inform you about a critical issue regarding your recent trading activity at Fox Funded.</p>
                         
-                        <p>Upon reviewing your recent trades, we noticed that one of your trades has exceeded the 1.5% consistency rule. As per our trading policy, no single trade should generate more than 1.5% of the initial account balance. Unfortunately, your recent trade violated this rule.</p>
+                        <p>Upon reviewing your recent trades, we noticed that some of your trades have violated the <strong>Lot Size Risk</strong> rule. According to our policy, the lot size for trades must be proportional to the account size. Trades that exceed the allowed lot size limit are considered a breach of this policy.</p>
             
-                        <p>This trade is considered non-compliant and could lead to a challenge violation. The details of the non-compliant trade are provided below:</p>
+                        <p>The details of the violating trades are as follows:</p>
             
                         <div class="highlight">
                             <p><strong>Account Number:</strong> ${account}</p>
-                            <p><strong>Profit Limit:</strong> ${
-                                accountDetails.trades[0].profitLimit
+                            <p><strong>Initial Account Balance:</strong> $${
+                                accountDetails.accountSize
                             }</p>
+                            <p><strong>Lot Size Limit:</strong> ${
+                                accountDetails.totalLotSizeLimit
+                            }</p>
+                            <p><strong>Exceeding Trades:</strong></p>
                             <div>
-                                <p><strong>Trade Tickets:</strong></p>
-                                <div class="tickets">
-                                    ${accountDetails.trades
-                                        .map(
-                                            (trade) =>
-                                                `Ticket: ${trade.ticket}, Profit: ${trade.profit} (${trade.profitPercentage}%)`
-                                        )
-                                        .join("<br>")}
-                      </div>
+                                ${accountDetails.trades
+                                    .map(
+                                        (trade) =>
+                                            `<p><strong>Ticket:</strong> ${trade.ticket}, <strong>Lot Size:</strong> ${trade.lotSize}</p>`
+                                    )
+                                    .join("")}
                             </div>
                         </div>
             
-                        <p>Please note that any further violations may result in stricter consequences, including potential account restrictions. We strongly recommend reviewing your trading strategies to ensure compliance with the 1.5% consistency rule moving forward.</p>
+                        <p>Please be aware that continuing to exceed the lot size limit could result in further account restrictions or other actions as outlined in our policies.</p>
             
-                        <p>If you have any questions or need assistance in adjusting your trading strategies, please feel free to contact our support team.</p>
+                        <p>We strongly recommend reviewing your trading strategies to ensure that future trades comply with the <strong>Lot Size Risk</strong> rule. If you have any questions or need assistance adjusting your trades, please do not hesitate to reach out to our support team.</p>
             
                         <p>Thank you for your attention to this matter. We appreciate your cooperation in maintaining a responsible trading environment.</p>
             
@@ -623,11 +618,12 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
                             <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
                                 contact us or contact our support team
                             </a>.
-                          </p>
+                        </p>
+            
                         <div class="social-links">
-                              <a href="https://t.me/+2QVq5aChxiBlOWFk">
+                            <a href="https://t.me/+2QVq5aChxiBlOWFk">
                                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
-                              </a>
+                            </a>
                         </div>
                     </div>
             
@@ -638,11 +634,11 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
                 </div>
             </body>
             </html>
-            `;
+        `;
 
         const info = await sendEmailSingleRecipient(
             accountDetails?.email,
-            "Fox Funded - 1.5% Consistency Rule Breach",
+            "Fox Funded - Lot Size Risk Breach",
             null,
             htmlContent
         );
@@ -650,16 +646,13 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
         // Check if the response indicates a successful send
         if (typeof info === "string" && info.includes("OK")) {
             // Update emailSent field to true in the database
-            await ConsistencyBreakModel.updateMany(
-                { account: account },
-                { $set: { emailSent: true } }
-            );
+            await LotSizeRiskModel.updateMany({ account: account }, { $set: { emailSent: true } });
         }
 
         // Return success response with details
         return {
             success: true,
-            message: `Warning email successfully sent to ${accountDetails?.email}`,
+            message: `Lot size breach warning email successfully sent to ${accountDetails?.email}`,
             emailInfo: info,
         };
     } catch (error) {
@@ -673,5 +666,3 @@ module.exports = {
     disableLotRiskedAccount,
     sendLotSizeWarningEmail,
 };
-
-// Commit message:
