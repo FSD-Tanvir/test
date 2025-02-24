@@ -1,15 +1,7 @@
 const { sendEmailSingleRecipient } = require("../../helper/mailing");
-// const {
-// 	balanceDepositAndWithdrawal,
-// 	userDetails,
-// 	orderHistories,
-// } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
-// const {
-// 	updateLastDailyDataByMt5Account,
-// } = require("../breach/breach.services");
 const MWithDrawRequest = require("./withDrawRequests.schema");
 const MUser = require("../users/users.schema");
-const { userDetails, balanceDepositAndWithdrawal } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
+const { userDetails, balanceDepositAndWithdrawal, orderHistories } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const { updateLastDailyDataByMt5Account } = require("../breach/breach.services");
 
 // Create a new withdrawal request
@@ -324,16 +316,17 @@ const getAllPayoutsWithDrawRequestsByEmailService = async (email, page, limit) =
 	}
 };
 
-// const getOrderHistory = async (account, startDate, endDate) => {
+const getOrderHistory = async (account, startDate, endDate) => {
 
-// 	try {
-// 		const response = await orderHistories(account, startDate, endDate);
-// 		return response;
+	try {
+		const response = await orderHistories(account, startDate, endDate);
+		console.log(response);
+		return response;
 
-// 	} catch (error) {
-// 		throw new Error(error.message);
-// 	}
-// }
+	} catch (error) {
+		throw new Error(error.message);
+	}
+}
 
 const getAllApprovedRequester = async () => {
 	try {
@@ -378,7 +371,7 @@ module.exports = {
 	getAllApprovedWithDrawRequestsByEmailService,
 	getAllPayoutsWithDrawRequestsByEmailService,
 	getAllPendingWithDrawRequestsByEmailService,
-	// getOrderHistory,
+	getOrderHistory,
 	getAllApprovedRequester,
 	getAllPendingRequester,
 };
