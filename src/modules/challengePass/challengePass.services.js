@@ -151,7 +151,7 @@ const passingChallengeUsingAPI = async (mt5Account) => {
 
 				if (account) {
 					const changeGroupDetails = {
-						Group: "demo\\forex-hedge-usd-01",
+						Group: "demo\\Evpassed",
 					};
 
 					const changeGroup = await accountUpdate(account.account, changeGroupDetails);
@@ -321,7 +321,7 @@ const passingChallenge = async () => {
 
 				if (account) {
 					const changeGroupDetails = {
-						Group: "demo\\forex-hedge-usd-01", //! TODO : Change the group
+						Group: "demo\\Evpassed",
 					};
 
 					const changeGroup = await accountUpdate(account.account, changeGroupDetails);
