@@ -13,6 +13,7 @@ const {
 	// getOrderHistory,
 	getAllApprovedRequester,
 	getAllPendingRequester,
+	getOrderHistory,
 } = require("./withDrawRequests.services");
 
 // Handle POST request to create a new withdrawal request
@@ -323,26 +324,26 @@ const getPayoutRequestHandler = async (req, res) => {
 	}
 };
 
-// const getOrderHistoryController = async (req, res) => {
-// 	const { account, startDate, endDate } = req.query;
+const getOrderHistoryController = async (req, res) => {
+	const { account, startDate, endDate } = req.query;
+// console.log(account, startDate, endDate);
+	try {
+		// Call the service function
+		const orderHistory = await getOrderHistory(account, startDate, endDate);
 
-// 	try {
-// 		// Call the service function
-// 		const orderHistory = await getOrderHistory(account, startDate, endDate);
-
-// 		// Send success response with order history data
-// 		res.status(200).json({
-// 			success: true,
-// 			data: orderHistory
-// 		});
-// 	} catch (error) {
-// 		// Send error response
-// 		res.status(500).json({
-// 			success: false,
-// 			message: error.message
-// 		});
-// 	}
-// }
+		// Send success response with order history data
+		res.status(200).json({
+			success: true,
+			data: orderHistory
+		});
+	} catch (error) {
+		// Send error response
+		res.status(500).json({
+			success: false,
+			message: error.message
+		});
+	}
+}
 
 
 const getApprovedRequestsController = async (req, res) => {
@@ -389,7 +390,7 @@ module.exports = {
 	getPayoutRequestHandler,
 	getAllPayoutsWithDrawRequestsByEmail,
 	getAllPendingWithDrawRequestsByEmail,
-	// getOrderHistoryController,
+	getOrderHistoryController,
 	getApprovedRequestsController,
 	getPendingRequestsController,
 };
