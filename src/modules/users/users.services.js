@@ -907,7 +907,7 @@ const manualChallengePass = async (id) => {
 
 		if (matchingAccount) {
 			const changeGroupDetails = {
-				Group: "demo\\Evpassed", //! TODO : Change the group
+				Group: "demo\\EVPASSED", 
 			};
 
 			const changeGroup = await accountUpdate(matchingAccount.account, changeGroupDetails);
