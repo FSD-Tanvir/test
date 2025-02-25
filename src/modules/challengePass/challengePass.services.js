@@ -713,7 +713,7 @@ const assignNewMT5Account = async (
 			<p><strong>Account:</strong> <span class="highlight" style="color: #DB8112; font-weight: 600;">${newMt5Account?.account}</span></p>
 			<p><strong>Password:</strong> <span class="highlight" style="color: #DB8112; font-weight: 600;">${newMt5Account?.masterPassword}</span></p>
 			<p><strong>Platform:</strong> MT5</p>
-			<p><strong>Broker:</strong> BizzTrade</p>
+			<p><strong>Broker:</strong> PreferredCapital</p>
 			<p class="message-warning" style="text-align: center; background-color: #fff7e6; border: 1px solid #ffe0b3; padding: 15px; border-radius: 8px; font-size: 14px; color: #A35E04; margin: 20px 0;">Please keep this information secure and do not share it with anyone.</p>
 
 			<!-- Download Section with Gradient Buttons -->
