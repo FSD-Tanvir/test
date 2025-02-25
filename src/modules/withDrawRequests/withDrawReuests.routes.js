@@ -12,29 +12,35 @@ const {
 	getPayoutRequestHandler,
 	getAllPayoutsWithDrawRequestsByEmail,
 	getAllPendingWithDrawRequestsByEmail,
-	// getOrderHistoryController,
+	getOrderHistoryController,
 	getApprovedRequestsController,
 	getPendingRequestsController,
 } = require("./withDrawRequests.controller");
 
 const router = express.Router();
 
-// More specific routes should come first
+router.get('/history', getOrderHistoryController);
 router.get('/approved-requests', getApprovedRequestsController);
 router.get('/pending-requests', getPendingRequestsController);
-// router.get('/history', getOrderHistoryController);
+
 router.get('/check-request/:accountNumber', getPayoutRequestHandler);
 router.get('/approved/:email', getAllApprovedWithDrawRequestsByEmail);
 router.get('/pending/:email', getAllPendingWithDrawRequestsByEmail);
 router.get('/all-payout/:email', getAllPayoutsWithDrawRequestsByEmail);
-router.get('/all-approved/:accountNumber', getApprovedAccountByNumber);
+router.get('/approved/:accountNumber', getApprovedAccountByNumber);
 
 // Generic routes come later
 router.post("/", createWithDrawRequest);
 router.get("/by-id/:id", getWithDrawRequestById); 
-router.get("/:accountNumber", getWithDrawRequestByAccountNumber);
+router.get('/:accountNumber', (req, res, next) => {
+    if (isNaN(req.params.accountNumber)) {
+        return res.status(400).json({ message: "Invalid account number" });
+    }
+    next();
+}, getWithDrawRequestByAccountNumber);;
 router.get("/", getAllWithDrawRequests);
 router.patch("/:id", updateWithDrawRequestById);
+
 
 
 
