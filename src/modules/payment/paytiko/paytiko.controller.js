@@ -109,7 +109,7 @@ const controllerPaytikoWebhook = async (req, res) => {
 				City: buyerDetails.city,
 				ZIPCode: buyerDetails.zipCode,
 				Phone: buyerDetails.phone,
-				Leverage: 30,
+				Leverage: challengeData.challengeType === "funded" ? 50 : 100,
 				Group: group,
 			};
 
