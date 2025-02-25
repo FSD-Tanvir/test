@@ -1,534 +1,544 @@
 const { sendEmailSingleRecipient } = require("../../helper/mailing");
 const {
-	getUniqueTradingDays,
-	getDateBeforeDays,
-	formatDateTime,
+    getUniqueTradingDays,
+    getDateBeforeDays,
+    formatDateTime,
 } = require("../../helper/utils/dateUtils");
 const generatePassword = require("../../helper/utils/generatePasswordForMt5");
 const {
-	accountUpdate,
-	accountCreateAndDeposit,
-	orderHistories,
-	accountDetails,
+    accountUpdate,
+    accountCreateAndDeposit,
+    orderHistories,
+    accountDetails,
 } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const MUser = require("../users/users.schema");
 const StoreDataModel = require("../breach/breach.schema");
 
 // Helper function to find existing MT5 account with the same productId and challengeStage
 const findMT5Account = async (user, productId, stage) => {
-	try {
-		// Assuming you have a collection or database call to find accounts
-		const existingAccount = user.mt5Accounts.find(
-			(acc) => acc.productId === productId && acc.challengeStage === stage
-		);
+    try {
+        // Assuming you have a collection or database call to find accounts
+        const existingAccount = user.mt5Accounts.find(
+            (acc) => acc.productId === productId && acc.challengeStage === stage
+        );
 
-		return existingAccount;
-	} catch (error) {
-		console.error("Error in finding MT5 account:", error.message);
-		return null;
-	}
+        return existingAccount;
+    } catch (error) {
+        console.error("Error in finding MT5 account:", error.message);
+        return null;
+    }
 };
 
 const getPhasedUsersForAPI = async (acc) => {
-	try {
-		// Query to find all MUser documents where at least one mt5Account meets all three conditions
-		const users = await MUser.find(
-			{
-				"mt5Accounts.account": acc,
-				mt5Accounts: {
-					$elemMatch: {
-						challengeStage: { $ne: "funded" },
-						challengeStatus: { $ne: "passed" },
-						accountStatus: { $eq: "active" },
-					},
-				},
-			},
-			{
-				mt5Accounts: 1, // Project all mt5Accounts to filter in application logic
-				email: 1, // Include email or other identifying fields if necessary
-				_id: 1,
-			}
-		).exec();
+    try {
+        // Query to find all MUser documents where at least one mt5Account meets all three conditions
+        const users = await MUser.find(
+            {
+                "mt5Accounts.account": acc,
+                mt5Accounts: {
+                    $elemMatch: {
+                        challengeStage: { $ne: "funded" },
+                        challengeStatus: { $ne: "passed" },
+                        accountStatus: { $eq: "active" },
+                    },
+                },
+            },
+            {
+                mt5Accounts: 1, // Project all mt5Accounts to filter in application logic
+                email: 1, // Include email or other identifying fields if necessary
+                _id: 1,
+            }
+        ).exec();
 
-		// Flatten the array of matched mt5Accounts and inject user email and _id
-		const filteredAccounts = users.flatMap((user) =>
-			user.mt5Accounts
-				.filter(
-					(account) =>
-						account.challengeStage !== "funded" &&
-						account.challengeStatus !== "passed" &&
-						account.accountStatus === "active"
-				)
-				.map((account) => ({
-					...account.toObject(), // Convert the Mongoose document to a plain object if necessary
-					email: user.email,
-					userId: user._id,
-				}))
-		);
+        // Flatten the array of matched mt5Accounts and inject user email and _id
+        const filteredAccounts = users.flatMap((user) =>
+            user.mt5Accounts
+                .filter(
+                    (account) =>
+                        account.challengeStage !== "funded" &&
+                        account.challengeStatus !== "passed" &&
+                        account.accountStatus === "active"
+                )
+                .map((account) => ({
+                    ...account.toObject(), // Convert the Mongoose document to a plain object if necessary
+                    email: user.email,
+                    userId: user._id,
+                }))
+        );
 
-		return filteredAccounts;
-	} catch (err) {
-		console.error("Error fetching filtered mt5Accounts:", err);
-		throw err;
-	}
+        return filteredAccounts;
+    } catch (err) {
+        console.error("Error fetching filtered mt5Accounts:", err);
+        throw err;
+    }
 };
 
 const passingChallengeUsingAPI = async (mt5Account) => {
-	try {
-		const startDate = "1990-12-07 12:33:12";
-		const endDate = formatDateTime(new Date());
+    try {
+        const startDate = "1990-12-07 12:33:12";
+        const endDate = formatDateTime(new Date());
 
-		// Retrieve the list of users currently in the phased challenge.
-		const accounts = await getPhasedUsersForAPI(mt5Account);
+        // Retrieve the list of users currently in the phased challenge.
+        const accounts = await getPhasedUsersForAPI(mt5Account);
 
-		// If no accounts are found, log an error message and exit the function.
-		if (accounts.length === 0) {
-			console.error("No accounts found for processing manually.");
-			return;
-		}
+        // If no accounts are found, log an error message and exit the function.
+        if (accounts.length === 0) {
+            console.error("No accounts found for processing manually.");
+            return;
+        }
 
-		// Iterate over each account to check and update their challenge status.
-		for (const acc of accounts) {
-			const { challengeStage, challengeStageData, userId, account: accNumber } = acc;
+        // Iterate over each account to check and update their challenge status.
+        for (const acc of accounts) {
+            const { challengeStage, challengeStageData, userId, account: accNumber } = acc;
 
-			// Check if accNumber is available
-			if (!accNumber) {
-				console.log("Account number is missing, skipping this account.");
-				continue; // Skip to the next iteration if accNumber is not available
-			}
+            // Check if accNumber is available
+            if (!accNumber) {
+                console.log("Account number is missing, skipping this account.");
+                continue; // Skip to the next iteration if accNumber is not available
+            }
 
-			// Check if challengeStageData and challengeStages are defined and valid
-			if (
-				!challengeStageData ||
-				!challengeStageData.challengeStages ||
-				!challengeStageData.challengeStages[challengeStage]
-			) {
-				continue; // Skip to the next iteration if data is undefined
-			}
+            // Check if challengeStageData and challengeStages are defined and valid
+            if (
+                !challengeStageData ||
+                !challengeStageData.challengeStages ||
+                !challengeStageData.challengeStages[challengeStage]
+            ) {
+                continue; // Skip to the next iteration if data is undefined
+            }
 
-			const { minTradingDays, profitTarget } = challengeStageData.challengeStages[challengeStage];
-			const calculatedProfitTarget = challengeStageData.accountSize * (profitTarget / 100);
-			const accountSize = challengeStageData.accountSize;
+            const { minTradingDays, profitTarget } =
+                challengeStageData.challengeStages[challengeStage];
+            const calculatedProfitTarget = challengeStageData.accountSize * (profitTarget / 100);
+            const accountSize = challengeStageData.accountSize;
 
-			let tradeHistories, traderProfitTarget;
+            let tradeHistories, traderProfitTarget;
 
-			try {
-				// Getting trade histories & account details from MT5
-				[tradeHistories, traderProfitTarget] = await Promise.all([
-					orderHistories(accNumber, startDate, endDate),
-					accountDetails(accNumber),
-				]);
-				// Ensure tradeHistories is an array
-				if (!Array.isArray(tradeHistories)) {
-					tradeHistories = []; // Fallback to an empty array
-				}
-			} catch (error) {
-				console.error(`Error fetching data for account ${accNumber}:`, error.message);
+            try {
+                // Getting trade histories & account details from MT5
+                [tradeHistories, traderProfitTarget] = await Promise.all([
+                    orderHistories(accNumber, startDate, endDate),
+                    accountDetails(accNumber),
+                ]);
+                // Ensure tradeHistories is an array
+                if (!Array.isArray(tradeHistories)) {
+                    tradeHistories = []; // Fallback to an empty array
+                }
+            } catch (error) {
+                console.error(`Error fetching data for account ${accNumber}:`, error.message);
 
-				continue; // Skip to the next account if there is an error
-			}
+                continue; // Skip to the next account if there is an error
+            }
 
-			// get unique trading days
-			const tradingDays = getUniqueTradingDays(tradeHistories);
-			const balance = traderProfitTarget.balance;
-			const traderProfit = Number(balance - accountSize);
+            // get unique trading days
+            const tradingDays = getUniqueTradingDays(tradeHistories);
+            const balance = traderProfitTarget.balance;
+            const traderProfit = Number(balance - accountSize);
 
-			// check if trading days are greater than minTradingDays and traderProfit is greater than calculatedProfitTarget
-			const checkPassed = tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
+            // check if trading days are greater than minTradingDays and traderProfit is greater than calculatedProfitTarget
+            const checkPassed =
+                tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
 
-			if (checkPassed) {
-				// Fetch the user document from the database using userId.
-				const user = await MUser.findById(userId);
+            if (checkPassed) {
+                // Fetch the user document from the database using userId.
+                const user = await MUser.findById(userId);
 
-				// If the user is not found, log an error and skip to the next account.
-				if (!user) {
-					console.error(`User not found for userId: ${userId}`);
-					continue;
-				}
+                // If the user is not found, log an error and skip to the next account.
+                if (!user) {
+                    console.error(`User not found for userId: ${userId}`);
+                    continue;
+                }
 
-				// Find the MT5 account associated with this user.
-				const account = user.mt5Accounts.find((a) => a.account === accNumber);
+                // Find the MT5 account associated with this user.
+                const account = user.mt5Accounts.find((a) => a.account === accNumber);
 
-				if (account) {
-					const changeGroupDetails = {
-						Group: "demo\\Evpassed",
-					};
+                if (account) {
+                    const changeGroupDetails = {
+                        Group: "demo\\EVPASSED",
+                    };
 
-					const changeGroup = await accountUpdate(account.account, changeGroupDetails);
+                    const changeGroup = await accountUpdate(account.account, changeGroupDetails);
 
-					if (changeGroup === "OK") {
-						// Update the user's account status in the database.
-						account.group = changeGroupDetails.Group;
-						await user.save();
+                    if (changeGroup === "OK") {
+                        // Update the user's account status in the database.
+                        account.group = changeGroupDetails.Group;
+                        await user.save();
 
-						// Disable trading rights for the MT5 account.
-						const userDisableDetails = {
-							Rights: "USER_RIGHT_TRADE_DISABLED",
-							enabled: true,
-						};
+                        // Disable trading rights for the MT5 account.
+                        const userDisableDetails = {
+                            Rights: "USER_RIGHT_TRADE_DISABLED",
+                            enabled: true,
+                        };
 
-						// API call to disable MT5 account and verify the response.
-						const disableMT5Account = await accountUpdate(account.account, userDisableDetails);
+                        // API call to disable MT5 account and verify the response.
+                        const disableMT5Account = await accountUpdate(
+                            account.account,
+                            userDisableDetails
+                        );
 
-						if (disableMT5Account === "OK") {
-							// Update the user's account status in the database.
-							account.challengeStatus = "passed";
-							account.accountStatus = "inActive";
-							await user.save();
+                        if (disableMT5Account === "OK") {
+                            // Update the user's account status in the database.
+                            account.challengeStatus = "passed";
+                            account.accountStatus = "inActive";
+                            await user.save();
 
-							// Check if the user needs to be assigned a new MT5 account based on their challenge progress.
-							await handleNextChallengeStage(account, user, acc);
-						} else {
-							console.error(`Failed to disable the account in MT5. : ${accNumber}`);
-						}
-					}
-				} else {
-					console.warn(`Account not found for accNumber: ${accNumber}`);
-				}
-			} else {
-				console.log(`Account - ${accNumber} has not passed the challenge yet.`);
-			}
-		}
+                            // Check if the user needs to be assigned a new MT5 account based on their challenge progress.
+                            await handleNextChallengeStage(account, user, acc);
+                        } else {
+                            console.error(`Failed to disable the account in MT5. : ${accNumber}`);
+                        }
+                    }
+                } else {
+                    console.warn(`Account not found for accNumber: ${accNumber}`);
+                }
+            } else {
+                console.log(`Account - ${accNumber} has not passed the challenge yet.`);
+            }
+        }
 
-		// Return the processed accounts.
-		return accounts;
-	} catch (error) {
-		console.error("An error occurred in the passingChallenge function:", error.message);
-		throw new Error("Failed to process the passing challenge due to an unexpected error.");
-	}
+        // Return the processed accounts.
+        return accounts;
+    } catch (error) {
+        console.error("An error occurred in the passingChallenge function:", error.message);
+        throw new Error("Failed to process the passing challenge due to an unexpected error.");
+    }
 };
 
 /* ---------------------------------------------------------------------------------------------- */
 /*                                   //! AUTOMATIC CHALLENGE PASS                                  */
 /* ---------------------------------------------------------------------------------------------- */
 const getPhasedUsers = async () => {
-	try {
-		// Query to find all MUser documents where at least one mt5Account meets all three conditions
-		const users = await MUser.find(
-			{
-				mt5Accounts: {
-					$elemMatch: {
-						challengeStage: { $ne: "funded" },
-						challengeStatus: { $ne: "passed" },
-						accountStatus: { $eq: "active" },
-					},
-				},
-			},
-			{
-				mt5Accounts: 1, // Project all mt5Accounts to filter in application logic
-				email: 1, // Include email or other identifying fields if necessary
-				_id: 1,
-			}
-		).exec();
+    try {
+        // Query to find all MUser documents where at least one mt5Account meets all three conditions
+        const users = await MUser.find(
+            {
+                mt5Accounts: {
+                    $elemMatch: {
+                        challengeStage: { $ne: "funded" },
+                        challengeStatus: { $ne: "passed" },
+                        accountStatus: { $eq: "active" },
+                    },
+                },
+            },
+            {
+                mt5Accounts: 1, // Project all mt5Accounts to filter in application logic
+                email: 1, // Include email or other identifying fields if necessary
+                _id: 1,
+            }
+        ).exec();
 
-		// Flatten the array of matched mt5Accounts and inject user email and _id
-		const filteredAccounts = users.flatMap((user) =>
-			user.mt5Accounts
-				.filter(
-					(account) =>
-						account.challengeStage !== "funded" &&
-						account.challengeStatus !== "passed" &&
-						account.accountStatus === "active"
-				)
-				.map((account) => ({
-					...account.toObject(), // Convert the Mongoose document to a plain object if necessary
-					email: user.email,
-					userId: user._id,
-				}))
-		);
+        // Flatten the array of matched mt5Accounts and inject user email and _id
+        const filteredAccounts = users.flatMap((user) =>
+            user.mt5Accounts
+                .filter(
+                    (account) =>
+                        account.challengeStage !== "funded" &&
+                        account.challengeStatus !== "passed" &&
+                        account.accountStatus === "active"
+                )
+                .map((account) => ({
+                    ...account.toObject(), // Convert the Mongoose document to a plain object if necessary
+                    email: user.email,
+                    userId: user._id,
+                }))
+        );
 
-		return filteredAccounts;
-	} catch (err) {
-		console.error("Error fetching filtered mt5Accounts:", err);
-		throw err;
-	}
+        return filteredAccounts;
+    } catch (err) {
+        console.error("Error fetching filtered mt5Accounts:", err);
+        throw err;
+    }
 };
 
 const passingChallenge = async () => {
-	try {
-		const startDate = "1990-12-07 12:33:12";
-		const endDate = formatDateTime(new Date());
+    try {
+        const startDate = "1990-12-07 12:33:12";
+        const endDate = formatDateTime(new Date());
 
-		// Retrieve the list of users currently in the phased challenge.
-		const accounts = await getPhasedUsers();
+        // Retrieve the list of users currently in the phased challenge.
+        const accounts = await getPhasedUsers();
 
-		// If no accounts are found, log an error message and exit the function.
-		if (accounts.length === 0) {
-			console.error("No accounts found for processing.");
-			return;
-		}
+        // If no accounts are found, log an error message and exit the function.
+        if (accounts.length === 0) {
+            console.error("No accounts found for processing.");
+            return;
+        }
 
-		// Iterate over each account to check and update their challenge status.
-		for (const acc of accounts) {
-			const { challengeStage, challengeStageData, userId, account: accNumber } = acc;
+        // Iterate over each account to check and update their challenge status.
+        for (const acc of accounts) {
+            const { challengeStage, challengeStageData, userId, account: accNumber } = acc;
 
-			// Check if accNumber is available
-			if (!accNumber) {
-				console.log("Account number is missing, skipping this account.");
-				continue; // Skip to the next iteration if accNumber is not available
-			}
+            // Check if accNumber is available
+            if (!accNumber) {
+                console.log("Account number is missing, skipping this account.");
+                continue; // Skip to the next iteration if accNumber is not available
+            }
 
-			// Check if challengeStageData and challengeStages are defined and valid
-			if (
-				!challengeStageData ||
-				!challengeStageData.challengeStages ||
-				!challengeStageData.challengeStages[challengeStage]
-			) {
-				continue; // Skip to the next iteration if data is undefined
-			}
+            // Check if challengeStageData and challengeStages are defined and valid
+            if (
+                !challengeStageData ||
+                !challengeStageData.challengeStages ||
+                !challengeStageData.challengeStages[challengeStage]
+            ) {
+                continue; // Skip to the next iteration if data is undefined
+            }
 
-			const { minTradingDays, profitTarget } = challengeStageData.challengeStages[challengeStage];
-			const calculatedProfitTarget = challengeStageData.accountSize * (profitTarget / 100);
-			const accountSize = challengeStageData.accountSize;
+            const { minTradingDays, profitTarget } =
+                challengeStageData.challengeStages[challengeStage];
+            const calculatedProfitTarget = challengeStageData.accountSize * (profitTarget / 100);
+            const accountSize = challengeStageData.accountSize;
 
-			let tradeHistories, traderProfitTarget;
+            let tradeHistories, traderProfitTarget;
 
-			try {
-				// Getting trade histories & account details from MT5
-				[tradeHistories, traderProfitTarget] = await Promise.all([
-					orderHistories(accNumber, startDate, endDate),
-					accountDetails(accNumber),
-				]);
-				// Ensure tradeHistories is an array
-				if (!Array.isArray(tradeHistories)) {
-					tradeHistories = []; // Fallback to an empty array
-				}
-			} catch (error) {
-				console.error(`Error fetching data for account ${accNumber}:`, error.message);
-				continue; // Skip to the next account if there is an error
-			}
+            try {
+                // Getting trade histories & account details from MT5
+                [tradeHistories, traderProfitTarget] = await Promise.all([
+                    orderHistories(accNumber, startDate, endDate),
+                    accountDetails(accNumber),
+                ]);
+                // Ensure tradeHistories is an array
+                if (!Array.isArray(tradeHistories)) {
+                    tradeHistories = []; // Fallback to an empty array
+                }
+            } catch (error) {
+                console.error(`Error fetching data for account ${accNumber}:`, error.message);
+                continue; // Skip to the next account if there is an error
+            }
 
-			// get unique trading days
-			const tradingDays = getUniqueTradingDays(tradeHistories);
-			const balance = traderProfitTarget.balance;
-			const traderProfit = Number(balance - accountSize);
+            // get unique trading days
+            const tradingDays = getUniqueTradingDays(tradeHistories);
+            const balance = traderProfitTarget.balance;
+            const traderProfit = Number(balance - accountSize);
 
-			// check if trading days are greater than minTradingDays and traderProfit is greater than calculatedProfitTarget
-			const checkPassed = tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
+            // check if trading days are greater than minTradingDays and traderProfit is greater than calculatedProfitTarget
+            const checkPassed =
+                tradingDays >= minTradingDays && traderProfit >= calculatedProfitTarget;
 
-			if (checkPassed) {
-				// Fetch the user document from the database using userId.
-				const user = await MUser.findById(userId);
+            if (checkPassed) {
+                // Fetch the user document from the database using userId.
+                const user = await MUser.findById(userId);
 
-				// If the user is not found, log an error and skip to the next account.
-				if (!user) {
-					console.error(`User not found for userId: ${userId}`);
-					continue;
-				}
+                // If the user is not found, log an error and skip to the next account.
+                if (!user) {
+                    console.error(`User not found for userId: ${userId}`);
+                    continue;
+                }
 
-				// Find the MT5 account associated with this user.
-				const account = user.mt5Accounts.find((a) => a.account === accNumber);
+                // Find the MT5 account associated with this user.
+                const account = user.mt5Accounts.find((a) => a.account === accNumber);
 
-				if (account) {
-					const changeGroupDetails = {
-						Group: "demo\\Evpassed",
-					};
+                if (account) {
+                    const changeGroupDetails = {
+                        Group: "demo\\EVPASSED",
+                    };
 
-					const changeGroup = await accountUpdate(account.account, changeGroupDetails);
+                    const changeGroup = await accountUpdate(account.account, changeGroupDetails);
 
-					if (changeGroup === "OK") {
-						// Update the user's account status in the database.
-						account.group = changeGroupDetails.Group;
-						await user.save();
+                    if (changeGroup === "OK") {
+                        // Update the user's account status in the database.
+                        account.group = changeGroupDetails.Group;
+                        await user.save();
 
-						// Disable trading rights for the MT5 account.
-						const userDisableDetails = {
-							// Rights: "USER_RIGHT_TRADE_DISABLED",
-							Rights: "USER_RIGHT_TRADE_DISABLED",
-							enabled: true,
-							// Group: "demo\\real\\Bin-P",
-						};
+                        // Disable trading rights for the MT5 account.
+                        const userDisableDetails = {
+                            // Rights: "USER_RIGHT_TRADE_DISABLED",
+                            Rights: "USER_RIGHT_TRADE_DISABLED",
+                            enabled: true,
+                            // Group: "demo\\real\\Bin-P",
+                        };
 
-						// API call to disable MT5 account and verify the response.
-						const disableMT5Account = await accountUpdate(account.account, userDisableDetails);
+                        // API call to disable MT5 account and verify the response.
+                        const disableMT5Account = await accountUpdate(
+                            account.account,
+                            userDisableDetails
+                        );
 
-						if (disableMT5Account === "OK") {
-							// Update the user's account status in the database.
-							account.challengeStatus = "passed";
-							account.accountStatus = "inActive";
-							await user.save();
+                        if (disableMT5Account === "OK") {
+                            // Update the user's account status in the database.
+                            account.challengeStatus = "passed";
+                            account.accountStatus = "inActive";
+                            await user.save();
 
-							// Check if the user needs to be assigned a new MT5 account based on their challenge progress.
-							await handleNextChallengeStage(account, user, acc);
-						} else {
-							console.error(`Failed to disable the account in MT5. : ${accNumber}`);
-						}
-					}
-				} else {
-					console.warn(`Account not found for accNumber: ${accNumber}`);
-				}
-			} else {
-				// console.log(`Account - ${accNumber} has not passed the challenge yet.`);
-			}
-		}
+                            // Check if the user needs to be assigned a new MT5 account based on their challenge progress.
+                            await handleNextChallengeStage(account, user, acc);
+                        } else {
+                            console.error(`Failed to disable the account in MT5. : ${accNumber}`);
+                        }
+                    }
+                } else {
+                    console.warn(`Account not found for accNumber: ${accNumber}`);
+                }
+            } else {
+                // console.log(`Account - ${accNumber} has not passed the challenge yet.`);
+            }
+        }
 
-		// Return the processed accounts.
-		return accounts;
-	} catch (error) {
-		console.error("An error occurred in the passingChallenge function:", error.message);
-		throw new Error("Failed to process the passing challenge due to an unexpected error.");
-	}
+        // Return the processed accounts.
+        return accounts;
+    } catch (error) {
+        console.error("An error occurred in the passingChallenge function:", error.message);
+        throw new Error("Failed to process the passing challenge due to an unexpected error.");
+    }
 };
 
 // Function to determine and assign the next challenge stage for the user if applicable.
 const handleNextChallengeStage = async (account, user, acc) => {
-	try {
-		const { challengeStageData, productId, challengeStage } = account;
-		const purchasedProduct = user.purchasedProducts.get(productId);
-		if (
-			challengeStage === "phase1" &&
-			account.challengeStatus === "passed" &&
-			account.accountStatus === "inActive" &&
-			challengeStageData.challengeType === "twoStep"
-		) {
-			const phase2Account = await findMT5Account(user, productId, "phase2");
-			if (!phase2Account) {
-				await assignNewMT5Account(account, user, acc, purchasedProduct, "phase1", "phase2");
-			} else {
-				console.log("Phase 2 account already exists for user");
-			}
-		} else if (
-			challengeStage === "phase2" &&
-			account.challengeStatus === "passed" &&
-			account.accountStatus === "inActive" &&
-			challengeStageData.challengeType === "twoStep"
-		) {
-			const fundedAccount = await findMT5Account(user, productId, "funded");
-			if (!fundedAccount) {
-				await assignNewMT5Account(account, user, acc, purchasedProduct, "phase2", "funded");
-			} else {
-				console.log("Funded account already exists for user");
-			}
-		} else if (
-			challengeStage === "phase1" &&
-			account.challengeStatus === "passed" &&
-			account.accountStatus === "inActive" &&
-			challengeStageData.challengeType === "oneStep"
-		) {
-			const fundedAccount = await findMT5Account(user, productId, "funded");
-			if (!fundedAccount) {
-				await assignNewMT5Account(account, user, acc, purchasedProduct, "phase1", "funded");
-			} else {
-				console.log("Funded account already exists for user");
-			}
-		}
-	} catch (error) {
-		console.error("Error in handling next challenge stage:", error.message);
-	}
+    try {
+        const { challengeStageData, productId, challengeStage } = account;
+        const purchasedProduct = user.purchasedProducts.get(productId);
+        if (
+            challengeStage === "phase1" &&
+            account.challengeStatus === "passed" &&
+            account.accountStatus === "inActive" &&
+            challengeStageData.challengeType === "twoStep"
+        ) {
+            const phase2Account = await findMT5Account(user, productId, "phase2");
+            if (!phase2Account) {
+                await assignNewMT5Account(account, user, acc, purchasedProduct, "phase1", "phase2");
+            } else {
+                console.log("Phase 2 account already exists for user");
+            }
+        } else if (
+            challengeStage === "phase2" &&
+            account.challengeStatus === "passed" &&
+            account.accountStatus === "inActive" &&
+            challengeStageData.challengeType === "twoStep"
+        ) {
+            const fundedAccount = await findMT5Account(user, productId, "funded");
+            if (!fundedAccount) {
+                await assignNewMT5Account(account, user, acc, purchasedProduct, "phase2", "funded");
+            } else {
+                console.log("Funded account already exists for user");
+            }
+        } else if (
+            challengeStage === "phase1" &&
+            account.challengeStatus === "passed" &&
+            account.accountStatus === "inActive" &&
+            challengeStageData.challengeType === "oneStep"
+        ) {
+            const fundedAccount = await findMT5Account(user, productId, "funded");
+            if (!fundedAccount) {
+                await assignNewMT5Account(account, user, acc, purchasedProduct, "phase1", "funded");
+            } else {
+                console.log("Funded account already exists for user");
+            }
+        }
+    } catch (error) {
+        console.error("Error in handling next challenge stage:", error.message);
+    }
 };
 
 // Function to assign a new MT5 account when the user progresses to the next challenge stage.
 const assignNewMT5Account = async (
-	account,
-	user,
-	acc,
-	purchasedProduct,
-	previousChallengeStage,
-	newChallengeStage
+    account,
+    user,
+    acc,
+    purchasedProduct,
+    previousChallengeStage,
+    newChallengeStage
 ) => {
-	try {
-		let group = acc.group;
-		if (newChallengeStage === "phase2") {
-			group = "demo\\phase2";
-		} else if (newChallengeStage === "funded") {
-			group = "demo\\phase3";
-		}
+    try {
+        let group = acc.group;
+        if (newChallengeStage === "phase2") {
+            group = "demo\\PH2";
+        } else if (newChallengeStage === "funded") {
+            group = "demo\\REAL";
+        }
 
-		// Prepare data for creating a new MT5 account.
-		const mt5SignUpData = {
-			EMail: user.email,
-			master_pass: generatePassword(),
-			investor_pass: generatePassword(),
-			amount: account.challengeStageData.accountSize,
-			FirstName: `Foxx Funded - ${
-				account?.challengeStageData?.challengeName
-			} (${newChallengeStage}) ${user.first ? user.first : ""}`,
-			LastName: user?.last,
-			Country: user?.country,
-			Address: user?.addr,
-			City: user?.city,
-			ZIPCode: user?.zipCode,
-			Phone: user?.phone,
-			Leverage: 30,
-			Group: group,
-			Rights: newChallengeStage === "funded" && "USER_RIGHT_TRADE_DISABLED",
-		};
+        // Prepare data for creating a new MT5 account.
+        const mt5SignUpData = {
+            EMail: user.email,
+            master_pass: generatePassword(),
+            investor_pass: generatePassword(),
+            amount: account.challengeStageData.accountSize,
+            FirstName: `Foxx Funded - ${
+                account?.challengeStageData?.challengeName
+            } (${newChallengeStage}) ${user.first ? user.first : ""}`,
+            LastName: user?.last,
+            Country: user?.country,
+            Address: user?.addr,
+            City: user?.city,
+            ZIPCode: user?.zipCode,
+            Phone: user?.phone,
+            Leverage: 30,
+            Group: group,
+            Rights: newChallengeStage === "funded" && "USER_RIGHT_TRADE_DISABLED",
+        };
 
-		// API call to create a new MT5 account.
-		const createUser = await accountCreateAndDeposit(mt5SignUpData);
+        // API call to create a new MT5 account.
+        const createUser = await accountCreateAndDeposit(mt5SignUpData);
 
-		// If account creation fails, throw an error.
-		if (!createUser.login) {
-			throw new Error("Failed to create user in MT5");
-		}
+        // If account creation fails, throw an error.
+        if (!createUser.login) {
+            throw new Error("Failed to create user in MT5");
+        }
 
-		await StoreDataModel.findOneAndUpdate(
-			{},
-			{
-				$push: {
-					dailyData: {
-						mt5Account: createUser?.login,
-						asset: mt5SignUpData.amount,
-						dailyStartingBalance: mt5SignUpData.amount,
-						dailyStartingEquity: mt5SignUpData.amount,
-						createdAt: new Date(),
-						updatedAt: new Date(),
-					},
-				},
-			},
-			{
-				sort: { _id: -1 }, // Sort by _id in descending order to get the last document
-				new: true,
-			}
-		);
+        await StoreDataModel.findOneAndUpdate(
+            {},
+            {
+                $push: {
+                    dailyData: {
+                        mt5Account: createUser?.login,
+                        asset: mt5SignUpData.amount,
+                        dailyStartingBalance: mt5SignUpData.amount,
+                        dailyStartingEquity: mt5SignUpData.amount,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    },
+                },
+            },
+            {
+                sort: { _id: -1 }, // Sort by _id in descending order to get the last document
+                new: true,
+            }
+        );
 
-		// Construct the new MT5 account object based on the new challenge stage.
-		const newMt5Account = {
-			account: createUser.login,
-			investorPassword: createUser.investor_pass,
-			masterPassword: createUser.master_pass,
-			productId: purchasedProduct.productId,
-			challengeStage: newChallengeStage,
-			challengeStageData: {
-				...purchasedProduct.product,
-				challengeStages: {
-					phase1: null,
-					phase2:
-						newChallengeStage === "phase2"
-							? {
-									maxDailyDrawdown: 4,
-									maxDrawdown: 8,
-									tradingPeriod: "360 Days",
-									profitTarget: 7,
-									minTradingDays: 5,
-									drawdownType: "equity-based",
-									profitSpilt: "90/10",
-									payouts: false,
-									leverage: 100,
-									stage: "phase2",
-							  }
-							: null,
-					funded:
-						newChallengeStage === "funded"
-							? {
-									maxDailyDrawdown: 4,
-									maxDrawdown: 8,
-									tradingPeriod: "Unlimited",
-									profitTarget: null,
-									minTradingDays: 1,
-									drawdownType: "equity-based",
-									profitSpilt: "90/10",
-									payouts: true,
-									leverage: 100,
-									stage: "funded",
-							  }
-							: null,
-				},
-			},
-			group: group,
-		};
+        // Construct the new MT5 account object based on the new challenge stage.
+        const newMt5Account = {
+            account: createUser.login,
+            investorPassword: createUser.investor_pass,
+            masterPassword: createUser.master_pass,
+            productId: purchasedProduct.productId,
+            challengeStage: newChallengeStage,
+            challengeStageData: {
+                ...purchasedProduct.product,
+                challengeStages: {
+                    phase1: null,
+                    phase2:
+                        newChallengeStage === "phase2"
+                            ? {
+                                  maxDailyDrawdown: 4,
+                                  maxDrawdown: 8,
+                                  tradingPeriod: "360 Days",
+                                  profitTarget: 7,
+                                  minTradingDays: 5,
+                                  drawdownType: "equity-based",
+                                  profitSpilt: "90/10",
+                                  payouts: false,
+                                  leverage: 100,
+                                  stage: "phase2",
+                              }
+                            : null,
+                    funded:
+                        newChallengeStage === "funded"
+                            ? {
+                                  maxDailyDrawdown: 4,
+                                  maxDrawdown: 8,
+                                  tradingPeriod: "Unlimited",
+                                  profitTarget: null,
+                                  minTradingDays: 1,
+                                  drawdownType: "equity-based",
+                                  profitSpilt: "90/10",
+                                  payouts: true,
+                                  leverage: 100,
+                                  stage: "funded",
+                              }
+                            : null,
+                },
+            },
+            group: group,
+        };
 
-		const passedHTMLTemplate = `<!DOCTYPE html>
+        const passedHTMLTemplate = `<!DOCTYPE html>
 <html>
 <head>
 	<style>
@@ -729,31 +739,31 @@ const assignNewMT5Account = async (
 </body>
 </html>`;
 
-		await sendEmailSingleRecipient(
-			user.email,
-			`🎉 Congratulations! 🎉 for ${previousChallengeStage} passed`,
-			"",
-			passedHTMLTemplate
-		);
+        await sendEmailSingleRecipient(
+            user.email,
+            `🎉 Congratulations! 🎉 for ${previousChallengeStage} passed`,
+            "",
+            passedHTMLTemplate
+        );
 
-		user.mt5Accounts.push(newMt5Account);
-		await user.save();
+        user.mt5Accounts.push(newMt5Account);
+        await user.save();
 
-		// Log success for new challenge stage.
-		console.log(
-			`New MT5 account ${newMt5Account.account} added for ${newChallengeStage} successfully!`
-		);
-	} catch (error) {
-		// Log any errors during the account assignment process.
-		console.error("Failed to assign new MT5 account:", error.message);
-	}
+        // Log success for new challenge stage.
+        console.log(
+            `New MT5 account ${newMt5Account.account} added for ${newChallengeStage} successfully!`
+        );
+    } catch (error) {
+        // Log any errors during the account assignment process.
+        console.error("Failed to assign new MT5 account:", error.message);
+    }
 };
 
 setInterval(passingChallenge, 3600000); // 1 hour er= 60 * 60 * 1000 milliseconds
 
 module.exports = {
-	getPhasedUsers,
-	passingChallenge,
-	passingChallengeUsingAPI,
-	handleNextChallengeStage,
+    getPhasedUsers,
+    passingChallenge,
+    passingChallengeUsingAPI,
+    handleNextChallengeStage,
 };
