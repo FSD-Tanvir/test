@@ -435,8 +435,46 @@ const disableLotRiskedAccount = async (account, accountDetails) => {
             <p>Lot Size Rules:</p>
 
             <p>To ensure responsible trading and prevent excessive risk-taking, the number of lots opened must be proportional to the account size:
-Account Size Max Recommended Lot Size (Forex) $5,000 0.5 lot$10,000  1 lot$25,000 2.5 lots$50,000 5 lots$100,000 10 lots$200,000 20 lots$300,000 30 lots 
 </p>
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                    <tr style="background-color: #ff6f61; color: #ffffff; text-align: left;">
+                        <th style="padding: 10px; border: 1px solid #e0e0e0;">Account Size</th>
+                        <th style="padding: 10px; border: 1px solid #e0e0e0;">Max Recommended Lot Size (Forex)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">$5,000</td>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">0.5 lot</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">$10,000</td>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">1 lot</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">$25,000</td>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">2.5 lots</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">$50,000</td>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">5 lots</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">$100,000</td>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">10 lots</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">$200,000</td>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">20 lots</td>
+                    </tr>
+                    <tr style="background-color: #fff5e1;">
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">$300,000</td>
+                        <td style="padding: 10px; border: 1px solid #e0e0e0;">30 lots</td>
+                    </tr>
+                </tbody>
+            </table>
+
             <p>Example: A trader with a $10K account opening a 5-lot trade on EUR/USD is taking excessive risk and violating this rule.
 </p>
 
@@ -525,7 +563,7 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lot Size Risk Breach Notification</title>
+    <title>Lot Size Risk Warning Notification</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -731,7 +769,7 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
 
         const info = await sendEmailSingleRecipient(
             accountDetails?.email,
-            "Fox Funded - Lot Size Risk Breach",
+            "Important Notice: Compliance with Trading Policies",
             null,
             htmlContent
         );
