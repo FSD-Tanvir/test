@@ -127,20 +127,15 @@ const getLotSizeRiskData = async (openDate, account, page = 1, limit = 10) => {
 
         // Build the query object
         const query = {};
-
         if (account) {
             query.account = Number(account);
         }
-
         if (openDate) {
             const parsedDate = new Date(openDate);
-
             // Start of the day
             const startOfDay = new Date(parsedDate.setHours(0, 0, 0, 0));
-
             // End of the day
             const endOfDay = new Date(parsedDate.setHours(23, 59, 59, 999));
-
             // Query to filter between start and end of the day
             query.createdAt = {
                 $gte: startOfDay,
@@ -158,6 +153,7 @@ const getLotSizeRiskData = async (openDate, account, page = 1, limit = 10) => {
                     accountSize: { $first: "$accountSize" }, // Store account size
                     isDisabled: { $first: "$isDisabled" }, // Store isDisabled for reference
                     emailSent: { $first: "$emailSent" }, // Store emailSent for reference
+                    emailCount: { $sum: "$emailCount" }, // Sum up the emailCount across documents
                     totalLotSize: { $sum: "$lotSize" }, // Sum lotSize across documents
                     totalLotSizeLimit: { $sum: "$lotSizeLimit" }, // Sum lotSizeLimit across documents
                     count: { $sum: 1 }, // Count the number of trades
@@ -181,6 +177,7 @@ const getLotSizeRiskData = async (openDate, account, page = 1, limit = 10) => {
             totalLotSize: Number(group.totalLotSize),
             totalLotSizeLimit: Number(group.totalLotSizeLimit),
             totalTrades: group.count,
+            emailCount: group.emailCount, // Include the emailCount in the output
             trades: group.accounts.map((trade) => ({
                 ticket: trade.ticket,
                 profit: Number(trade.profit),
@@ -563,7 +560,7 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lot Size Risk Warning Notification</title>
+    <title>Lot Size Risk Warning Notification ${accountDetails.emailCount} </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -656,7 +653,7 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
         <div class="header">
             <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo">
             <br>
-            Lot Size Risk Breach Notification
+            Lot Size Risk Breach Notification - ${accountDetails.emailCount}
         </div>
         
         <!-- Content Section -->
@@ -777,7 +774,13 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
         // Check if the response indicates a successful send
         if (typeof info === "string" && info.includes("OK")) {
             // Update emailSent field to true in the database
-            await LotSizeRiskModel.updateMany({ account: account }, { $set: { emailSent: true } });
+            await LotSizeRiskModel.updateMany(
+                { account: account },
+                {
+                    $set: { emailSent: true },
+                    $inc: { emailCount: 1 }, // Increment the email count
+                }
+            );
         }
 
         // Return success response with details
