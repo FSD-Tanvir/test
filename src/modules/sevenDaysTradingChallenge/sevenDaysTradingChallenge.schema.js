@@ -1,4 +1,4 @@
-const { Schema } = require("mongoose");
+const { Schema, default: mongoose } = require("mongoose");
 
 const sevenDaysTradingChallengeSchema = new Schema({
     email: { type: String, required: true },
