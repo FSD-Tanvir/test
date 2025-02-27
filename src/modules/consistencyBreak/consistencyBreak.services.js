@@ -132,20 +132,15 @@ const getConsistencyBreakData = async (openDate, account, page = 1, limit = 10) 
 
         // Build the query object
         const query = {};
-
         if (account) {
             query.account = Number(account);
         }
-
         if (openDate) {
             const parsedDate = new Date(openDate);
-
             // Start of the day
             const startOfDay = new Date(parsedDate.setHours(0, 0, 0, 0));
-
             // End of the day
             const endOfDay = new Date(parsedDate.setHours(23, 59, 59, 999));
-
             // Query to filter between start and end of the day
             query.createdAt = {
                 $gte: startOfDay,
@@ -172,6 +167,9 @@ const getConsistencyBreakData = async (openDate, account, page = 1, limit = 10) 
             { $sort: { "accounts.createdAt": -1 } }, // Sort in descending order based on createdAt
         ]);
 
+        // Calculate the total sum of emailCount across all groups
+        const totalEmailCount = groupedData.reduce((sum, group) => sum + group.emailCount, 0);
+
         // Total count is the length of the grouped data
         const totalCount = groupedData.length;
 
@@ -186,6 +184,7 @@ const getConsistencyBreakData = async (openDate, account, page = 1, limit = 10) 
                 accountSize: group.accountSize,
                 totalProfit: Number(group.totalProfit.toFixed(4)), // Convert to number
                 totalTrades: group.count,
+                emailCount: group.emailCount, // Include emailCount for the group
                 trades: group.accounts.map((trade) => ({
                     ticket: trade.ticket,
                     profit: Number(trade.profit.toFixed(4)), // Convert to number
@@ -204,6 +203,7 @@ const getConsistencyBreakData = async (openDate, account, page = 1, limit = 10) 
             totalCount,
             totalPages: Math.ceil(totalCount / limit),
             currentPage: page,
+            totalEmailCount, // Add the total sum of emailCount to the response
         };
     } catch (error) {
         console.log(error);
