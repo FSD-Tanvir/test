@@ -28,7 +28,7 @@ const getAccountRiskData = async (openDate, account, page = 1, limit = 10) => {
             query.account = accountNumber;
         }
 
-        // Query to filter documents by optional 'date' and 'account', use lean() for performance
+        // Query to filter documents by optional 'date' and 'account'
         const results = await MTwoPercentRiskModel.find(query)
             .sort({ createdAt: -1 }) // Sort by createdAt in descending order
             .lean();
@@ -323,7 +323,10 @@ const sendWarningEmail = async (account, accountDetails) => {
             // Update emailSent field to true in the database
             await MTwoPercentRiskModel.updateMany(
                 { account: account },
-                { $set: { emailSent: true } }
+                {
+                    $set: { emailSent: true },
+                    $inc: { emailCount: 1 }, // Increment the email count
+                }
             );
         }
 
