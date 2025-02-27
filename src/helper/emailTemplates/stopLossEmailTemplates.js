@@ -569,7 +569,7 @@ const sendStopLossWarningEmail2 = (account, accountDetails) => {
                 <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo" class="logo">
             </div>
             <h1 class="animated-text">Stop Loss Warning ${
-							accountDetails.emailCount > 0 ? accountDetails.emailCount : " "
+							accountDetails.emailCount > 1 ? accountDetails.emailCount : " "
 						}</h1>
         </div>
 
