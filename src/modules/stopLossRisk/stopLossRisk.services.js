@@ -1,6 +1,7 @@
 const {
     stopLossDisabledEmailTemplate,
     sendStopLossWarningEmail1,
+    sendStopLossWarningEmail2,
 } = require("../../helper/emailTemplates/stopLossEmailTemplates");
 const { sendEmailSingleRecipient } = require("../../helper/mailing");
 const {
@@ -314,7 +315,7 @@ const sendStopLossWarningEmail = async (account, accountDetails) => {
         let info;
 
         const htmlContent1 = sendStopLossWarningEmail1(account, accountDetails);
-        // const htmlContent2 = sendStopLossWarningEmail2(account, accountDetails);
+        const htmlContent2 = sendStopLossWarningEmail2(account, accountDetails);
 
         if (accountDetails.emailCount === 0) {
             info = await sendEmailSingleRecipient(
@@ -323,15 +324,14 @@ const sendStopLossWarningEmail = async (account, accountDetails) => {
                 null,
                 htmlContent1
             );
+        } else {
+            info = await sendEmailSingleRecipient(
+                accountDetails?.email,
+                "Stop-Loss Warning 2: Urgent Compliance Required",
+                null,
+                htmlContent2
+            );
         }
-        //  else {
-        //     info = await sendEmailSingleRecipient(
-        //         accountDetails?.email,
-        //         "Stop-Loss Warning 2: Urgent Compliance Required",
-        //         null,
-        //         sendStopLossWarningEmail2(account, accountDetails)
-        //     );
-        // }
 
         // Check if the response indicates a successful send
         if (typeof info === "string" && info.includes("OK")) {
