@@ -164,7 +164,7 @@ const stopLossDisabledEmailTemplate = (account, accountDetails) => {
 <div class="highlight">
     <p><strong>Account Number:</strong> ${account}</p>
     <div>
-        <p><strong>Trade Tickets:</strong></p>
+         <p><strong>Trade Tickets (Breached Stop-Loss Risk):</strong></p>
         <div class="tickets">${tickets}</div>
     </div>
 </div>
