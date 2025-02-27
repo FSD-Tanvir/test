@@ -1,6 +1,7 @@
 const { storeDailyDataController } = require("../modules/breach/breach.controller");
 const { consistencyBreak } = require("../modules/consistencyBreak/consistencyBreak.services");
 const { lotSizeRisk } = require("../modules/lotSizeRisk/lotSizeRisk.services");
+const { checkAndSaveInactiveAccounts } = require("../modules/sevenDaysTradingChallenge/sevenDaysTradingChallenge.controller");
 const { stopLossRisk } = require("../modules/stopLossRisk/stopLossRisk.services");
 const cron = require("node-cron");
 
@@ -21,5 +22,12 @@ const runAllFunctions = () => {
     cron.schedule("30 22 * * *", () => {
         consistencyBreak();
     });
+
+    cron.schedule("45 15 * * *", () => {
+        checkAndSaveInactiveAccounts()
+    });
+
+    
 };
 module.exports = { runAllFunctions };
+
