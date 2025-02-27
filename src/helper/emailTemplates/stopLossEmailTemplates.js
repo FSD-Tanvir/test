@@ -363,7 +363,7 @@ const sendStopLossWarningEmail1 = (account, accountDetails) => {
             <div class="logo-container">
                 <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo" class="logo">
             </div>
-            <h1 class="animated-text">Stop Loss Warning 1</h1>
+            <h1 class="animated-text">Stop Loss Warning</h1>
         </div>
 
         <!-- Content Section -->
@@ -566,9 +566,7 @@ const sendStopLossWarningEmail2 = (account, accountDetails) => {
             <div class="logo-container">
                 <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo" class="logo">
             </div>
-            <h1 class="animated-text">Stop Loss Warning ${
-							accountDetails.emailCount >= 1 ? accountDetails.emailCount : " "
-						}</h1>
+            <h1 class="animated-text">Stop Loss Warning </h1>
         </div>
 
         <!-- Content Section -->
