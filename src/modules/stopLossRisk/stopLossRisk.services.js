@@ -310,7 +310,7 @@ const sendStopLossWarningEmail = async (account, accountDetails) => {
 		const htmlContent1 = sendStopLossWarningEmail1(account, accountDetails);
 		const htmlContent2 = sendStopLossWarningEmail2(account, accountDetails);
 
-		if (accountDetails.emailCount === 1) {
+		if (accountDetails.emailCount === 0) {
 			info = await sendEmailSingleRecipient(
 				accountDetails?.email,
 				"Stop-Loss Warning 1: Compliance with Trading Policies",
