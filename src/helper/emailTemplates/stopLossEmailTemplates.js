@@ -1,5 +1,4 @@
 const stopLossDisabledEmailTemplate = (account, accountDetails) => {
-    // Extract tickets and join them into a comma-separated string
     const tickets = accountDetails.tickets.join(", ");
     return `<!DOCTYPE html>
 <html lang="en">
@@ -209,4 +208,206 @@ const stopLossDisabledEmailTemplate = (account, accountDetails) => {
 </html>`;
 };
 
-module.exports = { stopLossDisabledEmailTemplate };
+// Function to send the warning email 1
+const sendStopLossWarningEmail1 = (account, accountDetails) => {
+    const tickets = accountDetails.tickets.join(", ");
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Account Breach Notification</title>
+	<style>
+		body {
+			font-family: 'Arial', sans-serif;
+			background-color: #ffff; /* Light red background */
+			margin: 0;
+			padding: 20px;
+			color: #333;
+		}
+		.email-container {
+			background-color: #ffffff;
+			border-radius: 8px;
+			max-width: 600px;
+			margin: 0 auto;
+			padding: 20px;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+			border: 2px solid #ffa726; /* Red border for urgency */
+		}
+		.header {
+			background-color: #f57c00; /* Strong red for header */
+			color: #ffffff;
+			padding: 20px;
+			border-radius: 8px 8px 0 0;
+			text-align: center;
+			font-size: 24px;
+			font-weight: bold;
+		}
+            .logo-container {
+            margin-bottom: 15px; /* Space between the logo and the text */
+            text-align: center; /* Center the logo */
+        }
+        .logo {
+            max-width: 150px; /* Limit the logo size */
+            height: auto; /* Maintain aspect ratio */
+            display: block; /* Remove extra space below the image */
+            margin: 0 auto; /* Center the logo horizontally */
+        }
+        .animated-text {
+            margin: 0; /* Remove default margins */
+            line-height: 1.4; /* Improve spacing between lines */
+        }
+        .header h1.animated-text {
+            font-size: 24px; /* Larger font size for the main heading */
+            font-weight: bold;
+            margin-bottom: 10px; /* Space between the heading and subheading */
+        }
+        .header p.animated-text {
+            font-size: 16px; /* Smaller font size for the subheading */
+            font-weight: normal;
+            color: #ffccbc; /* Light red for contrast */
+        }
+		.content {
+			padding: 20px;
+			font-size: 16px;
+			line-height: 1.6;
+			color: #444;
+		}
+	.highlight {
+    background-color: #fff3cd; /* Light orange background for warning */
+    color: #856404;           /* Dark orange text */
+    border-left: 4px solid #ffc107; /* Bright orange border */
+    padding: 10px;
+    margin: 20px 0;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.highlight .tickets {
+    font-size: 12px; /* Smaller font size for trade tickets */
+    line-height: 1.4;
+    max-height: 150px; /* Restrict height */
+    overflow-y: auto; /* Add scroll for long text */
+    word-break: break-word; /* Handle long unbroken text */
+    padding: 5px;
+    background-color: #fff8e1; /* Slightly lighter background for the tickets section */
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+}
+
+
+		.cta-button {
+			display: inline-block;
+			background-color: #f57c00; 
+			color: #ffffff;
+			padding: 10px 20px;
+			text-decoration: none;
+			border-radius: 4px;
+			margin-top: 20px;
+		}
+		.cta-button a{
+			text-decoration: none;
+			color: #ffffff;
+		}
+		.cta-button:hover {
+			background-color: #ffb74d;
+		}
+		.footer {
+			text-align: center;
+			font-size: 12px;
+			color: #777;
+			margin-top: 20px;
+		}
+		.social-links {
+  			margin-top: 20px;
+  			display: flex;
+  			justify-content: center;
+  			gap: 20px;
+		}
+
+		.social-links img {
+  			width: 32px;
+  			height: 32px;
+		}
+	</style>
+</head>
+<body>
+	<div class="email-container">
+		<!-- Header Section -->
+		 <!-- Header Section -->
+        <div class="header">
+            <div class="logo-container">
+                <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo" class="logo">
+            </div>
+            <h1 class="animated-text">Stop Loss Warning ${
+                accountDetails.emailCount > 0 ? accountDetails.emailCount : " "
+            }</h1>
+        </div>
+		
+		<!-- Content Section -->
+		<div class="content">
+			<p>Dear Trader,</p>
+			<p>I hope this email finds you well. We wanted to bring to your attention an issue that has been observed in your recent trading activities at Foxx Funded.
+			</p>
+			
+			<p> Upon reviewing your trading history, we've noticed that you have not placed stop-loss orders on your trades, which constitutes a soft breach violation of our trading policies. While we understand that trading involves a certain level of risk, failure to implement stop-loss orders can significantly expose your account to unnecessary risks and potential losses.
+			</p>
+
+			<p>
+				As a reminder, stop-loss orders are an essential risk management tool that helps protect your capital and mitigate potential losses in volatile market conditions. It's crucial to adhere to our trading guidelines to ensure the safety and integrity of your account. The profit(s) generated from the trades without a stop-loss will be deducted as per our rules, with details of the affected trades listed below. If the trade resulted in a loss, no deduction will be made.
+
+			</p>
+
+			<div class="highlight">
+    <p><strong>Account Number:</strong> ${account}</p>
+    <div>
+        <p><strong>Trade Tickets (Breached Stop-Loss Risk):</strong></p>
+        <div class="tickets">${tickets}</div>
+    </div>
+</div>
+
+
+			
+			<p>We want to emphasize the seriousness of this matter and the importance of strict compliance with our policies. Failure to rectify this behavior and continue disregarding stop loss orders within the first 2 minutes of placing a simulated trade may result in more severe consequences, including the termination of your trading account with Foxx Funded. Please refer to the <a href="https://foxx-funded.com/faqs/"> <strong></strong>FAQ</strong> </a> here.
+			</p>
+
+			<p>
+				We highly encourage you to review and adjust your trading strategies to incorporate stop-loss orders effectively. If you have any questions or need assistance in implementing stop-loss orders, please don't hesitate to reach out to our support team for guidance.
+			</p>
+
+
+			<p>Thank you for your attention to this matter, and we appreciate your cooperation in maintaining a safe and responsible trading environment.
+			</p>
+
+			<p>Best regards,</p>
+			<p>Foxx Funded Risk Team</p>
+
+			 <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                If you have any questions, feel free to
+                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+                    contact us or contact our support team
+                </a>.
+            </p>
+
+            <div class="social-links">
+                <a href="https://t.me/+2QVq5aChxiBlOWFk">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
+                </a>
+            </div>
+
+		
+		</div>
+		
+		<!-- Footer Section -->
+		<div class="footer">
+			  <p>@2024 Fox Funded All Rights Reserved.</p>
+		</div>
+	</div>
+</body>
+</html>
+
+`;
+};
+
+module.exports = { stopLossDisabledEmailTemplate, sendStopLossWarningEmail1 };

@@ -1,5 +1,6 @@
 const {
     stopLossDisabledEmailTemplate,
+    sendStopLossWarningEmail1,
 } = require("../../helper/emailTemplates/stopLossEmailTemplates");
 const { sendEmailSingleRecipient } = require("../../helper/mailing");
 const {
@@ -310,188 +311,38 @@ const disableStopLossRiskedAccount = async (account, accountDetails) => {
 
 const sendStopLossWarningEmail = async (account, accountDetails) => {
     try {
-        const tickets = accountDetails.tickets.join(", ");
-        const htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Account Breach Notification</title>
-	<style>
-		body {
-			font-family: 'Arial', sans-serif;
-			background-color: #ffff; /* Light red background */
-			margin: 0;
-			padding: 20px;
-			color: #333;
-		}
-		.email-container {
-			background-color: #ffffff;
-			border-radius: 8px;
-			max-width: 600px;
-			margin: 0 auto;
-			padding: 20px;
-			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-			border: 2px solid #ffa726; /* Red border for urgency */
-		}
-		.header {
-			background-color: #f57c00; /* Strong red for header */
-			color: #ffffff;
-			padding: 20px;
-			border-radius: 8px 8px 0 0;
-			text-align: center;
-			font-size: 24px;
-			font-weight: bold;
-		}
-		.content {
-			padding: 20px;
-			font-size: 16px;
-			line-height: 1.6;
-			color: #444;
-		}
-	.highlight {
-    background-color: #fff3cd; /* Light orange background for warning */
-    color: #856404;           /* Dark orange text */
-    border-left: 4px solid #ffc107; /* Bright orange border */
-    padding: 10px;
-    margin: 20px 0;
-    border-radius: 4px;
-    font-weight: bold;
-}
+        let info;
 
-.highlight .tickets {
-    font-size: 12px; /* Smaller font size for trade tickets */
-    line-height: 1.4;
-    max-height: 150px; /* Restrict height */
-    overflow-y: auto; /* Add scroll for long text */
-    word-break: break-word; /* Handle long unbroken text */
-    padding: 5px;
-    background-color: #fff8e1; /* Slightly lighter background for the tickets section */
-    border: 1px solid #ffc107;
-    border-radius: 4px;
-}
+        const htmlContent1 = sendStopLossWarningEmail1(account, accountDetails);
+        // const htmlContent2 = sendStopLossWarningEmail2(account, accountDetails);
 
-
-		.cta-button {
-			display: inline-block;
-			background-color: #f57c00; 
-			color: #ffffff;
-			padding: 10px 20px;
-			text-decoration: none;
-			border-radius: 4px;
-			margin-top: 20px;
-		}
-		.cta-button a{
-			text-decoration: none;
-			color: #ffffff;
-		}
-		.cta-button:hover {
-			background-color: #ffb74d;
-		}
-		.footer {
-			text-align: center;
-			font-size: 12px;
-			color: #777;
-			margin-top: 20px;
-		}
-		.social-links {
-  			margin-top: 20px;
-  			display: flex;
-  			justify-content: center;
-  			gap: 20px;
-		}
-
-		.social-links img {
-  			width: 32px;
-  			height: 32px;
-		}
-	</style>
-</head>
-<body>
-	<div class="email-container">
-		<!-- Header Section -->
-		<div class="header">
-			Stop Loss Warning 1
-		</div>
-		
-		<!-- Content Section -->
-		<div class="content">
-			<p>Dear Trader,</p>
-			<p>I hope this email finds you well. We wanted to bring to your attention an issue that has been observed in your recent trading activities at Summit Strike Capital.
-			</p>
-			
-			<p> Upon reviewing your trading history, we've noticed that you have not placed stop-loss orders on your trades, which constitutes a soft breach violation of our trading policies. While we understand that trading involves a certain level of risk, failure to implement stop-loss orders can significantly expose your account to unnecessary risks and potential losses.
-			</p>
-
-			<p>
-				As a reminder, stop-loss orders are an essential risk management tool that helps protect your capital and mitigate potential losses in volatile market conditions. It's crucial to adhere to our trading guidelines to ensure the safety and integrity of your account. The profit(s) generated from the trades without a stoploss will be deducted as per our rules and information regarding the trades listed below. If the trade resulted in a loss no deduction will be done.
-
-			</p>
-
-			<div class="highlight">
-    <p><strong>Account Number:</strong> ${account}</p>
-    <div>
-        <p><strong>Trade Tickets:</strong></p>
-        <div class="tickets">${tickets}</div>
-    </div>
-    <p><strong>Total Profit:</strong> ${accountDetails?.profit}</p>
-</div>
-
-
-			
-			<p>We want to emphasize the seriousness of this matter and the importance of strict compliance with our policies. Failure to rectify this behavior and continue disregarding stop loss orders within the first 2 minutes of placing a simulated trade may result in more severe consequences, including the termination of your trading account with Summit Strike Capital. Please refer to the <a href="https://summitstrike.com/faq/"> <strong></strong>FAQ</strong> </a> here.
-			</p>
-
-			<p>
-				We highly encourage you to review and adjust your trading strategies to incorporate stop-loss orders effectively. If you have any questions or need assistance in implementing stop-loss orders, please don't hesitate to reach out to our support team for guidance.
-			</p>
-
-
-			<p>Thank you for your attention to this matter, and we appreciate your cooperation in maintaining a safe and responsible trading environment.
-			</p>
-
-			<p>Best regards,</p>
-			<p>Summit Strike Capital Risk Team</p>
-
-			<p style="font-size: 14px; color: #777; margin-top: 20px;">
-		    	If you have any questions, feel free to
-		    	<a href="https://summitstrike.com/contact" style="color: #007bff; text-decoration: none; font-weight: bold;">
-		    		contact us or contact our support team
-		    	</a>.
-		  	</p>
-			<div class="social-links">
-  				<a  href="https://t.me/summitsrikecapital">
-    				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
-  				</a>
-  				<a style="margin-left: 20px;" href="https://discord.com/invite/2NpszcabHC">
-    				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRILFgGb5Qgu-Lc9kkKFcnjKso7EI85qQcy8A&s" alt="Discord">
-  				</a>
-			</div>
-
-		
-		</div>
-		
-		<!-- Footer Section -->
-		<div class="footer">
-			<p>@2024 Summit Strike All Rights Reserved.</p>
-		</div>
-	</div>
-</body>
-</html>
-
-`;
-
-        const info = await sendEmailSingleRecipient(
-            accountDetails?.email,
-            "Summit Strike Capital -  Stop Loss Warning 1",
-            null,
-            htmlContent
-        );
+        if (accountDetails.emailCount === 0) {
+            info = await sendEmailSingleRecipient(
+                accountDetails?.email,
+                "Stop-Loss Warning 1: Compliance with Trading Policies",
+                null,
+                htmlContent1
+            );
+        }
+        //  else {
+        //     info = await sendEmailSingleRecipient(
+        //         accountDetails?.email,
+        //         "Stop-Loss Warning 2: Urgent Compliance Required",
+        //         null,
+        //         sendStopLossWarningEmail2(account, accountDetails)
+        //     );
+        // }
 
         // Check if the response indicates a successful send
         if (typeof info === "string" && info.includes("OK")) {
             // Update emailSent field to true in the database
-            await StopLossRiskModel.updateMany({ account: account }, { $set: { emailSent: true } });
+            await StopLossRiskModel.updateMany(
+                { account: account },
+                {
+                    $set: { emailSent: true },
+                    $inc: { emailCount: 1 }, // Increment the email count
+                }
+            );
         }
 
         // Return success response with details
