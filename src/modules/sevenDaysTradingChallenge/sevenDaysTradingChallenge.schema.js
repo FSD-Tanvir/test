@@ -1,6 +1,6 @@
 const { Schema, default: mongoose } = require("mongoose");
 
-const sevenDaysTradingChallengeSchema = new Schema({
+const SevenDaysTradingChallengeSchema = new Schema({
     email: { type: String, required: true },
     account: { type: Number, required: true },
     lastOpenTime: { type: Date },
@@ -16,4 +16,5 @@ const sevenDaysTradingChallengeSchema = new Schema({
     
 },{ timestamps: true });
 
-module.exports = mongoose.model("SevenDaysTradingChallenge", sevenDaysTradingChallengeSchema);
+const SevenDaysTradingChallenge = mongoose.model( "SevenDaysTradingChallenge", SevenDaysTradingChallengeSchema);
+module.exports = SevenDaysTradingChallenge

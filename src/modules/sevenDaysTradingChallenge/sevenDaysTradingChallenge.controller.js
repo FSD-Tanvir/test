@@ -2,7 +2,9 @@
 const moment = require("moment");
 const { getActiveAccounts } = require("./sevenDaysTradingChallenge.services");
 const { orderHistories } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
-const sevenDaysTradingChallengeSchema = require("./sevenDaysTradingChallenge.schema");
+const SevenDaysTradingChallenge = require("./sevenDaysTradingChallenge.schema");
+
+
 
 // Function to check and save inactive accounts with last open time
 const checkAndSaveInactiveAccounts = async () => {
@@ -35,7 +37,7 @@ const checkAndSaveInactiveAccounts = async () => {
             // Step 6: If there is a last open time, define the 7-day window
             if (lastOpenTime) {
                 const startDate1 = moment(lastOpenTime).format("YYYY-MM-DD");
-                const endDate2 = moment(lastOpenTime).add(7, "days").format("YYYY-MM-DD");
+                const endDate2 = moment(lastOpenTime).add(2, "days").format("YYYY-MM-DD");
 
                 // Step 7: Fetch order history for the 7-day window
                 const history = await orderHistories(accountNumber, startDate1, endDate2);
@@ -49,7 +51,7 @@ const checkAndSaveInactiveAccounts = async () => {
 
                 if (!hasOpenTime) {
                     // Step 9: Check if the account already exists in the SevenDaysTradingChallenge collection
-                    let existingAccount = await sevenDaysTradingChallengeSchema.findOne({ account: accountNumber });
+                    let existingAccount = await SevenDaysTradingChallenge.findOne({ account: accountNumber });
 
                     if (existingAccount) {
                         // Increment the countdown if the account exists

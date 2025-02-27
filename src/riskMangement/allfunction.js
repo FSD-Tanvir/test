@@ -23,7 +23,7 @@ const runAllFunctions = () => {
         consistencyBreak();
     });
 
-    cron.schedule("36 15 * * *", () => {
+    cron.schedule("45 15 * * *", () => {
         checkAndSaveInactiveAccounts()
     });
 
