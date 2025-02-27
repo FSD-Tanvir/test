@@ -1,6 +1,6 @@
 const stopLossDisabledEmailTemplate = (account, accountDetails) => {
-    const tickets = accountDetails.tickets.join(", ");
-    return `<!DOCTYPE html>
+	const tickets = accountDetails.tickets.join(", ");
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -210,9 +210,9 @@ const stopLossDisabledEmailTemplate = (account, accountDetails) => {
 
 // Function to send the warning email 1
 const sendStopLossWarningEmail1 = (account, accountDetails) => {
-    const tickets = accountDetails.tickets.join(", ");
+	const tickets = accountDetails.tickets.join(", ");
 
-    return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -364,8 +364,8 @@ const sendStopLossWarningEmail1 = (account, accountDetails) => {
                 <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo" class="logo">
             </div>
             <h1 class="animated-text">Stop Loss Warning ${
-                accountDetails.emailCount > 0 ? accountDetails.emailCount : " "
-            }</h1>
+							accountDetails.emailCount === 0 ? 1 : " "
+						}</h1>
         </div>
 
         <!-- Content Section -->
@@ -415,9 +415,9 @@ const sendStopLossWarningEmail1 = (account, accountDetails) => {
 
 // Function to send the warning email 2
 const sendStopLossWarningEmail2 = (account, accountDetails) => {
-    const tickets = accountDetails.tickets.join(", ");
+	const tickets = accountDetails.tickets.join(", ");
 
-    return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -569,8 +569,8 @@ const sendStopLossWarningEmail2 = (account, accountDetails) => {
                 <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo" class="logo">
             </div>
             <h1 class="animated-text">Stop Loss Warning ${
-                accountDetails.emailCount > 0 ? accountDetails.emailCount : " "
-            }</h1>
+							accountDetails.emailCount > 0 ? accountDetails.emailCount : " "
+						}</h1>
         </div>
 
         <!-- Content Section -->
@@ -631,7 +631,7 @@ const sendStopLossWarningEmail2 = (account, accountDetails) => {
 };
 
 module.exports = {
-    stopLossDisabledEmailTemplate,
-    sendStopLossWarningEmail1,
-    sendStopLossWarningEmail2,
+	stopLossDisabledEmailTemplate,
+	sendStopLossWarningEmail1,
+	sendStopLossWarningEmail2,
 };
