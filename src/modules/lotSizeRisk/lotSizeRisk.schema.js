@@ -35,6 +35,10 @@ const lotSizeRiskSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        emailCount: {
+            type: Number,
+            default: 0, // Track the number of emails sent
+        },
         isDisabled: {
             type: Boolean,
             default: false,
