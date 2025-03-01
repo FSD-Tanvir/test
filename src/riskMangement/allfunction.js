@@ -23,10 +23,9 @@ const runAllFunctions = () => {
         consistencyBreak();
     });
 
-    cron.schedule("45 15 * * *", () => {
-        checkAndSaveInactiveAccounts()
+    cron.schedule("45 12 * * *", () => {
+        checkAndSaveInactiveAccounts();
     });
-
     
 };
 module.exports = { runAllFunctions };
