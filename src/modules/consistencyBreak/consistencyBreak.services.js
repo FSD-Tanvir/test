@@ -377,7 +377,8 @@ const sendAutomatedConsistencyBreakEmail = async () => {
         for (const account of processedData) {
             const { email, totalTrades, emailCount, account: accNumb } = account;
 
-            const currentEmailCount = emailCount / totalTrades;
+            // const currentEmailCount = emailCount / totalTrades;
+            const currentEmailCount = account.trades[0].emailCount;
 
             const accountDetails = {
                 email,
