@@ -297,7 +297,7 @@ const disableConsistencyBreakAccount = async (account, accountDetails) => {
     }
 };
 
-/* ------------------------------- // Send consistency break warning email ------------------------------ */
+/* ------------------------------- // Send consistency break warning email  ------------------------------ */
 
 const sendConsistencyBreakWarningEmail = async (account, accountDetails) => {
     try {
