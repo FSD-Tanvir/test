@@ -386,7 +386,7 @@ const sendConsistencyBreakWarningEmailTemplate = (account, accountDetails) => {
         <div class="header">
             <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo">
             <br>
-            1.5% Consistency Rule Breach Notification - ${accountDetails.emailCount}
+            1.5% Consistency Rule Breach Notification 
         </div>
         
         <!-- Content Section -->
