@@ -333,9 +333,130 @@ const sendConsistencyBreakWarningEmail = async (account, accountDetails) => {
     }
 };
 
+/* -------------------------- // Send automated consistency break email ------------------------- */
+
+const sendAutomatedConsistencyBreakEmail = async () => {
+    try {
+        const groupedData = await ConsistencyBreakModel.aggregate([
+            {
+                $group: {
+                    _id: "$account",
+                    email: { $first: "$email" },
+                    accountSize: { $first: "$accountSize" },
+                    isDisabled: { $first: "$isDisabled" },
+                    emailSent: { $first: "$emailSent" },
+                    emailCount: { $sum: "$emailCount" },
+                    accounts: { $push: "$$ROOT" },
+                    count: { $sum: 1 },
+                    totalProfit: { $sum: "$profit" },
+                },
+            },
+            { $sort: { "accounts.createdAt": -1 } },
+        ]);
+
+        const processedData = groupedData.map((group) => ({
+            account: group._id,
+            email: group.email,
+            accountSize: group.accountSize,
+            totalProfit: Number(group.totalProfit.toFixed(4)),
+            totalTrades: group.count,
+            emailCount: group.emailCount,
+            trades: group.accounts.map((trade) => ({
+                ticket: trade.ticket,
+                profit: Number(trade.profit.toFixed(4)),
+                profitPercentage: Number(trade.profitPercentage.toFixed(4)),
+                profitDifference: Number(trade.profitDifference.toFixed(4)),
+                profitLimit: Number(trade.profitLimit.toFixed(4)),
+                emailSent: trade.emailSent,
+                isDisabled: trade.isDisabled,
+                createdAt: trade.createdAt,
+            })),
+        }));
+
+        for (const account of processedData) {
+            const { email, totalTrades, emailCount, account: accNumb } = account;
+            const accountDetails = {
+                email,
+                accountSize: account.accountSize,
+                totalProfit: account.totalProfit,
+                totalTrades,
+                emailCount,
+                trades: account.trades,
+            };
+
+            const sendEmail = async (subject, template) => {
+                const htmlContent = template(accNumb, accountDetails);
+                const info = await sendEmailSingleRecipient(
+                    accountDetails.email,
+                    subject,
+                    null,
+                    htmlContent
+                );
+                if (typeof info === "string" && info.includes("OK")) {
+                    await ConsistencyBreakModel.updateMany(
+                        { account: accNumb },
+                        { $set: { emailSent: true }, $inc: { emailCount: 1 } }
+                    );
+                }
+            };
+
+            const disableAccount = async (accNumb, accountDetails) => {
+                try {
+                    const htmlContent = consistencyBreakDisabledEmailTemplate(
+                        accNumb,
+                        accountDetails
+                    );
+                    await sendEmailSingleRecipient(
+                        accountDetails.email,
+                        "Final Breach Notice: Permanent Account Action Required",
+                        "",
+                        htmlContent
+                    );
+                    await ConsistencyBreakModel.updateMany(
+                        { account: accNumb },
+                        { $set: { isDisabled: true } }
+                    );
+                } catch (error) {
+                    console.error(
+                        `Failed to send final breach notice to ${accountDetails.email}: ${error.message}`
+                    );
+                }
+            };
+
+            if (emailCount === 0) {
+                if (totalTrades >= 1)
+                    await sendEmail(
+                        "Fox Funded - 1.5% Consistency Rule Breach. Warning - 1",
+                        sendConsistencyBreakWarningEmailTemplate
+                    );
+                if (totalTrades >= 2)
+                    await sendEmail(
+                        "Fox Funded - 1.5% Consistency Rule Breach. Warning - 2",
+                        sendConsistencyBreakWarningEmailTemplate
+                    );
+                if (totalTrades >= 3) await disableAccount(accNumb, accountDetails);
+            } else if (emailCount === 1 && totalTrades >= 2) {
+                await sendEmail(
+                    "Fox Funded - 1.5% Consistency Rule Breach. Warning - 2",
+                    sendConsistencyBreakWarningEmailTemplate
+                );
+                if (totalTrades >= 3) await disableAccount(accNumb, accountDetails);
+            } else if (emailCount === 2 && totalTrades >= 3) {
+                await disableAccount(accNumb, accountDetails);
+            }
+        }
+
+        console.log("Email processing completed successfully.");
+    } catch (error) {
+        console.error(error);
+        throw new Error("Failed to fetch consistency break data or send emails");
+    }
+};
+
 module.exports = {
     consistencyBreak,
     getConsistencyBreakData,
     disableConsistencyBreakAccount,
     sendConsistencyBreakWarningEmail,
+    sendAutomatedConsistencyBreakEmail,
 };
