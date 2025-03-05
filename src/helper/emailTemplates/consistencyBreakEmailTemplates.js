@@ -257,6 +257,202 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
 </html>`;
 };
 
+const sendConsistencyBreakWarningEmailTemplate = (account, accountDetails) => {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Breach Notification</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa; /* Light gray background */
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0; /* Subtle border */
+        }
+        .header {
+            background-color: #DB8112; /* Warm orange header */
+            color: #ffffff;
+            padding: 30px 20px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .header img {
+            max-width: 150px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+        .header img:hover {
+            transform: scale(1.1);
+        }
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .highlight {
+            background-color: #fff3e0; /* Light orange background */
+            color: #DB8112; /* Orange text */
+            border-left: 4px solid #DB8112; /* Orange border */
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .highlight:hover {
+            background-color: #ffe0b2; /* Slightly darker orange on hover */
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #DB8112; /* Orange button */
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .cta-button a {
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .cta-button:hover {
+            background-color: #c6710e; /* Darker orange on hover */
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .social-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .social-links img {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.3s ease;
+        }
+        .social-links img:hover {
+            transform: scale(1.2);
+        }
+        .rules-section {
+            background-color: #f1f8e9; /* Light green background */
+            border-left: 4px solid #7cb342; /* Green border */
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .rules-section p {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .rules-section p strong {
+            color: #2e7d32; /* Green for emphasis */
+        }
+        .tickets {
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header Section -->
+        <div class="header">
+            <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo">
+            <br>
+            1.5% Consistency Rule Breach Notification - ${accountDetails.emailCount}
+        </div>
+        
+        <!-- Content Section -->
+        <div class="content">
+            <p>Dear Trader,</p>
+            <p>I hope this email finds you well. We wanted to bring to your attention an issue that has been observed in your recent trading activities at Foxx Funded.</p>
+            
+            <p>Upon reviewing your trading history, we've noticed that some of your trades have violated our Consistency Rules, which constitutes a soft breach of our trading policies. While we understand that trading involves a certain level of risk, failing to adhere to these rules can expose your account to unnecessary risks and potential compliance issues.</p>
+
+            <div class="rules-section">
+                <p><strong>Consistency Rules</strong></p>
+                <p><strong>Objective:</strong> Ensure responsible trading and prevent excessive risk-taking.</p>
+                <p>• <strong>Maximum Profit per Trade:</strong> A single trade cannot generate more than 1.5% of the initial account balance.</p>
+                <p>• <strong>Non-Compliance:</strong> If a trade exceeds this limit, it will be considered non-compliant and may lead to a challenge violation.</p>
+                <p>Any profit(s) generated from non-compliant trades will be deducted as per our rules, with details of the affected trades listed below. If the trade resulted in a loss, no deduction will be made.</p>
+            </div>
+
+            <div class="highlight">
+                <p><strong>Account Number:</strong> ${account}</p>
+                <p><strong>Profit Limit:</strong> ${accountDetails.trades[0].profitLimit}</p>
+                <div>
+                    <p><strong>Trade Tickets:</strong></p>
+                    <div class="tickets">
+                        ${accountDetails.trades
+                            .map(
+                                (trade) =>
+                                    `Ticket: ${trade.ticket}, Profit: ${trade.profit} (${trade.profitPercentage}%)`
+                            )
+                            .join("<br>")}
+                    </div>
+                </div>
+            </div>
+
+            <p>We want to emphasize the seriousness of this matter and the importance of strict compliance with our policies. Failure to follow the Consistency Rules may result in further consequences, including the termination of your trading account with Foxx Funded.</p>
+
+            <p>For further details on our policies and guidelines, please refer to our <a href="https://foxx-funded.com/faqs">FAQ</a> article.</p>
+
+            <p>If you have any questions or need further clarification on the Consistency Rules, please don’t hesitate to reach out to our support team for guidance.</p>
+
+            <p>Best regards,</p>
+            <p>Risk Team</p>
+            <p>Fox Funded Risk Team</p>
+
+            <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                If you have any questions, feel free to
+                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+                    contact us or contact our support team
+                </a>.
+            </p>
+            <div class="social-links">
+                <a href="https://t.me/+2QVq5aChxiBlOWFk">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <p>@2024 Fox Funded All Rights Reserved.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+};
+
 module.exports = {
     consistencyBreakDisabledEmailTemplate,
+    sendConsistencyBreakWarningEmailTemplate,
 };
