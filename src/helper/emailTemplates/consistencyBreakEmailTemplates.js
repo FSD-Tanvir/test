@@ -1,0 +1,458 @@
+const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Breach Notification</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border: 3px solid #d32f2f;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .email-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #d32f2f, #f44336);
+            color: #ffffff;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 2px solid #eeeeee;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .header img {
+            width: 80px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+        .header img:hover {
+            transform: scale(1.1);
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            font-size: 16px;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .highlight {
+            background-color: #ffebee;
+            color: #d32f2f;
+            border-left: 4px solid #d32f2f;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .highlight:hover {
+            background-color: #ffcdd2;
+        }
+        .trade-details {
+            margin-top: 20px;
+        }
+        .trade {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .trade:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .trade h3 {
+            font-size: 18px;
+            margin: 0 0 10px;
+            color: #d32f2f;
+        }
+        .trade p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .trade p strong {
+            color: #333;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .footer a {
+            color: #DB8112;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        .footer a:hover {
+            color: #ff9800;
+            text-decoration: underline;
+        }
+        .social-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .social-links img {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.3s ease;
+        }
+        .social-links img:hover {
+            transform: scale(1.2);
+        }
+        .animated-text {
+            animation: fadeIn 1s ease-in-out;
+        }
+        .consequences-section {
+            background-color: #fff3e0;
+            border-left: 6px solid #ff9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .consequences-section p {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .consequences-section p strong {
+            color: #d32f2f;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header Section with Logo -->
+        <div class="header">
+            <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo">
+            <h1 class="animated-text">Your Account Has Been Disabled</h1>
+            <p class="animated-text">Due to violating the 1.5% consistency rule</p>
+        </div>
+        
+        <!-- Content Section -->
+        <div class="content">
+            <p>Dear Trader,</p>
+            <p>I hope this message finds you well. We are writing to address a serious issue with your trading activities at Fox Funded.</p>
+    
+            <p>We regret to inform you that despite previous warnings, we have observed continued violations of our Consistency Rules at Foxx Funded. This constitutes a serious breach of our trading policies, and as a result, your account is now subject to permanent action.</p>
+
+            <p>As per our policies, no single trade should generate more than 1.5% of the initial account balance. Below are the details of the trades that violated this rule:</p>
+    
+            <p>Breach Details</p>
+
+            <div class="highlight">
+                <p><strong>Account Number:</strong> ${account}</p>
+                <p><strong>Initial Account Balance:</strong> $${accountDetails?.accountSize}</p>
+                <p><strong>Total Profit:</strong> $${accountDetails?.totalProfit}</p>
+                <p><strong>Total Trades:</strong> ${accountDetails?.totalTrades}</p>
+            </div>
+    
+            <!-- Trade Details Section -->
+            <div class="trade-details">
+                ${accountDetails?.trades
+                    ?.map(
+                        (trade) => `
+                    <div class="trade">
+                    <h3>Trade Ticket: ${trade.ticket}</h3>
+                    <p><strong>Profit Limit:</strong> $${trade.profitLimit}</p>
+                    <p><strong>Profit:</strong> $${trade.profit}</p>
+                    <p><strong>Profit Percentage:</strong> ${trade.profitPercentage}%</p>
+                    <p><strong>Profit Difference:</strong> $${trade.profitDifference}</p>
+                    </div>
+                `
+                    )
+                    .join("")}
+            </div>
+
+          <div style="background-color: #e3f2fd; border-left: 6px solid #1976d2; padding: 15px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+    <p style="font-size: 18px; font-weight: bold; color: #1976d2; margin-bottom: 10px;">Consistency Rules</p>
+    <p style="font-size: 16px; color: #333; margin-bottom: 10px;"><strong style="color: #2e7d32;">Objective:</strong> Ensure responsible trading and prevent excessive risk-taking.</p>
+    <ul style="list-style-type: disc; padding-left: 20px; margin: 0;">
+        <li style="font-size: 14px; color: #333; margin-bottom: 8px;">
+            <strong style="color: #1976d2;">Maximum Profit per Trade:</strong> A single trade cannot generate more than 1.5% of the initial account balance.
+        </li>
+        <li style="font-size: 14px; color: #333; margin-bottom: 8px;">
+            <strong style="color: #1976d2;">Non-Compliance:</strong> If a trade exceeds this limit, it is considered non-compliant and results in a challenge violation.
+        </li>
+    </ul>
+</div>
+            <!-- Final Consequences Section -->
+            <div class="consequences-section">
+                <p><strong>Final Consequences</strong></p>
+                <p>Due to repeated violations, the following permanent actions are being enforced:</p>
+                <p><strong>• Account Closure:</strong> Your trading account with Foxx Funded will be permanently closed.</p>
+                <p><strong>• Profit Deduction:</strong> Any profits generated from non-compliant trades will be deducted per our rules.</p>
+                <p><strong>• Ineligibility for Future Participation:</strong> You will no longer be eligible to trade with Foxx Funded.</p>
+                <p>This decision is final, and no further appeals will be considered.</p>
+            </div>
+    
+       
+    
+            <p>For further details on our policies and guidelines, please refer to our <a href="https://foxx-funded.com/faqs">FAQ</a> article.</p>
+    
+            <p>Best regards,</p>
+            <p>Fox Funded Risk Team</p>
+    
+            <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                If you have any questions, feel free to
+                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+                    contact us or contact our support team
+                </a>.
+            </p>
+    
+            <div class="social-links">
+                <a href="https://t.me/+2QVq5aChxiBlOWFk">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
+                </a>
+            </div>
+        </div>
+    
+        <!-- Footer Section -->
+        <div class="footer">
+            <p>@2024 Fox Funded All Rights Reserved.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+};
+
+const sendConsistencyBreakWarningEmailTemplate = (account, accountDetails) => {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Breach Notification</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa; /* Light gray background */
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0; /* Subtle border */
+        }
+        .header {
+            background-color: #DB8112; /* Warm orange header */
+            color: #ffffff;
+            padding: 30px 20px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .header img {
+            max-width: 150px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+        .header img:hover {
+            transform: scale(1.1);
+        }
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .highlight {
+            background-color: #fff3e0; /* Light orange background */
+            color: #DB8112; /* Orange text */
+            border-left: 4px solid #DB8112; /* Orange border */
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .highlight:hover {
+            background-color: #ffe0b2; /* Slightly darker orange on hover */
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #DB8112; /* Orange button */
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .cta-button a {
+            text-decoration: none;
+            color: #ffffff;
+        }
+        .cta-button:hover {
+            background-color: #c6710e; /* Darker orange on hover */
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .social-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .social-links img {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.3s ease;
+        }
+        .social-links img:hover {
+            transform: scale(1.2);
+        }
+        .rules-section {
+            background-color: #f1f8e9; /* Light green background */
+            border-left: 4px solid #7cb342; /* Green border */
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .rules-section p {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .rules-section p strong {
+            color: #2e7d32; /* Green for emphasis */
+        }
+        .tickets {
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header Section -->
+        <div class="header">
+            <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Fox Funded Logo">
+            <br>
+            1.5% Consistency Rule Breach Notification - ${accountDetails.emailCount}
+        </div>
+        
+        <!-- Content Section -->
+        <div class="content">
+            <p>Dear Trader,</p>
+            <p>I hope this email finds you well. We wanted to bring to your attention an issue that has been observed in your recent trading activities at Foxx Funded.</p>
+            
+            <p>Upon reviewing your trading history, we've noticed that some of your trades have violated our Consistency Rules, which constitutes a soft breach of our trading policies. While we understand that trading involves a certain level of risk, failing to adhere to these rules can expose your account to unnecessary risks and potential compliance issues.</p>
+
+            <div class="rules-section">
+                <p><strong>Consistency Rules</strong></p>
+                <p><strong>Objective:</strong> Ensure responsible trading and prevent excessive risk-taking.</p>
+                <p>• <strong>Maximum Profit per Trade:</strong> A single trade cannot generate more than 1.5% of the initial account balance.</p>
+                <p>• <strong>Non-Compliance:</strong> If a trade exceeds this limit, it will be considered non-compliant and may lead to a challenge violation.</p>
+                <p>Any profit(s) generated from non-compliant trades will be deducted as per our rules, with details of the affected trades listed below. If the trade resulted in a loss, no deduction will be made.</p>
+            </div>
+
+            <div class="highlight">
+                <p><strong>Account Number:</strong> ${account}</p>
+                <p><strong>Profit Limit:</strong> ${accountDetails.trades[0].profitLimit}</p>
+                <div>
+                    <p><strong>Trade Tickets:</strong></p>
+                    <div class="tickets">
+                        ${accountDetails.trades
+                            .map(
+                                (trade) =>
+                                    `Ticket: ${trade.ticket}, Profit: ${trade.profit} (${trade.profitPercentage}%)`
+                            )
+                            .join("<br>")}
+                    </div>
+                </div>
+            </div>
+
+            <p>We want to emphasize the seriousness of this matter and the importance of strict compliance with our policies. Failure to follow the Consistency Rules may result in further consequences, including the termination of your trading account with Foxx Funded.</p>
+
+            <p>For further details on our policies and guidelines, please refer to our <a href="https://foxx-funded.com/faqs">FAQ</a> article.</p>
+
+            <p>If you have any questions or need further clarification on the Consistency Rules, please don’t hesitate to reach out to our support team for guidance.</p>
+
+            <p>Best regards,</p>
+            <p>Risk Team</p>
+            <p>Fox Funded Risk Team</p>
+
+            <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                If you have any questions, feel free to
+                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
+                    contact us or contact our support team
+                </a>.
+            </p>
+            <div class="social-links">
+                <a href="https://t.me/+2QVq5aChxiBlOWFk">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <p>@2024 Fox Funded All Rights Reserved.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+};
+
+module.exports = {
+    consistencyBreakDisabledEmailTemplate,
+    sendConsistencyBreakWarningEmailTemplate,
+};
