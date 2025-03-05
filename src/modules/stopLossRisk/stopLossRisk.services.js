@@ -349,9 +349,185 @@ const sendStopLossWarningEmail = async (account, accountDetails) => {
 	}
 };
 
+/* -------------------------- // Send automated stop loss email ------------------------- */
+const sendAutomatedStopLossEmail = async () => {
+	try {
+		// Aggregation pipeline to group by account
+		const groupedData = await StopLossRiskModel.aggregate([
+			{
+				$group: {
+					_id: "$account", // Group by account
+					accounts: { $push: "$$ROOT" }, // Push the entire document into accounts array
+					count: { $sum: 1 }, // Count how many documents for each account
+				},
+			},
+		]);
+
+		// Process the grouped data
+		const processedData = groupedData.map((group) => {
+			const uniqueDatesMap = new Map();
+
+			// Calculate unique closeTime dates and their counts
+			group.accounts.forEach((account) => {
+				const closeDate = new Date(account.closeTime).toISOString().split("T")[0]; // Extract only the date part
+				uniqueDatesMap.set(closeDate, (uniqueDatesMap.get(closeDate) || 0) + 1);
+			});
+
+			const uniqueCloseTimes = Array.from(uniqueDatesMap.entries()).map(([date, count]) => ({
+				date,
+				count,
+			}));
+
+			// Calculate today's violations
+			const today = new Date();
+			const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+			const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+
+			const todaysViolations = group.accounts.filter((account) => {
+				const closeTime = new Date(account.closeTime);
+				return closeTime >= startOfToday && closeTime <= endOfToday;
+			}).length;
+
+			return {
+				...group,
+				uniqueCloseTimes,
+				todaysViolations,
+			};
+		});
+
+		const tickets = processedData.map((account) => account.accounts[0].ticket);
+
+		for (const account of processedData) {
+			const count = account.count;
+			const currentEmailCount = account.accounts[0].emailCount;
+			const accNumb = account.accounts[0].account;
+			const accountDetails = {
+				email: account.accounts[0].email,
+				account: account.accounts[0].account,
+				accountSize: account.accounts[0].accountSize,
+				emailCount: currentEmailCount,
+				tickets,
+			};
+
+			// Helper function to send an email and update the database
+			const sendEmail = async (subject, template) => {
+				const htmlContent = template(accNumb, accountDetails);
+				const info = await sendEmailSingleRecipient(
+					accountDetails.email,
+					subject,
+					null,
+					htmlContent
+				);
+				if (typeof info === "string" && info.includes("OK")) {
+					await StopLossRiskModel.updateMany(
+						{ account: accNumb },
+						{ $set: { emailSent: true }, $inc: { emailCount: 1 } }
+					);
+				}
+			};
+
+			// Helper function to send the final breach notice and disable the account
+			const disableAccount = async (accNumb, accountDetails) => {
+				try {
+					const message = "Stop Loss Violation";
+
+					const userDisableDetails = {
+						Rights: "USER_RIGHT_TRADE_DISABLED", // cannot trade, but can login
+						enabled: true,
+					};
+
+					const changeGroupDetails = {
+						Group: "demo\\FXbin",
+					};
+
+					const [disableMT5Account, orderCloseAll, updateAccGroup] = await Promise.all([
+						OrderCloseAll(accNumb),
+						accountUpdate(accNumb, changeGroupDetails),
+						accountUpdate(accNumb, userDisableDetails),
+					]);
+
+					if (disableMT5Account !== "OK") {
+						return {
+							success: false,
+							message: `Failed to disable the account ${accNumb}. Please try again.`,
+						};
+					}
+
+					const result = await saveRealTimeLog(
+						accNumb,
+						(lossPercentage = 0),
+						(asset = 0),
+						(balance = 0),
+						(initialBalance = accountDetails.accountSize),
+						(equity = 0),
+						message
+					);
+					if (result.success) {
+						console.log(`Log entry saved successfully for ${account}`);
+					}
+					const htmlContent = stopLossDisabledEmailTemplate(accNumb, accountDetails);
+					await sendEmailSingleRecipient(
+						accountDetails.email,
+						"Final Breach Notice: Permanent Account Action Required",
+						"",
+						htmlContent
+					);
+					await StopLossRiskModel.updateMany({ account: accNumb }, { $set: { isDisabled: true } });
+				} catch (error) {
+					console.error(
+						`Failed to send final breach notice to ${accountDetails.email}: ${error.message}`
+					);
+				}
+			};
+
+			// Handle case where no emails have been sent yet
+			if (currentEmailCount === 0) {
+				if (count >= 1)
+					await sendEmail(
+						"Stop-Loss Warning 1: Compliance with Trading Policies",
+						sendStopLossWarningEmail1
+					);
+				if (count >= 2)
+					await sendEmail(
+						"Stop-Loss Warning 2: Urgent Compliance Required",
+						sendStopLossWarningEmail2
+					);
+
+				if (!account.accounts[0].isDisabled && count >= 3) {
+					await disableAccount(accNumb, accountDetails);
+				}
+			}
+			//  Handle case where one email has been sent
+			else if (currentEmailCount === 1) {
+				if (count >= 2) {
+					await sendEmail(
+						"Stop-Loss Warning 2: Urgent Compliance Required",
+						sendStopLossWarningEmail2
+					);
+				}
+				if (!account.accounts[0].isDisabled && count >= 3)
+					await disableAccount(accNumb, accountDetails);
+			}
+			//  Handle case where two emails have been sent
+			else if (currentEmailCount === 2) {
+				if (!account.accounts[0].isDisabled && count >= 3)
+					await disableAccount(accNumb, accountDetails);
+			} else {
+				console.log("No action taken");
+			}
+		}
+
+		console.log("Email processing for Stop Loss completed successfully.");
+	} catch (error) {
+		console.log(error);
+		throw new Error("Failed to fetch stop loss risk data");
+	}
+};
+
 module.exports = {
 	getStopLossRiskData,
 	stopLossRisk,
 	disableStopLossRiskedAccount,
 	sendStopLossWarningEmail,
+	sendAutomatedStopLossEmail,
 };
