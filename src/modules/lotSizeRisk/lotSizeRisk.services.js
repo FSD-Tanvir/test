@@ -321,9 +321,184 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
 	}
 };
 
+/* -------------------------- // Send automated lot size  email ------------------------- */
+
+const sendAutomatedLotSizeEmail = async () => {
+	try {
+		// Aggregation pipeline to group by account and sort
+		const groupedData = await LotSizeRiskModel.aggregate([
+			{
+				$group: {
+					_id: "$account",
+					email: { $first: "$email" },
+					accountSize: { $first: "$accountSize" },
+					isDisabled: { $first: "$isDisabled" },
+					emailSent: { $first: "$emailSent" },
+					emailCount: { $sum: "$emailCount" },
+					totalLotSize: { $sum: "$lotSize" },
+					totalLotSizeLimit: { $sum: "$lotSizeLimit" },
+					count: { $sum: 1 },
+					accounts: { $push: "$$ROOT" },
+				},
+			},
+			{ $sort: { "accounts.createdAt": -1 } },
+		]);
+
+		// Process data to match the desired output structure
+		const processedData = groupedData.map((group) => ({
+			account: group._id,
+			email: group.email,
+			accountSize: group.accountSize,
+			totalLotSize: Number(group.totalLotSize),
+			totalLotSizeLimit: Number(group.totalLotSizeLimit),
+			totalTrades: group.count,
+			emailCount: group.emailCount, // Include the emailCount in the output
+			trades: group.accounts.map((trade) => ({
+				ticket: trade.ticket,
+				profit: Number(trade.profit),
+				lotSize: Number(trade.lotSize),
+				lotSizeLimit: Number(trade.lotSizeLimit),
+				emailSent: trade.emailSent,
+				emailCount: trade.emailCount,
+				isDisabled: trade.isDisabled,
+				createdAt: trade.createdAt,
+			})),
+		}));
+
+		for (const account of processedData) {
+			const { email, totalTrades, emailCount, account: accNumb } = account;
+
+			// const currentEmailCount = emailCount / totalTrades;
+			const currentEmailCount = account.trades[0].emailCount;
+
+			const accountDetails = {
+				email,
+				accountSize: account.accountSize,
+				totalLotSizeLimit: account.totalLotSizeLimit,
+				totalTrades,
+				emailCount,
+				trades: account.trades,
+			};
+
+			// Helper function to send an email and update the database
+			const sendEmail = async (subject, template) => {
+				const htmlContent = template(accNumb, accountDetails);
+				const info = await sendEmailSingleRecipient(
+					accountDetails.email,
+					subject,
+					null,
+					htmlContent
+				);
+				if (typeof info === "string" && info.includes("OK")) {
+					await LotSizeRiskModel.updateMany(
+						{ account: accNumb },
+						{ $set: { emailSent: true }, $inc: { emailCount: 1 } }
+					);
+				}
+			};
+
+			// Helper function to send the final breach notice and disable the account
+			const disableAccount = async (accNumb, accountDetails) => {
+				try {
+					const message = "Lot Size Rule Violation";
+
+					const userDisableDetails = {
+						Rights: "USER_RIGHT_TRADE_DISABLED", // cannot trade, but can login
+						enabled: true,
+					};
+
+					const changeGroupDetails = {
+						Group: "demo\\FXbin",
+					};
+
+					const [disableMT5Account, orderCloseAll, updateAccGroup] = await Promise.all([
+						OrderCloseAll(accNumb),
+						accountUpdate(accNumb, changeGroupDetails),
+						accountUpdate(accNumb, userDisableDetails),
+					]);
+
+					if (disableMT5Account !== "OK") {
+						return {
+							success: false,
+							message: `Failed to disable the account ${accNumb}. Please try again.`,
+						};
+					}
+
+					const result = await saveRealTimeLog(
+						accNumb,
+						(lossPercentage = 0),
+						(asset = 0),
+						(balance = 0),
+						(initialBalance = accountDetails.accountSize),
+						(equity = 0),
+						message
+					);
+					if (result.success) {
+						console.log(`Log entry saved successfully for ${account}`);
+					}
+					const htmlContent = lotSizeDisabledEmailTemplate(accNumb, accountDetails);
+					await sendEmailSingleRecipient(
+						accountDetails.email,
+						"Final Breach Notice: Permanent Account Action Required",
+						"",
+						htmlContent
+					);
+					await LotSizeRiskModel.updateMany({ account: accNumb }, { $set: { isDisabled: true } });
+				} catch (error) {
+					console.error(
+						`Failed to send final breach notice to ${accountDetails.email}: ${error.message}`
+					);
+				}
+			};
+
+			// Handle case where no emails have been sent yet
+			if (currentEmailCount === 0) {
+				if (totalTrades >= 1)
+					await sendEmail(
+						"Important Notice: Compliance with Trading Policies Warning - 1",
+						sendLotSizeWarningEmailTemplate
+					);
+				if (totalTrades >= 2)
+					await sendEmail(
+						"Important Notice: Compliance with Trading Policies Warning - 2",
+						sendLotSizeWarningEmailTemplate
+					);
+
+				if (!account.trades[0].isDisabled && totalTrades >= 3) {
+					await disableAccount(accNumb, accountDetails);
+				}
+			}
+			//  Handle case where one email has been sent
+			else if (currentEmailCount === 1) {
+				if (totalTrades >= 2) {
+					await sendEmail(
+						"Important Notice: Compliance with Trading Policies. Warning - 2",
+						sendLotSizeWarningEmailTemplate
+					);
+				}
+				if (!account.trades[0].isDisabled && totalTrades >= 3)
+					await disableAccount(accNumb, accountDetails);
+			}
+			//  Handle case where two emails have been sent
+			else if (currentEmailCount === 2) {
+				if (!account.trades[0].isDisabled && totalTrades >= 3)
+					await disableAccount(accNumb, accountDetails);
+			} else {
+				console.log("No action taken");
+			}
+		}
+
+		console.log("Email processing for Lot Size completed successfully.");
+	} catch (error) {
+		console.log(error);
+		throw new Error("Failed to fetch lot size risk data");
+	}
+};
+
 module.exports = {
 	lotSizeRisk,
 	getLotSizeRiskData,
 	disableLotRiskedAccount,
 	sendLotSizeWarningEmail,
+	sendAutomatedLotSizeEmail,
 };

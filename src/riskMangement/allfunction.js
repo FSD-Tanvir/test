@@ -3,7 +3,10 @@ const {
 	consistencyBreak,
 	sendAutomatedConsistencyBreakEmail,
 } = require("../modules/consistencyBreak/consistencyBreak.services");
-const { lotSizeRisk } = require("../modules/lotSizeRisk/lotSizeRisk.services");
+const {
+	lotSizeRisk,
+	sendAutomatedLotSizeEmail,
+} = require("../modules/lotSizeRisk/lotSizeRisk.services");
 const {
 	checkAndSaveInactiveAccounts,
 } = require("../modules/sevenDaysTradingChallenge/sevenDaysTradingChallenge.controller");
@@ -41,6 +44,10 @@ const runAllFunctions = () => {
 
 	cron.schedule("10 23 * * *", () => {
 		sendAutomatedStopLossEmail();
+	});
+
+	cron.schedule("15 22 * * *", () => {
+		sendAutomatedLotSizeEmail();
 	});
 };
 module.exports = { runAllFunctions };
