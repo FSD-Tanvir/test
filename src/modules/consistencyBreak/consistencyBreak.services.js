@@ -368,6 +368,7 @@ const sendAutomatedConsistencyBreakEmail = async () => {
                 profitDifference: Number(trade.profitDifference.toFixed(4)),
                 profitLimit: Number(trade.profitLimit.toFixed(4)),
                 emailSent: trade.emailSent,
+                emailCount: trade.emailCount,
                 isDisabled: trade.isDisabled,
                 createdAt: trade.createdAt,
             })),
@@ -375,6 +376,9 @@ const sendAutomatedConsistencyBreakEmail = async () => {
 
         for (const account of processedData) {
             const { email, totalTrades, emailCount, account: accNumb } = account;
+
+            const currentEmailCount = emailCount / totalTrades;
+
             const accountDetails = {
                 email,
                 accountSize: account.accountSize,
@@ -384,6 +388,7 @@ const sendAutomatedConsistencyBreakEmail = async () => {
                 trades: account.trades,
             };
 
+            // Helper function to send an email and update the database
             const sendEmail = async (subject, template) => {
                 const htmlContent = template(accNumb, accountDetails);
                 const info = await sendEmailSingleRecipient(
@@ -400,8 +405,45 @@ const sendAutomatedConsistencyBreakEmail = async () => {
                 }
             };
 
+            // Helper function to send the final breach notice and disable the account
             const disableAccount = async (accNumb, accountDetails) => {
                 try {
+                    const message = "Consistency Break Violation";
+
+                    const userDisableDetails = {
+                        Rights: "USER_RIGHT_TRADE_DISABLED", // cannot trade, but can login
+                        enabled: true,
+                    };
+
+                    const changeGroupDetails = {
+                        Group: "demo\\FXbin",
+                    };
+
+                    const [disableMT5Account, orderCloseAll, updateAccGroup] = await Promise.all([
+                        OrderCloseAll(accNumb),
+                        accountUpdate(accNumb, changeGroupDetails),
+                        accountUpdate(accNumb, userDisableDetails),
+                    ]);
+
+                    if (disableMT5Account !== "OK") {
+                        return {
+                            success: false,
+                            message: `Failed to disable the account ${accNumb}. Please try again.`,
+                        };
+                    }
+
+                    const result = await saveRealTimeLog(
+                        accNumb,
+                        (lossPercentage = 0),
+                        (asset = 0),
+                        (balance = 0),
+                        (initialBalance = accountDetails.accountSize),
+                        (equity = 0),
+                        message
+                    );
+                    if (result.success) {
+                        console.log(`Log entry saved successfully for ${account}`);
+                    }
                     const htmlContent = consistencyBreakDisabledEmailTemplate(
                         accNumb,
                         accountDetails
@@ -423,7 +465,8 @@ const sendAutomatedConsistencyBreakEmail = async () => {
                 }
             };
 
-            if (emailCount === 0) {
+            // Handle case where no emails have been sent yet
+            if (currentEmailCount === 0) {
                 if (totalTrades >= 1)
                     await sendEmail(
                         "Fox Funded - 1.5% Consistency Rule Breach. Warning - 1",
@@ -434,15 +477,28 @@ const sendAutomatedConsistencyBreakEmail = async () => {
                         "Fox Funded - 1.5% Consistency Rule Breach. Warning - 2",
                         sendConsistencyBreakWarningEmailTemplate
                     );
-                if (totalTrades >= 3) await disableAccount(accNumb, accountDetails);
-            } else if (emailCount === 1 && totalTrades >= 2) {
-                await sendEmail(
-                    "Fox Funded - 1.5% Consistency Rule Breach. Warning - 2",
-                    sendConsistencyBreakWarningEmailTemplate
-                );
-                if (totalTrades >= 3) await disableAccount(accNumb, accountDetails);
-            } else if (emailCount === 2 && totalTrades >= 3) {
-                await disableAccount(accNumb, accountDetails);
+
+                if (!account.trades[0].isDisabled && totalTrades >= 3) {
+                    await disableAccount(accNumb, accountDetails);
+                }
+            }
+            //  Handle case where one email has been sent
+            else if (currentEmailCount === 1) {
+                if (totalTrades >= 2) {
+                    await sendEmail(
+                        "Fox Funded - 1.5% Consistency Rule Breach. Warning - 2",
+                        sendConsistencyBreakWarningEmailTemplate
+                    );
+                }
+                if (!account.trades[0].isDisabled && totalTrades >= 3)
+                    await disableAccount(accNumb, accountDetails);
+            }
+            //  Handle case where two emails have been sent
+            else if (currentEmailCount === 2) {
+                if (!account.trades[0].isDisabled && totalTrades >= 3)
+                    await disableAccount(accNumb, accountDetails);
+            } else {
+                console.log("No action taken");
             }
         }
 
