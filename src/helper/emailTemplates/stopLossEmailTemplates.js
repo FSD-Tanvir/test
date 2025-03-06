@@ -174,7 +174,7 @@ const stopLossDisabledEmailTemplate = (account, accountDetails) => {
                 <ul style="margin-left: 20px; list-style-type: disc;">
                     <li>Your trading account is permanently closed and will no longer be accessible.</li>
                     <li>Any profits from non-compliant trades have been deducted in accordance with our policies.</li>
-                    <li>You are no longer eligible to participate in any future trading programs with Foxx Funded.</li>
+                    <li>You can try to pass a new challenge with promo code « RETRY40 » -40% Off</li>
                 </ul>
             </div>
 
