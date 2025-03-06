@@ -33,9 +33,7 @@ const getAccountRiskData = async (openDate, account, page = 1, limit = 10) => {
 		}
 
 		// Query to filter documents by optional 'date' and 'account'
-		const results = await MTwoPercentRiskModel.find(query)
-			.sort({ createdAt: -1 }) // Sort by createdAt in descending order
-			.lean();
+		const results = await MTwoPercentRiskModel.find(query).sort({ createdAt: -1 }).lean();
 
 		// Get all unique accounts from the current results
 		const uniqueAccounts = [...new Set(results.map((item) => item.account))];
@@ -221,8 +219,164 @@ const sendWarningEmail = async (account, accountDetails) => {
 	}
 };
 
+/* -------------------------- // Send automated stop loss email ------------------------- */
+
+const sendAutomatedTwoPercentEmail = async () => {
+	try {
+		const results = await MTwoPercentRiskModel.find().sort({ createdAt: -1 }).lean();
+
+		// Get all unique accounts from the results
+		const uniqueAccounts = [...new Set(results.map((item) => item.account))];
+
+		// Group and compare records
+		const processedData = uniqueAccounts.map((account) => {
+			const accountResults = results.filter((result) => result.account === account);
+
+			return {
+				account,
+				matches: accountResults,
+			};
+		});
+
+		for (const account of processedData) {
+			const tickets = account.matches.map((account) => account.ticket);
+			const accNumb = account.account;
+			const email = account.matches[0].email;
+			const currentEmailCount = account.matches[0].emailCount;
+
+			// Calculate unique date count from matches array
+			const uniqueDates = new Set(
+				account.matches.map((match) => new Date(match.date).toISOString().split("T")[0])
+			);
+			const count = uniqueDates.size;
+
+			const accountDetails = {
+				email,
+				account: accNumb,
+				accountSize: account.matches[0].accountSize,
+				emailCount: currentEmailCount,
+				count,
+				tickets,
+			};
+
+			// Helper function to send an email and update the database
+			const sendEmail = async (subject, template) => {
+				const htmlContent = template(accNumb, accountDetails);
+				const info = await sendEmailSingleRecipient(
+					accountDetails.email,
+					subject,
+					null,
+					htmlContent
+				);
+				if (typeof info === "string" && info.includes("OK")) {
+					await MTwoPercentRiskModel.updateMany(
+						{ account: accNumb },
+						{ $set: { emailSent: true }, $inc: { emailCount: 1 } }
+					);
+				}
+			};
+
+			// Helper function to send the final breach notice and disable the account
+			const disableAccount = async (accNumb, accountDetails) => {
+				try {
+					const message = "Two Percent Risk Violation";
+
+					const userDisableDetails = {
+						Rights: "USER_RIGHT_TRADE_DISABLED", // cannot trade, but can login
+						enabled: true,
+					};
+
+					const changeGroupDetails = {
+						Group: "demo\\FXbin",
+					};
+
+					const [disableMT5Account, orderCloseAll, updateAccGroup] = await Promise.all([
+						OrderCloseAll(accNumb),
+						accountUpdate(accNumb, changeGroupDetails),
+						accountUpdate(accNumb, userDisableDetails),
+					]);
+
+					if (disableMT5Account !== "OK") {
+						return {
+							success: false,
+							message: `Failed to disable the account ${accNumb}. Please try again.`,
+						};
+					}
+
+					const result = await saveRealTimeLog(
+						accNumb,
+						(lossPercentage = 0),
+						(asset = 0),
+						(balance = 0),
+						(initialBalance = accountDetails.accountSize),
+						(equity = 0),
+						message
+					);
+					if (result.success) {
+						console.log(`Log entry saved successfully for ${account}`);
+					}
+					const htmlContent = twoPercentDisabledEmailTemplate(accNumb, accountDetails);
+					await sendEmailSingleRecipient(
+						accountDetails.email,
+						"Final Breach Notice: Permanent Account Action Required",
+						"",
+						htmlContent
+					);
+					await MTwoPercentRiskModel.updateMany(
+						{ account: accNumb },
+						{ $set: { isDisabled: true } }
+					);
+				} catch (error) {
+					console.error(
+						`Failed to send final breach notice to ${accountDetails.email}: ${error.message}`
+					);
+				}
+			};
+
+			// Handle case where no emails have been sent yet
+			if (currentEmailCount === 0) {
+				if (count >= 1)
+					await sendEmail(
+						"Two Percent Warning 1: Foxx Funded - Maximum risk per trade exposure warning",
+						sendTwoPercentWarningEmailTemplate
+					);
+				if (count >= 2)
+					await sendEmail(
+						"Two Percent Warning 2: Foxx Funded - Maximum risk per trade exposure warning",
+						sendTwoPercentWarningEmailTemplate
+					);
+
+				if (!account.matches[0].isDisabled && count >= 3) {
+					await disableAccount(accNumb, accountDetails);
+				}
+			}
+			//  Handle case where one email has been sent
+			else if (currentEmailCount === 1) {
+				if (count >= 2) {
+					await sendEmail(
+						"Two Percent Warning 2: Foxx Funded - Maximum risk per trade exposure warning",
+						sendTwoPercentWarningEmailTemplate
+					);
+				}
+				if (!account.matches[0].isDisabled && count >= 3)
+					await disableAccount(accNumb, accountDetails);
+			}
+			//  Handle case where two emails have been sent
+			else if (currentEmailCount === 2) {
+				if (!account.matches[0].isDisabled && count >= 3)
+					await disableAccount(accNumb, accountDetails);
+			} else {
+				console.log("No action taken");
+			}
+		}
+		console.log("Email processing for Two Percent Risk completed successfully.");
+	} catch (error) {
+		throw new Error(`Error fetching account risk data: ${error.message}`);
+	}
+};
 module.exports = {
 	getAccountRiskData,
 	disableRiskedAccount,
 	sendWarningEmail,
+	sendAutomatedTwoPercentEmail,
 };
