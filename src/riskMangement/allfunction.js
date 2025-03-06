@@ -15,6 +15,9 @@ const {
 	sendAutomatedStopLossEmail,
 } = require("../modules/stopLossRisk/stopLossRisk.services");
 const cron = require("node-cron");
+const {
+	sendAutomatedTwoPercentEmail,
+} = require("../modules/twoPercentRisk/twoPercentRisk.services");
 
 const runAllFunctions = () => {
 	storeDailyDataController();
@@ -46,8 +49,12 @@ const runAllFunctions = () => {
 		sendAutomatedStopLossEmail();
 	});
 
-	cron.schedule("20 23 * * *", () => {
+	cron.schedule("25 23 * * *", () => {
 		sendAutomatedLotSizeEmail();
+	});
+
+	cron.schedule("40 23 * * *", () => {
+		sendAutomatedTwoPercentEmail();
 	});
 };
 module.exports = { runAllFunctions };
