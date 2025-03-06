@@ -1,5 +1,5 @@
 const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
-    return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -191,8 +191,8 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
             <!-- Trade Details Section -->
             <div class="trade-details">
                 ${accountDetails?.trades
-                    ?.map(
-                        (trade) => `
+									?.map(
+										(trade) => `
                     <div class="trade">
                     <h3>Trade Ticket: ${trade.ticket}</h3>
                     <p><strong>Profit Limit:</strong> $${trade.profitLimit}</p>
@@ -201,8 +201,8 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
                     <p><strong>Profit Difference:</strong> $${trade.profitDifference}</p>
                     </div>
                 `
-                    )
-                    .join("")}
+									)
+									.join("")}
             </div>
 
           <div style="background-color: #e3f2fd; border-left: 6px solid #1976d2; padding: 15px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
@@ -223,7 +223,7 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
                 <p>Due to repeated violations, the following permanent actions are being enforced:</p>
                 <p><strong>• Account Closure:</strong> Your trading account with Foxx Funded will be permanently closed.</p>
                 <p><strong>• Profit Deduction:</strong> Any profits generated from non-compliant trades will be deducted per our rules.</p>
-                <p><strong>• Ineligibility for Future Participation:</strong> You will no longer be eligible to trade with Foxx Funded.</p>
+                <p><strong>• You can try to pass a new challenge with promo code « RETRY40 » -40% Off</p>
                 <p>This decision is final, and no further appeals will be considered.</p>
             </div>
     
@@ -258,7 +258,7 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
 };
 
 const sendConsistencyBreakWarningEmailTemplate = (account, accountDetails) => {
-    return `<!DOCTYPE html>
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -411,11 +411,11 @@ const sendConsistencyBreakWarningEmailTemplate = (account, accountDetails) => {
                     <p><strong>Trade Tickets:</strong></p>
                     <div class="tickets">
                         ${accountDetails.trades
-                            .map(
-                                (trade) =>
-                                    `Ticket: ${trade.ticket}, Profit: ${trade.profit} (${trade.profitPercentage}%)`
-                            )
-                            .join("<br>")}
+													.map(
+														(trade) =>
+															`Ticket: ${trade.ticket}, Profit: ${trade.profit} (${trade.profitPercentage}%)`
+													)
+													.join("<br>")}
                     </div>
                 </div>
             </div>
@@ -453,6 +453,6 @@ const sendConsistencyBreakWarningEmailTemplate = (account, accountDetails) => {
 };
 
 module.exports = {
-    consistencyBreakDisabledEmailTemplate,
-    sendConsistencyBreakWarningEmailTemplate,
+	consistencyBreakDisabledEmailTemplate,
+	sendConsistencyBreakWarningEmailTemplate,
 };
