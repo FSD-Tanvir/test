@@ -962,6 +962,20 @@ const manualChallengePass = async (id) => {
 	}
 };
 
+const getOnlyUserHandlerBYEmailService = async (email) => {
+	try {
+		const user = await
+			MUser.findOne({ email: email });
+		if (!user) {	
+			throw new Error("User not found.");
+		}
+		return user;
+	} catch (error) {
+		console.log(error);
+		throw error;
+	}
+};
+
 module.exports = {
 	handleMt5AccountCreate,
 	findUserWithMt5Details,
@@ -984,4 +998,5 @@ module.exports = {
 	updateMt5AccountStatus,
 	findFundedUsers,
 	manualChallengePass,
+	getOnlyUserHandlerBYEmailService,
 };

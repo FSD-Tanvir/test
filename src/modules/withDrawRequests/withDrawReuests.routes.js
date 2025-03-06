@@ -15,6 +15,7 @@ const {
 	getOrderHistoryController,
 	getApprovedRequestsController,
 	getPendingRequestsController,
+	getAccountDetailsController
 } = require("./withDrawRequests.controller");
 
 const router = express.Router();
@@ -39,7 +40,9 @@ router.get('/:accountNumber', (req, res, next) => {
     next();
 }, getWithDrawRequestByAccountNumber);;
 router.get("/", getAllWithDrawRequests);
+router.get("/accountDetails/:account", getAccountDetailsController);
 router.patch("/:id", updateWithDrawRequestById);
+
 
 
 

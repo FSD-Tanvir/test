@@ -1,5 +1,6 @@
 // withdrawRequestController.js
 
+const { accountDetails } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const MWithDrawRequest = require("./withDrawRequests.schema");
 const {
 	createWithDrawRequestService,
@@ -102,24 +103,24 @@ const getWithDrawRequestByAccountNumber = async (req, res) => {
 
 // Handle GET request to fetch all withdrawal requests
 const getAllWithDrawRequests = async (req, res) => {
-    try {
-        // Call the service to get all enriched withdrawal requests
-        const withdrawRequests = await getAllWithDrawRequestsService();
+	try {
+		// Call the service to get all enriched withdrawal requests
+		const withdrawRequests = await getAllWithDrawRequestsService();
 
-        if (!withdrawRequests.length) {
-            return res.status(404).json({ message: "No withdrawal requests found." });
-        }
+		if (!withdrawRequests.length) {
+			return res.status(404).json({ message: "No withdrawal requests found." });
+		}
 
-        res.status(200).json({
-            message: "All withdrawal requests fetched successfully",
-            data: withdrawRequests,
-        });
-    } catch (error) {
-        res.status(500).json({
-            message: "Error fetching withdrawal requests",
-            error: error.message,
-        });
-    }
+		res.status(200).json({
+			message: "All withdrawal requests fetched successfully",
+			data: withdrawRequests,
+		});
+	} catch (error) {
+		res.status(500).json({
+			message: "Error fetching withdrawal requests",
+			error: error.message,
+		});
+	}
 };
 
 
@@ -327,7 +328,7 @@ const getPayoutRequestHandler = async (req, res) => {
 
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
-// console.log(account, startDate, endDate);
+	// console.log(account, startDate, endDate);
 	try {
 		// Call the service function
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
@@ -380,6 +381,17 @@ const getPendingRequestsController = async (req, res) => {
 	}
 }
 
+const getAccountDetailsController = async (req, res) => {
+	const { account } = req.params;
+	if (!account) {
+		return res.status(400).json({ error: "Account number is required" });
+	}
+
+	const singleAccountDetails = await accountDetails(account);
+	res.status(200).json(singleAccountDetails);
+};
+
+
 module.exports = {
 	createWithDrawRequest,
 	getWithDrawRequestByAccountNumber,
@@ -394,4 +406,5 @@ module.exports = {
 	getOrderHistoryController,
 	getApprovedRequestsController,
 	getPendingRequestsController,
+	getAccountDetailsController
 };
