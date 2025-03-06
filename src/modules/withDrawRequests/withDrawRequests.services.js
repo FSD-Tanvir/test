@@ -153,11 +153,13 @@ const updateWithDrawRequestByIdService = async (id, updateData) => {
 		// Check if the status is being updated to "approved" from "pending"
 		if (updateData.status === "approved") {
 			const currentBalance = updateData.amount;
+			
 			// Assuming balanceDepositAndWithdrawal is defined elsewhere
 			const accountData = await balanceDepositAndWithdrawal(
 				withdrawRequest.accountNumber,
 				-currentBalance,
 			);
+			
 
 			// Check if accountData is a number
 			if (typeof accountData === "number") {
