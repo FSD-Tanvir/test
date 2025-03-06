@@ -48,13 +48,14 @@ const createWithDrawRequest = async (req, res) => {
 		if (newWithDrawRequest && newWithDrawRequest._id) {
 			const id = newWithDrawRequest._id;
 			const updatedData = newWithDrawRequest;
-			// const updatedWithdrawRequest = await updateWithDrawRequestByIdService(
-			// 	id,
-			// 	updatedData,
-			// );
+			const updatedWithdrawRequest = await updateWithDrawRequestByIdService(
+				id,
+				updatedData,
+			);
+			// console.log(updatedWithdrawRequest);
 
 			return res.status(201).json({
-				data: updatedData,
+				data: updatedWithdrawRequest,
 			});
 		} else {
 			return res
