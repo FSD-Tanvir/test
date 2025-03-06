@@ -395,9 +395,8 @@ const sendAutomatedStopLossEmail = async () => {
 			};
 		});
 
-		const tickets = processedData.map((account) => account.accounts[0].ticket);
-
 		for (const account of processedData) {
+			const tickets = account.accounts.map((account) => account.ticket);
 			const count = account.count;
 			const currentEmailCount = account.accounts[0].emailCount;
 			const accNumb = account.accounts[0].account;
