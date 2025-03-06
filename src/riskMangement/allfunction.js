@@ -46,7 +46,7 @@ const runAllFunctions = () => {
 		sendAutomatedStopLossEmail();
 	});
 
-	cron.schedule("15 22 * * *", () => {
+	cron.schedule("20 23 * * *", () => {
 		sendAutomatedLotSizeEmail();
 	});
 };
