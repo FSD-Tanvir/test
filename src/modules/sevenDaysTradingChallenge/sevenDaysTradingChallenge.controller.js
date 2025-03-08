@@ -16,13 +16,6 @@ const getLastOpenTime = (orders) => {
     return openTimes.length > 0 ? moment.max(openTimes) : null;
 };
 
-// const checkInactivityInWindow = (history, startDate, endDate) => {
-//     return !history.some(order => {
-//         const orderTime = moment(order.openTime);
-//         return orderTime.isBetween(startDate, endDate, null, '[]');
-//     });
-// };
-
 const checkAndSaveInactiveAccounts = async () => {
     try {
         const activeAccounts = await getActiveAccounts();
