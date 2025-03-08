@@ -39,12 +39,14 @@ router.get("/mt5-accounts", getAllMt5Accounts);
 router.get("/funded", getFundedUsers);
 
 
-router.get("/:email", (req, res, next) => {
-	if (!req.params.email) {
-		return res.status(400).json({ message: "Invalid email" });
-	}
-	next();
-}, getOnlyUserHandlerByEmail);
+// router.get("/:email", (req, res, next) => {
+// 	if (!req.params.email) {
+// 		return res.status(400).json({ message: "Invalid email" });
+// 	}
+// 	next();
+// }, getOnlyUserHandlerByEmail);
+
+
 // get phase based accounts
 router.get("/phased-users/:account", getPhasedUsers);
 
