@@ -2,6 +2,7 @@ const moment = require("moment");
 const { getActiveAccounts } = require("./sevenDaysTradingChallenge.services");
 const { orderHistories } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const SevenDaysTradingChallenge = require("./sevenDaysTradingChallenge.schema");
+const { getSevenDaysTradingChallengeDataService } = require("./sevenDaysTradingChallenge.services");
 
 const fetchAndValidateOrderHistory = async (accountNumber, startDate, endDate) => {
     const history = await orderHistories(accountNumber, startDate, endDate);
@@ -87,4 +88,15 @@ const checkAndSaveInactiveAccounts = async () => {
     }
 };
 
-module.exports = { checkAndSaveInactiveAccounts };
+
+const getSevenDaysTradingChallengeDataHandler = async (req, res) => {
+    try {
+      const data = await getSevenDaysTradingChallengeDataService();
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      console.error("Error fetching challenge data:", error);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  };
+
+module.exports = { checkAndSaveInactiveAccounts,getSevenDaysTradingChallengeDataHandler };
