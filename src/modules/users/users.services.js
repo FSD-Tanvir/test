@@ -2,7 +2,6 @@ const crypto = require("crypto");
 const MOtp = require("../../helper/otpSchema.js");
 const { sendMailForOTP, sendEmailSingleRecipient } = require("../../helper/mailing.js");
 const { generateToken } = require("../../helper/utils/tokenUtils.js");
-const { Parser } = require("json2csv");
 
 const config = require("../../config/config.js"); // Assuming config is in this path
 const MUser = require("./users.schema.js"); // Assuming the MUser model is in this path
