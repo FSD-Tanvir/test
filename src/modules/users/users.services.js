@@ -166,24 +166,29 @@ const getOnlyUser = async (id) => {
 
 const generateAllUsersCSV = async () => {
     try {
-        const users = await MUser.find().lean();
+        // Select only necessary fields: email, first, last, mt5Accounts
+        const users = await MUser.find({}, "email first last mt5Accounts").lean();
 
         if (!users.length) throw new Error("No users found");
 
-        // Extract necessary fields for each user
-        const userData = users.map((user) => ({
-            email: user.email,
-            firstName: user.first.trim(),
-            lastName: user.last.trim(),
-            challengeNames:
-                user.mt5Accounts
-                    ?.map((acc) => acc.challengeStageData?.challengeName || "N/A")
-                    .join(" | ") || "N/A",
-        }));
+        // Use map to process users in parallel, and extract required fields
+        const userData = users.map((user) => {
+            // Get all challenge names from the mt5Accounts
+            const challengeNames = user.mt5Accounts
+                ? user.mt5Accounts
+                      .map((acc) => acc.challengeStageData?.challengeName || "N/A")
+                      .join(" || ")
+                : "N/A";
 
-        // Convert JSON to CSV
-        const parser = new Parser();
-        return parser.parse(userData);
+            return {
+                email: user.email,
+                firstName: user.first.trim(),
+                lastName: user.last.trim(),
+                challengeNames,
+            };
+        });
+
+        return userData;
     } catch (error) {
         console.error(error);
         throw error;

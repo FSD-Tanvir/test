@@ -51,9 +51,6 @@ const getUserById = async (req, res) => {
 const downloadAllUsersCsvHandler = async (req, res) => {
     try {
         const csvData = await userService.generateAllUsersCSV();
-        // Set headers for CSV download
-        res.setHeader("Content-Type", "text/csv");
-        res.setHeader("Content-Disposition", "attachment; filename=all_users.csv");
 
         res.status(200).send(csvData);
     } catch (error) {
