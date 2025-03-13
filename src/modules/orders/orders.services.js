@@ -191,21 +191,19 @@ const allOrders = async (
 
 		// If couponName is provided, find matching coupon IDs
 		if (couponName) {
-			const matchingCoupon = await MCoupon.findOne(
-				{ couponName: { $regex: couponName, $options: "i" } },
-				{ _id: 1 }
-			).sort({ created_at: -1 }); // Get the latest coupon by created_at
+			const matchingCoupon = await MCoupon.findOne({ couponName: couponName }, { _id: 1 }).sort({
+				created_at: -1,
+			});
 
 			if (matchingCoupon) {
 				filter.couponClaimed = matchingCoupon._id;
 			} else {
-				console.log("No coupons found with the given name.");
 				return {
 					orders: [],
 					currentPage: page,
 					totalPages: 0,
 					totalOrders: 0,
-				}; // Return empty response if no matching coupon is found
+				};
 			}
 		}
 
@@ -217,7 +215,7 @@ const allOrders = async (
 		const orders = await MOrder.find(filter)
 			.populate({
 				path: "couponClaimed",
-				select: "name",
+				select: "couponName", // Add other fields you need
 			})
 			.sort({ createdAt: -1 })
 			.skip((pageNumber - 1) * limitNumber)
