@@ -163,6 +163,39 @@ const getOnlyUser = async (id) => {
 	}
 };
 
+const generateAllUsersCSV = async () => {
+	try {
+		// Select only necessary fields: email, first, last, mt5Accounts
+		const users = await MUser.find({}, "email first last mt5Accounts createdAt").lean();
+
+		if (!users.length) throw new Error("No users found");
+
+		// Use map to process users in parallel, and extract required fields
+		const userData = users.map((user) => {
+			// Get all challenge names from the mt5Accounts
+			const challengeNames = user.mt5Accounts
+				? user.mt5Accounts.map((acc) => acc.challengeStageData?.challengeName || "N/A").join(" || ")
+				: "N/A";
+
+			// Format the createdAt date
+			const formattedCreatedAt = new Date(user.createdAt).toLocaleDateString("en-US");
+
+			return {
+				email: user.email,
+				firstName: user.first.trim(),
+				lastName: user.last.trim(),
+				createdAt: formattedCreatedAt, // Use the formatted date
+				challengeNames,
+			};
+		});
+
+		return userData;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
 // get all user
 const getAllUsers = async (page = 1, limit = 10, searchQuery = "") => {
 	try {
@@ -907,7 +940,7 @@ const manualChallengePass = async (id) => {
 
 		if (matchingAccount) {
 			const changeGroupDetails = {
-				Group: "demo\\EVPASSED", 
+				Group: "demo\\EVPASSED",
 			};
 
 			const changeGroup = await accountUpdate(matchingAccount.account, changeGroupDetails);
@@ -964,9 +997,8 @@ const manualChallengePass = async (id) => {
 
 const getOnlyUserHandlerBYEmailService = async (email) => {
 	try {
-		const user = await
-			MUser.findOne({ email: email });
-		if (!user) {	
+		const user = await MUser.findOne({ email: email });
+		if (!user) {
 			throw new Error("User not found.");
 		}
 		return user;
@@ -999,4 +1031,5 @@ module.exports = {
 	findFundedUsers,
 	manualChallengePass,
 	getOnlyUserHandlerBYEmailService,
+	generateAllUsersCSV,
 };
