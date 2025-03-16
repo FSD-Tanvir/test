@@ -15,32 +15,32 @@ const { calculateDiscount, calculateTotal } = require("../../helper/utils/orderC
  * @throws {Error} If there is an error creating the order.
  */
 const createOrder = async (orderData) => {
-    try {
-        // Validate that orderItems is not empty
-        if (!Array.isArray(orderData.orderItems) || orderData.orderItems.length === 0) {
-            throw new Error("Order items cannot be empty");
-        }
+	try {
+		// Validate that orderItems is not empty
+		if (!Array.isArray(orderData.orderItems) || orderData.orderItems.length === 0) {
+			throw new Error("Order items cannot be empty");
+		}
 
-        const challengePrice = orderData.orderItems[0].challengePrice;
-        const couponPercentage = orderData.couponPercentage || 0;
+		const challengePrice = orderData.orderItems[0].challengePrice;
+		const couponPercentage = orderData.couponPercentage || 0;
 
-        const discount = calculateDiscount(challengePrice, couponPercentage);
+		const discount = calculateDiscount(challengePrice, couponPercentage);
 
-        const totalPrice = calculateTotal(challengePrice, discount);
+		const totalPrice = calculateTotal(challengePrice, discount);
 
-        const newOrder = await MOrder.create({
-            ...orderData,
-            orderItems: orderData.orderItems || [],
-            totalPrice,
-        });
+		const newOrder = await MOrder.create({
+			...orderData,
+			orderItems: orderData.orderItems || [],
+			totalPrice,
+		});
 
-        const { orderId, buyerDetails } = newOrder;
+		const { orderId, buyerDetails } = newOrder;
 
-        //  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details 💬💬💬💬💬💬💬💬
+		//  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details
 
-        // Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
+		// Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
 
-        const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; background-color: #ffffff; border: 2px solid #DB8112; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center;">
+		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; background-color: #ffffff; border: 2px solid #DB8112; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center;">
             <!-- Header Section -->
             <div style="text-align: center; margin-bottom: 25px;">
                 <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 100px; height: auto;">
@@ -117,20 +117,20 @@ const createOrder = async (orderData) => {
             }
         </style>`;
 
-        if (newOrder) {
-            await sendEmailSingleRecipient(
-                buyerDetails?.email,
-                "Onboard your Order",
-                "Your order has been successfully created with the following details:",
-                htmlTemplate
-            );
-        }
-        // 🧲🧲🧲🧲🧲🧲🧲🧲🧲
-        return newOrder;
-    } catch (error) {
-        console.error(error);
-        throw new Error("Error creating order");
-    }
+		if (newOrder) {
+			await sendEmailSingleRecipient(
+				buyerDetails?.email,
+				"Onboard your Order",
+				"Your order has been successfully created with the following details:",
+				htmlTemplate
+			);
+		}
+		// 🧲🧲🧲🧲🧲🧲🧲🧲🧲
+		return newOrder;
+	} catch (error) {
+		console.error(error);
+		throw new Error("Error creating order");
+	}
 };
 
 /**
@@ -145,112 +145,109 @@ const createOrder = async (orderData) => {
  * @throws {Error} If there is an error retrieving orders.
  */
 const allOrders = async (
-    orderStatus = null,
-    paymentStatus = null,
-    paymentMethod = null,
-    page = 1,
-    limit = 10,
-    search = "",
-    date = null,
-    accountSize = null,
-    couponName = null
+	orderStatus = null,
+	paymentStatus = null,
+	paymentMethod = null,
+	page = 1,
+	limit = 10,
+	search = "",
+	date = null,
+	accountSize = null,
+	couponName = null
 ) => {
-    try {
-        const validOrderStatuses = ["Processing", "Pending", "Accepted", "Delivered", "Cancelled"];
-        const validPaymentStatuses = ["Unpaid", "Processing", "Paid", "Refunded", "Failed"];
+	try {
+		const validOrderStatuses = ["Processing", "Pending", "Accepted", "Delivered", "Cancelled"];
+		const validPaymentStatuses = ["Unpaid", "Processing", "Paid", "Refunded", "Failed"];
 
-        let filter = {
-            $or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
-        };
+		let filter = {
+			$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
+		};
 
-        // Add order status filter if valid
-        if (orderStatus && validOrderStatuses.includes(orderStatus)) {
-            filter.orderStatus = orderStatus;
-        }
+		// Add order status filter if valid
+		if (orderStatus && validOrderStatuses.includes(orderStatus)) {
+			filter.orderStatus = orderStatus;
+		}
 
-        // Add payment status filter if valid
-        if (paymentStatus && validPaymentStatuses.includes(paymentStatus)) {
-            filter.paymentStatus = paymentStatus;
-        }
+		// Add payment status filter if valid
+		if (paymentStatus && validPaymentStatuses.includes(paymentStatus)) {
+			filter.paymentStatus = paymentStatus;
+		}
 
-        // Add payment method filter if provided
-        if (paymentMethod) {
-            filter.paymentMethod = paymentMethod;
-        }
+		// Add payment method filter if provided
+		if (paymentMethod) {
+			filter.paymentMethod = paymentMethod;
+		}
 
-        // Add search filter if provided
-        if (search) {
-            filter.$or = [
-                { orderId: { $regex: search, $options: "i" } },
-                { "buyerDetails.email": { $regex: search, $options: "i" } },
-            ];
-        }
+		// Add search filter if provided
+		if (search) {
+			filter.$or = [
+				{ orderId: { $regex: search, $options: "i" } },
+				{ "buyerDetails.email": { $regex: search, $options: "i" } },
+			];
+		}
 
-        // Apply date filter if provided
-        if (date) {
-            const targetDate = new Date(date);
-            const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
-            const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+		// Apply date filter if provided
+		if (date) {
+			const targetDate = new Date(date);
+			const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+			const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
 
-            filter.createdAt = {
-                $gte: startOfDay,
-                $lte: endOfDay,
-            };
-        }
+			filter.createdAt = {
+				$gte: startOfDay,
+				$lte: endOfDay,
+			};
+		}
 
-        // Add account size filter if provided and convert to number
-        if (accountSize) {
-            filter["orderItems.accountSize"] = Number(accountSize);
-        }
+		// Add account size filter if provided and convert to number
+		if (accountSize) {
+			filter["orderItems.accountSize"] = Number(accountSize);
+		}
 
-        // If couponName is provided, find matching coupon IDs
-        if (couponName) {
-            const matchingCoupon = await MCoupon.findOne(
-                { couponName: couponName },
-                { _id: 1 }
-            ).sort({
-                created_at: -1,
-            });
+		// If couponName is provided, find matching coupon IDs
+		if (couponName) {
+			const matchingCoupon = await MCoupon.findOne({ couponName: couponName }, { _id: 1 }).sort({
+				created_at: -1,
+			});
 
-            if (matchingCoupon) {
-                filter.couponClaimed = matchingCoupon._id;
-            } else {
-                return {
-                    orders: [],
-                    currentPage: page,
-                    totalPages: 0,
-                    totalOrders: 0,
-                };
-            }
-        }
+			if (matchingCoupon) {
+				filter.couponClaimed = matchingCoupon._id;
+			} else {
+				return {
+					orders: [],
+					currentPage: page,
+					totalPages: 0,
+					totalOrders: 0,
+				};
+			}
+		}
 
-        // Convert page and limit to numbers and apply pagination
-        const pageNumber = Number.parseInt(page, 10);
-        const limitNumber = Number.parseInt(limit, 10);
+		// Convert page and limit to numbers and apply pagination
+		const pageNumber = Number.parseInt(page, 10);
+		const limitNumber = Number.parseInt(limit, 10);
 
-        // Query the orders with filters, sort by createdAt, and paginate results
-        const orders = await MOrder.find(filter)
-            .populate({
-                path: "couponClaimed",
-                select: "couponName", // Add other fields you need
-            })
-            .sort({ createdAt: -1 })
-            .skip((pageNumber - 1) * limitNumber)
-            .limit(limitNumber);
+		// Query the orders with filters, sort by createdAt, and paginate results
+		const orders = await MOrder.find(filter)
+			.populate({
+				path: "couponClaimed",
+				select: "couponName", // Add other fields you need
+			})
+			.sort({ createdAt: -1 })
+			.skip((pageNumber - 1) * limitNumber)
+			.limit(limitNumber);
 
-        // Get the total count of orders matching the filter
-        const totalOrders = await MOrder.countDocuments(filter);
+		// Get the total count of orders matching the filter
+		const totalOrders = await MOrder.countDocuments(filter);
 
-        return {
-            orders,
-            currentPage: pageNumber,
-            totalPages: Math.ceil(totalOrders / limitNumber),
-            totalOrders,
-        };
-    } catch (error) {
-        console.error("Error retrieving orders:", error.message);
-        throw new Error("Error retrieving orders");
-    }
+		return {
+			orders,
+			currentPage: pageNumber,
+			totalPages: Math.ceil(totalOrders / limitNumber),
+			totalOrders,
+		};
+	} catch (error) {
+		console.error("Error retrieving orders:", error.message);
+		throw new Error("Error retrieving orders");
+	}
 };
 
 /**
@@ -262,64 +259,64 @@ const allOrders = async (
  */
 
 const updateOrder = async (id, data) => {
-    try {
-        // Update the order with the provided data
-        const updatedOrder = await MOrder.findByIdAndUpdate(
-            id,
-            { $set: data },
-            { new: true, runValidators: true }
-        );
+	try {
+		// Update the order with the provided data
+		const updatedOrder = await MOrder.findByIdAndUpdate(
+			id,
+			{ $set: data },
+			{ new: true, runValidators: true }
+		);
 
-        if (!updatedOrder) {
-            // Return an appropriate response if the order is not found
-            return { error: `Order with id ${id} not found` };
-        }
+		if (!updatedOrder) {
+			// Return an appropriate response if the order is not found
+			return { error: `Order with id ${id} not found` };
+		}
 
-        // Extract necessary fields from the updated order
-        const { orderId, paymentStatus, orderStatus } = updatedOrder;
+		// Extract necessary fields from the updated order
+		const { orderId, paymentStatus, orderStatus } = updatedOrder;
 
-        if (paymentStatus === "Paid") {
-            // ⚠️⚠️⚠️invoice details send to user through email
-            if (
-                (updatedOrder?.totalPrice !== null ||
-                    updatedOrder?.totalPrice !== 0 ||
-                    updatedOrder?.totalPrice !== undefined) &&
-                (updatedOrder?.subtotal !== null ||
-                    updatedOrder?.subtotal !== undefined ||
-                    updatedOrder?.subtotal !== 0)
-            ) {
-                const invoiceHTML = await invoiceMailingHTMLTemplate(updatedOrder);
-                await sendEmailSingleRecipient(
-                    updatedOrder?.buyerDetails?.email,
-                    "Your Order Confirmation invoice",
-                    "Your order has been successfully created with the following details:",
-                    invoiceHTML
-                );
-            } else if (updatedOrder?.discountPrice === updatedOrder?.orderItems[0].challengePrice) {
-                const invoiceHTML = await invoiceMailingHTMLTemplate(updatedOrder);
-                await sendEmailSingleRecipient(
-                    updatedOrder?.buyerDetails?.email,
-                    "Your Order Confirmation invoice",
-                    "Your order has been successfully created with the following details:",
-                    invoiceHTML
-                );
-            }
-        }
+		if (paymentStatus === "Paid") {
+			// ⚠️⚠️⚠️invoice details send to user through email
+			if (
+				(updatedOrder?.totalPrice !== null ||
+					updatedOrder?.totalPrice !== 0 ||
+					updatedOrder?.totalPrice !== undefined) &&
+				(updatedOrder?.subtotal !== null ||
+					updatedOrder?.subtotal !== undefined ||
+					updatedOrder?.subtotal !== 0)
+			) {
+				const invoiceHTML = await invoiceMailingHTMLTemplate(updatedOrder);
+				await sendEmailSingleRecipient(
+					updatedOrder?.buyerDetails?.email,
+					"Your Order Confirmation invoice",
+					"Your order has been successfully created with the following details:",
+					invoiceHTML
+				);
+			} else if (updatedOrder?.discountPrice === updatedOrder?.orderItems[0].challengePrice) {
+				const invoiceHTML = await invoiceMailingHTMLTemplate(updatedOrder);
+				await sendEmailSingleRecipient(
+					updatedOrder?.buyerDetails?.email,
+					"Your Order Confirmation invoice",
+					"Your order has been successfully created with the following details:",
+					invoiceHTML
+				);
+			}
+		}
 
-        // Find the user
-        const user = await MUser.findOne({ email: updatedOrder?.buyerDetails?.email });
+		// Find the user
+		const user = await MUser.findOne({ email: updatedOrder?.buyerDetails?.email });
 
-        if (!user || user.mt5Accounts.length === 0) {
-            // If no user or no Mt5Accounts, return the updated order
-            return { updatedOrder };
-        }
+		if (!user || user.mt5Accounts.length === 0) {
+			// If no user or no Mt5Accounts, return the updated order
+			return { updatedOrder };
+		}
 
-        // Find the matching MT5 account
-        const matchingAccount =
-            user && (await user.mt5Accounts.find((account) => account.productId === orderId));
+		// Find the matching MT5 account
+		const matchingAccount =
+			user && (await user.mt5Accounts.find((account) => account.productId === orderId));
 
-        // Prepare the HTML content for the email
-        const htmlContent = `<!DOCTYPE html>
+		// Prepare the HTML content for the email
+		const htmlContent = `<!DOCTYPE html>
 <html>
 <head>
     <style>
@@ -487,32 +484,32 @@ const updateOrder = async (id, data) => {
 </body>
 </html>`;
 
-        // Send email and update order status if conditions are met
-        if (matchingAccount) {
-            const info = await sendEmailSingleRecipient(
-                user.email,
-                "Your MT5 Account Credentials From Foxx Funded",
-                `Your MT5 account: ${matchingAccount.account} and password: ${matchingAccount.masterPassword}`,
-                htmlContent
-            );
-            if (info) {
-                // Update order status to 'Delivered'
-                await MOrder.findOneAndUpdate(
-                    { orderId: orderId },
-                    { $set: { orderStatus: "Delivered" } },
-                    { new: true }
-                );
-            }
-            // Return the matched MT5 account
-            return { matchingAccount, updatedOrder };
-        }
-        // Return the updated order if no email was sent
-        return { updatedOrder };
-    } catch (error) {
-        console.log("🚀 ~ updateOrder ~ error:", error);
-        // Return the error in the response
-        return { error: `Error updating order: ${error.message}` };
-    }
+		// Send email and update order status if conditions are met
+		if (matchingAccount) {
+			const info = await sendEmailSingleRecipient(
+				user.email,
+				"Your MT5 Account Credentials From Foxx Funded",
+				`Your MT5 account: ${matchingAccount.account} and password: ${matchingAccount.masterPassword}`,
+				htmlContent
+			);
+			if (info) {
+				// Update order status to 'Delivered'
+				await MOrder.findOneAndUpdate(
+					{ orderId: orderId },
+					{ $set: { orderStatus: "Delivered" } },
+					{ new: true }
+				);
+			}
+			// Return the matched MT5 account
+			return { matchingAccount, updatedOrder };
+		}
+		// Return the updated order if no email was sent
+		return { updatedOrder };
+	} catch (error) {
+		console.log("🚀 ~ updateOrder ~ error:", error);
+		// Return the error in the response
+		return { error: `Error updating order: ${error.message}` };
+	}
 };
 
 /**
@@ -520,64 +517,64 @@ const updateOrder = async (id, data) => {
  * @returns {Promise<{ totalSales: number, todaySales: number }>} An object containing the total sales and today's sales.
  */
 const totalOrderSales = async () => {
-    try {
-        // Define the pipeline for total sales with paymentStatus and orderStatus filter
-        const totalSalesPipeline = [
-            {
-                $match: {
-                    paymentStatus: "Paid",
-                    orderStatus: "Delivered",
-                },
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalSales: {
-                        $sum: "$totalPrice", // Summing the totalPrice field from the demo data
-                    },
-                },
-            },
-        ];
+	try {
+		// Define the pipeline for total sales with paymentStatus and orderStatus filter
+		const totalSalesPipeline = [
+			{
+				$match: {
+					paymentStatus: "Paid",
+					orderStatus: "Delivered",
+				},
+			},
+			{
+				$group: {
+					_id: null,
+					totalSales: {
+						$sum: "$totalPrice", // Summing the totalPrice field from the demo data
+					},
+				},
+			},
+		];
 
-        // Define the pipeline for today's sales with paymentStatus and orderStatus filter
-        const todaySalesPipeline = [
-            {
-                $match: {
-                    paymentStatus: "Paid",
-                    orderStatus: "Delivered",
-                    createdAt: {
-                        $gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of today
-                        $lt: new Date(new Date().setHours(23, 59, 59, 999)), // End of today
-                    },
-                },
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalSalesToday: {
-                        $sum: "$totalPrice", // Summing the totalPrice field from today's sales
-                    },
-                },
-            },
-        ];
+		// Define the pipeline for today's sales with paymentStatus and orderStatus filter
+		const todaySalesPipeline = [
+			{
+				$match: {
+					paymentStatus: "Paid",
+					orderStatus: "Delivered",
+					createdAt: {
+						$gte: new Date(new Date().setHours(0, 0, 0, 0)), // Start of today
+						$lt: new Date(new Date().setHours(23, 59, 59, 999)), // End of today
+					},
+				},
+			},
+			{
+				$group: {
+					_id: null,
+					totalSalesToday: {
+						$sum: "$totalPrice", // Summing the totalPrice field from today's sales
+					},
+				},
+			},
+		];
 
-        // Count all the orders in the collection without any filters
-        const totalOrdersResult = await MOrder.countDocuments().exec(); // Just return the count of all orders
+		// Count all the orders in the collection without any filters
+		const totalOrdersResult = await MOrder.countDocuments().exec(); // Just return the count of all orders
 
-        // Execute the aggregation pipelines for total sales and today's sales
-        const [totalSalesResult] = await MOrder.aggregate(totalSalesPipeline).exec();
-        const [todaySalesResult] = await MOrder.aggregate(todaySalesPipeline).exec();
+		// Execute the aggregation pipelines for total sales and today's sales
+		const [totalSalesResult] = await MOrder.aggregate(totalSalesPipeline).exec();
+		const [todaySalesResult] = await MOrder.aggregate(todaySalesPipeline).exec();
 
-        // Return total sales, today's sales, and total order count
-        return {
-            totalSales: totalSalesResult?.totalSales || 0, // Returning total sales, or 0 if no result
-            todaySales: todaySalesResult?.totalSalesToday || 0, // Returning today's sales, or 0 if no result
-            totalOrders: totalOrdersResult || 0, // Returning the count of all orders
-        };
-    } catch (error) {
-        console.error("Error calculating order sales:", error);
-        throw error;
-    }
+		// Return total sales, today's sales, and total order count
+		return {
+			totalSales: totalSalesResult?.totalSales || 0, // Returning total sales, or 0 if no result
+			todaySales: todaySalesResult?.totalSalesToday || 0, // Returning today's sales, or 0 if no result
+			totalOrders: totalOrdersResult || 0, // Returning the count of all orders
+		};
+	} catch (error) {
+		console.error("Error calculating order sales:", error);
+		throw error;
+	}
 };
 
 /**
@@ -587,12 +584,12 @@ const totalOrderSales = async () => {
  * @throws {Error} If there is an error retrieving the order.
  */
 const singleOrder = async (id) => {
-    try {
-        const order = await MOrder.findById(id);
-        return order;
-    } catch (error) {
-        throw new Error("Error retrieving order");
-    }
+	try {
+		const order = await MOrder.findById(id);
+		return order;
+	} catch (error) {
+		throw new Error("Error retrieving order");
+	}
 };
 
 /**
@@ -604,106 +601,104 @@ const singleOrder = async (id) => {
  * @throws {Error} If there is an error retrieving the orders from the database.
  */
 const userOrders = async (email) => {
-    try {
-        const orders = await MOrder.find({ "buyerDetails.email": email }).sort({
-            createdAt: -1,
-        }); // Sort by 'createdAt' field in descending order
-        return orders || [];
-    } catch (error) {
-        throw new Error("Error retrieving order");
-    }
+	try {
+		const orders = await MOrder.find({ "buyerDetails.email": email }).sort({
+			createdAt: -1,
+		}); // Sort by 'createdAt' field in descending order
+		return orders || [];
+	} catch (error) {
+		throw new Error("Error retrieving order");
+	}
 };
 
 const getOrderById = async (orderId) => {
-    try {
-        const order = await MOrder.findOne({ orderId: `#${orderId}` });
-        return order;
-    } catch (error) {
-        console.error("Error in orderService:", error);
-        throw new Error("Failed to retrieve order from database");
-    }
+	try {
+		const order = await MOrder.findOne({ orderId: `#${orderId}` });
+		return order;
+	} catch (error) {
+		console.error("Error in orderService:", error);
+		throw new Error("Failed to retrieve order from database");
+	}
 };
 
 // Service function to get orders by referralCode with additional filters
 const getOrdersByReferralCode = async (referralCode) => {
-    try {
-        const orders = await MOrder.find({
-            referralCode,
-            orderStatus: "Delivered",
-            paymentStatus: "Paid",
-        });
+	try {
+		const orders = await MOrder.find({
+			referralCode,
+			orderStatus: "Delivered",
+			paymentStatus: "Paid",
+		});
 
-        // Total number of orders (totalSales)
-        const totalSales = orders.length;
+		// Total number of orders (totalSales)
+		const totalSales = orders.length;
 
-        // Total Sales Price (sum of challengePrice from each order)
-        const totalSalesPrice = orders.reduce((sum, order) => {
-            return (
-                sum + order.orderItems.reduce((itemSum, item) => itemSum + item.challengePrice, 0)
-            );
-        }, 0);
+		// Total Sales Price (sum of challengePrice from each order)
+		const totalSalesPrice = orders.reduce((sum, order) => {
+			return sum + order.orderItems.reduce((itemSum, item) => itemSum + item.challengePrice, 0);
+		}, 0);
 
-        // Get affiliate data
-        const getAffiliate = await getAffiliateByReferralCode(referralCode);
+		// Get affiliate data
+		const getAffiliate = await getAffiliateByReferralCode(referralCode);
 
-        // Set commission rate based on affiliate tier
-        let commissionRate = 0.075; // Default 7.5% for Tier 1
-        if (getAffiliate.tier === "Tier 2") {
-            commissionRate = 0.1; // 10% for Tier 2
-        } else if (getAffiliate.tier === "Tier 3") {
-            commissionRate = 0.15; // 15% for Tier 3
-        }
+		// Set commission rate based on affiliate tier
+		let commissionRate = 0.075; // Default 7.5% for Tier 1
+		if (getAffiliate.tier === "Tier 2") {
+			commissionRate = 0.1; // 10% for Tier 2
+		} else if (getAffiliate.tier === "Tier 3") {
+			commissionRate = 0.15; // 15% for Tier 3
+		}
 
-        // Commissions Earned (based on affiliate tier, rounded to two decimal places)
-        const commissionsEarned = parseFloat(
-            orders
-                .reduce((sum, order) => {
-                    return (
-                        sum + order.totalPrice * commissionRate
-                        // order.orderItems.reduce(
-                        // 	(itemSum, item) => itemSum + item.challengePrice * commissionRate,
-                        // 	0
-                        // )
-                    );
-                }, 0)
-                .toFixed(2)
-        );
+		// Commissions Earned (based on affiliate tier, rounded to two decimal places)
+		const commissionsEarned = parseFloat(
+			orders
+				.reduce((sum, order) => {
+					return (
+						sum + order.totalPrice * commissionRate
+						// order.orderItems.reduce(
+						// 	(itemSum, item) => itemSum + item.challengePrice * commissionRate,
+						// 	0
+						// )
+					);
+				}, 0)
+				.toFixed(2)
+		);
 
-        // Return the result with totals
-        return {
-            success: true,
-            totalSales,
-            totalSalesPrice,
-            commissionsEarned,
-            orders,
-        };
-    } catch (error) {
-        throw new Error(error.message);
-    }
+		// Return the result with totals
+		return {
+			success: true,
+			totalSales,
+			totalSalesPrice,
+			commissionsEarned,
+			orders,
+		};
+	} catch (error) {
+		throw new Error(error.message);
+	}
 };
 
 const getOrdersByReferralAndStatus = async () => {
-    try {
-        const orders = await MOrder.find({
-            referralCode: { $exists: true, $ne: "" },
-            orderStatus: "Delivered",
-            paymentStatus: "Paid",
-        });
+	try {
+		const orders = await MOrder.find({
+			referralCode: { $exists: true, $ne: "" },
+			orderStatus: "Delivered",
+			paymentStatus: "Paid",
+		});
 
-        // Calculate total number of orders
-        const totalOrders = orders.length;
+		// Calculate total number of orders
+		const totalOrders = orders.length;
 
-        // Calculate sum of totalPrice
-        const totalPriceSum = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+		// Calculate sum of totalPrice
+		const totalPriceSum = orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
 
-        return {
-            orders,
-            totalOrders,
-            totalPriceSum,
-        };
-    } catch (error) {
-        throw new Error(error.message);
-    }
+		return {
+			orders,
+			totalOrders,
+			totalPriceSum,
+		};
+	} catch (error) {
+		throw new Error(error.message);
+	}
 };
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -716,28 +711,28 @@ const getOrdersByReferralAndStatus = async () => {
 // });
 
 const sendingFollowUpUnPaidEmail = async () => {
-    try {
-        // Fetch all orders with paymentStatus 'Unpaid'
-        const orders = await MOrder.find({ paymentStatus: "Unpaid" });
+	try {
+		// Fetch all orders with paymentStatus 'Unpaid'
+		const orders = await MOrder.find({ paymentStatus: "Unpaid" });
 
-        if (orders.length === 0) {
-            console.log("No unpaid orders found.");
-            return;
-        }
+		if (orders.length === 0) {
+			console.log("No unpaid orders found.");
+			return;
+		}
 
-        const currentTime = new Date();
-        const twoHoursAgo = new Date(currentTime.getTime() - 2 * 60 * 60 * 1000); // 2 hours ago
-        const oneHourAgo = new Date(currentTime.getTime() - 1 * 60 * 60 * 1000); // 1 hour ago
+		const currentTime = new Date();
+		const twoHoursAgo = new Date(currentTime.getTime() - 2 * 60 * 60 * 1000); // 2 hours ago
+		const oneHourAgo = new Date(currentTime.getTime() - 1 * 60 * 60 * 1000); // 1 hour ago
 
-        // Process each order
-        for (const order of orders) {
-            const orderCreationTime = new Date(order.createdAt); // Ensure it's a Date object
+		// Process each order
+		for (const order of orders) {
+			const orderCreationTime = new Date(order.createdAt); // Ensure it's a Date object
 
-            // Check if the order was created between 2 hours ago and 1 hour ago
-            if (orderCreationTime >= twoHoursAgo && orderCreationTime < oneHourAgo) {
-                const buyerDetails = order.buyerDetails;
+			// Check if the order was created between 2 hours ago and 1 hour ago
+			if (orderCreationTime >= twoHoursAgo && orderCreationTime < oneHourAgo) {
+				const buyerDetails = order.buyerDetails;
 
-                const htmlTemplate = `
+				const htmlTemplate = `
 				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); text-align: center; line-height: 1.6;">
 				  <!-- Header Section -->
 				  <div style="margin-bottom: 25px;">
@@ -826,30 +821,30 @@ const sendingFollowUpUnPaidEmail = async () => {
 				</style>
 				`;
 
-                // Add email-sending logic here
-                await sendEmailSingleRecipient(
-                    buyerDetails?.email,
-                    "Complete Your Signup and Start Trading with Foxx Funded 🚀",
-                    null,
-                    htmlTemplate
-                );
-                console.log("Follow-up email sent successfully to:", buyerDetails.email);
-            }
-        }
-    } catch (error) {
-        console.error("Error fetching or processing orders:", error);
-    }
+				// Add email-sending logic here
+				await sendEmailSingleRecipient(
+					buyerDetails?.email,
+					"Complete Your Signup and Start Trading with Foxx Funded 🚀",
+					null,
+					htmlTemplate
+				);
+				console.log("Follow-up email sent successfully to:", buyerDetails.email);
+			}
+		}
+	} catch (error) {
+		console.error("Error fetching or processing orders:", error);
+	}
 };
 
 module.exports = {
-    createOrder,
-    allOrders,
-    updateOrder,
-    totalOrderSales,
-    singleOrder,
-    userOrders,
-    getOrderById,
-    getOrdersByReferralCode,
-    getOrdersByReferralAndStatus,
-    sendingFollowUpUnPaidEmail,
+	createOrder,
+	allOrders,
+	updateOrder,
+	totalOrderSales,
+	singleOrder,
+	userOrders,
+	getOrderById,
+	getOrdersByReferralCode,
+	getOrdersByReferralAndStatus,
+	sendingFollowUpUnPaidEmail,
 };
