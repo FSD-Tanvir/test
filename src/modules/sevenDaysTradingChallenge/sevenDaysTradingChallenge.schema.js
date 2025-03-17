@@ -9,7 +9,12 @@ const SevenDaysTradingChallengeSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    isDisabled: {
+    
+    emailCount: {
+        type: Number,
+        default: 0, // Track the number of emails sent
+    },
+ isDisabled: {
         type: Boolean,
         default: false,
     },

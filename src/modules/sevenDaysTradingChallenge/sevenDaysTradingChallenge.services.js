@@ -1,4 +1,5 @@
 const MUser = require("../users/users.schema");
+const SevenDaysTradingChallenge = require("./sevenDaysTradingChallenge.schema");
 
 ;
 
@@ -67,4 +68,11 @@ const getActiveAccounts = async () => {
     }
 };
 
-module.exports = { getActiveAccounts };
+
+const getSevenDaysTradingChallengeDataService = async () => {
+    return await SevenDaysTradingChallenge.find({});
+  };
+
+
+  
+  module.exports = { getActiveAccounts, getSevenDaysTradingChallengeDataService };
