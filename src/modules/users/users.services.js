@@ -99,15 +99,13 @@ const updateMt5AccountStatus = async (id, userDetails) => {
 const findUserWithMt5Details = async (id) => {
 	try {
 		const startDate = "1990-12-07 12:33:12";
-		const endDate = formatDateTime(new Date());
+		const endDate = "2100-12-07 12:33:12";
 
-		// Find user by ID from the database
 		const user = await MUser.findById(id);
 		if (!user) {
 			throw new Error("User not found.");
 		}
 
-		// Return the user in array of object if no MT5 accounts are found
 		if (!user.mt5Accounts || user.mt5Accounts.length === 0) {
 			return [{ user }];
 		}
@@ -116,36 +114,50 @@ const findUserWithMt5Details = async (id) => {
 		const accountNumbers = user.mt5Accounts.map((account) => account.account);
 
 		// Create an array of promises for all API requests
-		const promises = accountNumbers.map((account) => {
-			return Promise.all([
-				userDetails(account), // Fetch user details
-				accountDetails(account), // Fetch account details
-				orderHistories(account, startDate, endDate), // Fetch order histories
-			]);
+		const promises = accountNumbers.map(async (account) => {
+			try {
+				const [userDetailsResult, accountDetailsResult, orderHistoriesResult] = await Promise.all([
+					userDetails(account).catch((err) => {
+						return null;
+					}),
+					accountDetails(account).catch((err) => {
+						return null;
+					}),
+					orderHistories(account, startDate, endDate).catch((err) => {
+						return null;
+					}),
+				]);
+
+				// Process the fetched details
+				const tradingDays =
+					orderHistoriesResult && orderHistoriesResult.length > 0
+						? getUniqueTradingDays(orderHistoriesResult)
+						: " N/A ";
+
+				return {
+					account,
+					mt5UserDetails: userDetailsResult,
+					mt5AccountDetails: accountDetailsResult,
+					mt5OrderHistories: orderHistoriesResult,
+					tradingDays,
+				};
+			} catch (error) {
+				return null;
+			}
 		});
 
 		// Fetch details concurrently for all MT5 accounts
 		const detailsArray = await Promise.all(promises);
 
-		// Process the fetched details to extract required information
-		const userInfo = detailsArray.map(([userDetails, accountDetails, orderHistories]) => {
-			const tradingDays = getUniqueTradingDays(orderHistories); // Get unique trading days
-			return {
-				account: userDetails.login,
-				mt5UserDetails: userDetails,
-				mt5AccountDetails: accountDetails,
-				mt5OrderHistories: orderHistories,
-				tradingDays,
-			};
-		});
+		// Filter out any null results (accounts that failed completely)
+		const userInfo = detailsArray.filter((details) => details !== null);
 
 		return {
 			user,
 			userInfo,
 		};
 	} catch (error) {
-		console.error("Error in findUserWithMt5Details:", error); // Log error for debugging purposes
-		throw error; // Throw error if any issues arise during the process
+		throw error;
 	}
 };
 
