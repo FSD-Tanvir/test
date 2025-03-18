@@ -39,6 +39,7 @@ const consistencyBreakRoutes = require("./src/modules/consistencyBreak/consisten
 const newsTradingRiskRoutes = require("./src/modules/newsTradingRisk/newsTradingRisk.routes.js");
 const stopLossRiskRoutes = require("./src/modules/stopLossRisk/stopLossRisk.routes.js");
 const lotSizeRiskRoutes = require("./src/modules/lotSizeRisk/lotSizeRisk.routes.js");
+const sevenDaysTradingChallengeRoutes = require("./src/modules/sevenDaysTradingChallenge/sevenDaysTradingChallenge.routes.js");
 
 // Route middleware
 app.use("/api/foxx-funded/v1/challenges", challengesRoutes);
@@ -66,6 +67,7 @@ app.use("/api/foxx-funded/v1/newsTradingRisk", newsTradingRiskRoutes);
 app.use("/api/foxx-funded/v1/stopLossRisk", stopLossRiskRoutes);
 app.use("/api/foxx-funded/v1/consistencyBreak", consistencyBreakRoutes);
 app.use("/api/foxx-funded/v1/lotSizeRisk", lotSizeRiskRoutes);
+app.use("/api/foxx-funded/v1/sevenDaysTradingChallenge", sevenDaysTradingChallengeRoutes);
 
 runAllFunctions();
 

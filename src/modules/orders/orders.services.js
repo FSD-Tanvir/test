@@ -1,11 +1,10 @@
-const { default: mongoose } = require("mongoose");
 const { MOrder } = require("./orders.schema");
 const { sendEmailSingleRecipient } = require("../../helper/mailing");
 const MUser = require("../users/users.schema");
 const { invoiceMailingHTMLTemplate } = require("../../helper/utils/invoiceMailingHTMLTemplate");
-const { getAffiliateByReferralCode } = require("../affiliate/affiliate.services");
 const { MCoupon } = require("../coupon/coupon.schema");
 const { calculateDiscount, calculateTotal } = require("../../helper/utils/orderCalculations");
+const MAffiliate = require("../affiliate/affiliate.schema");
 
 /**
  * Asynchronously creates a new order in the database.
@@ -304,7 +303,9 @@ const updateOrder = async (id, data) => {
 		}
 
 		// Find the user
-		const user = await MUser.findOne({ email: updatedOrder?.buyerDetails?.email });
+		const user = await MUser.findOne({
+			email: updatedOrder?.buyerDetails?.email,
+		});
 
 		if (!user || user.mt5Accounts.length === 0) {
 			// If no user or no Mt5Accounts, return the updated order
@@ -634,34 +635,26 @@ const getOrdersByReferralCode = async (referralCode) => {
 		const totalSales = orders.length;
 
 		// Total Sales Price (sum of challengePrice from each order)
-		const totalSalesPrice = orders.reduce((sum, order) => {
-			return sum + order.orderItems.reduce((itemSum, item) => itemSum + item.challengePrice, 0);
-		}, 0);
-
-		// Get affiliate data
-		const getAffiliate = await getAffiliateByReferralCode(referralCode);
-
-		// Set commission rate based on affiliate tier
-		let commissionRate = 0.075; // Default 7.5% for Tier 1
-		if (getAffiliate.tier === "Tier 2") {
-			commissionRate = 0.1; // 10% for Tier 2
-		} else if (getAffiliate.tier === "Tier 3") {
-			commissionRate = 0.15; // 15% for Tier 3
+		const totalSalesPrice = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+		// Determine commission rate based on totalSales
+		let commissionRate = 0.15; // Default 15% for 1-15 sales
+		if (totalSales >= 16 && totalSales <= 50) {
+			commissionRate = 0.2; // 20% for 16-50 sales
+		} else if (totalSales > 50) {
+			commissionRate = 0.3; // 30% for 51+ sales
 		}
 
 		// Commissions Earned (based on affiliate tier, rounded to two decimal places)
-		const commissionsEarned = parseFloat(
-			orders
-				.reduce((sum, order) => {
-					return (
-						sum + order.totalPrice * commissionRate
-						// order.orderItems.reduce(
-						// 	(itemSum, item) => itemSum + item.challengePrice * commissionRate,
-						// 	0
-						// )
-					);
-				}, 0)
-				.toFixed(2)
+		const commissionsEarned = parseFloat(totalSalesPrice * commissionRate);
+
+		await MAffiliate.findOneAndUpdate(
+			{ referralCode },
+			{
+				totalNumberOfSales: totalSales,
+				totalSalesAmount: totalSalesPrice,
+				commissionsAmount: commissionsEarned,
+			},
+			{ new: true }
 		);
 
 		// Return the result with totals
