@@ -132,7 +132,7 @@ const findUserWithMt5Details = async (id) => {
 				const tradingDays =
 					orderHistoriesResult && orderHistoriesResult.length > 0
 						? getUniqueTradingDays(orderHistoriesResult)
-						: "-";
+						: " N/A ";
 
 				return {
 					account,
