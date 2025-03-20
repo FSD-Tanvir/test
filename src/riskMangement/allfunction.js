@@ -27,12 +27,12 @@ const runAllFunctions = () => {
         lotSizeRisk();
     });
 
-    // Schedule stopLossRisk to run at a specific time (e.g., 22:00)
+    // Schedule stopLossRisk to run daily at 22:00
     cron.schedule("00 22 * * *", () => {
         stopLossRisk();
     });
 
-    // Schedule consistencyBreak to run 30 minutes after stopLossRisk (e.g., 22:30)
+    // Schedule consistencyBreak to run 30 minutes after stopLossRisk
     cron.schedule("30 22 * * *", () => {
         consistencyBreak();
     });
