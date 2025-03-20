@@ -47,9 +47,16 @@ const runAllFunctions = () => {
         sendAutomatedConsistencyBreakEmail();
     });
 
-    // Schedule sendAutomatedStopLossEmail to run every 6 hours
-    cron.schedule("0 */6 * * *", () => {
+    // Schedule sendAutomatedStopLossEmail to run daily at 23:10
+    cron.schedule("10 23 * * *", () => {
         sendAutomatedStopLossEmail();
+
+        const nextExecutionTime = new Date();
+        nextExecutionTime.setHours(nextExecutionTime.getHours() + 6);
+
+        cron.schedule("0 */6 * * *", () => {
+            sendAutomatedStopLossEmail();
+        });
     });
 
     // Schedule lotSizeRisk to run daily at 23:25
