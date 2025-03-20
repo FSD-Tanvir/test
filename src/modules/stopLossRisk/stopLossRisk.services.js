@@ -408,6 +408,7 @@ const sendAutomatedStopLossEmail = async () => {
             const currentEmailCount = account.accounts[0].emailCount;
             const lastEmailSentAt = account.accounts[0].lastEmailSentAt; // Track when the last email was sent
             const accNumb = account.accounts[0].account;
+            const updatedAt = account.accounts[0].updatedAt;
             const accountDetails = {
                 email: account.accounts[0].email,
                 account: account.accounts[0].account,
@@ -495,7 +496,7 @@ const sendAutomatedStopLossEmail = async () => {
 
             // Check if 24 hours have passed since the last email was sent
             const currentTime = new Date();
-            const lastEmailTime = lastEmailSentAt ? new Date(lastEmailSentAt) : null;
+            const lastEmailTime = lastEmailSentAt ? new Date(lastEmailSentAt) : new Date(updatedAt);
             const twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
 
             // Handle case where no emails have been sent yet
@@ -516,10 +517,6 @@ const sendAutomatedStopLossEmail = async () => {
                             sendStopLossWarningEmail2
                         );
                     }
-                } else {
-                    console.log(
-                        `Skipping second email for account ${accNumb}: 24 hours not elapsed.`
-                    );
                 }
             }
             // Handle case where two emails have been sent
@@ -528,10 +525,6 @@ const sendAutomatedStopLossEmail = async () => {
                     if (!account.accounts[0].isDisabled && count >= 3) {
                         await disableAccount(accNumb, accountDetails);
                     }
-                } else {
-                    console.log(
-                        `Skipping account disable for account ${accNumb}: 24 hours not elapsed.`
-                    );
                 }
             } else {
                 console.log("No action taken");
