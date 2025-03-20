@@ -406,9 +406,7 @@ const sendAutomatedStopLossEmail = async () => {
             const tickets = account.accounts.map((account) => account.ticket);
             const count = account.count;
             const currentEmailCount = account.accounts[0].emailCount;
-            const lastEmailSentAt = account.accounts[0].lastEmailSentAt; // Track when the last email was sent
             const accNumb = account.accounts[0].account;
-            const updatedAt = account.accounts[0].updatedAt;
             const accountDetails = {
                 email: account.accounts[0].email,
                 account: account.accounts[0].account,
@@ -429,10 +427,7 @@ const sendAutomatedStopLossEmail = async () => {
                 if (typeof info === "string" && info.includes("OK")) {
                     await StopLossRiskModel.updateMany(
                         { account: accNumb },
-                        {
-                            $set: { emailSent: true, lastEmailSentAt: new Date() },
-                            $inc: { emailCount: 1 },
-                        }
+                        { $set: { emailSent: true }, $inc: { emailCount: 1 } }
                     );
                 }
             };
@@ -494,38 +489,38 @@ const sendAutomatedStopLossEmail = async () => {
                 }
             };
 
-            // Check if 24 hours have passed since the last email was sent
-            const currentTime = new Date();
-            const lastEmailTime = lastEmailSentAt ? new Date(lastEmailSentAt) : new Date(updatedAt);
-            const twentyFourHoursInMillis = 24 * 60 * 60 * 1000;
-
             // Handle case where no emails have been sent yet
             if (currentEmailCount === 0) {
-                if (count >= 1) {
+                if (count >= 1)
                     await sendEmail(
                         "Stop-Loss Warning 1: Compliance with Trading Policies",
                         sendStopLossWarningEmail1
                     );
+                if (count >= 2)
+                    await sendEmail(
+                        "Stop-Loss Warning 2: Urgent Compliance Required",
+                        sendStopLossWarningEmail2
+                    );
+
+                if (!account.accounts[0].isDisabled && count >= 3) {
+                    await disableAccount(accNumb, accountDetails);
                 }
             }
-            // Handle case where one email has been sent
+            //  Handle case where one email has been sent
             else if (currentEmailCount === 1) {
-                if (!lastEmailTime || currentTime - lastEmailTime >= twentyFourHoursInMillis) {
-                    if (count >= 2) {
-                        await sendEmail(
-                            "Stop-Loss Warning 2: Urgent Compliance Required",
-                            sendStopLossWarningEmail2
-                        );
-                    }
+                if (count >= 2) {
+                    await sendEmail(
+                        "Stop-Loss Warning 2: Urgent Compliance Required",
+                        sendStopLossWarningEmail2
+                    );
                 }
+                if (!account.accounts[0].isDisabled && count >= 3)
+                    await disableAccount(accNumb, accountDetails);
             }
-            // Handle case where two emails have been sent
+            //  Handle case where two emails have been sent
             else if (currentEmailCount === 2) {
-                if (!lastEmailTime || currentTime - lastEmailTime >= twentyFourHoursInMillis) {
-                    if (!account.accounts[0].isDisabled && count >= 3) {
-                        await disableAccount(accNumb, accountDetails);
-                    }
-                }
+                if (!account.accounts[0].isDisabled && count >= 3)
+                    await disableAccount(accNumb, accountDetails);
             } else {
                 console.log("No action taken");
             }
@@ -533,7 +528,7 @@ const sendAutomatedStopLossEmail = async () => {
 
         console.log("Email processing for Stop Loss completed successfully.");
     } catch (error) {
-        console.error(error);
+        console.log(error);
         throw new Error("Failed to fetch stop loss risk data");
     }
 };

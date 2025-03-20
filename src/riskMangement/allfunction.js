@@ -27,44 +27,32 @@ const runAllFunctions = () => {
         lotSizeRisk();
     });
 
-    // Schedule stopLossRisk to run daily at 22:00
+    // Schedule stopLossRisk to run at a specific time (e.g., 22:00)
     cron.schedule("00 22 * * *", () => {
         stopLossRisk();
     });
 
-    // Schedule consistencyBreak to run 30 minutes after stopLossRisk
+    // Schedule consistencyBreak to run 30 minutes after stopLossRisk (e.g., 22:30)
     cron.schedule("30 22 * * *", () => {
         consistencyBreak();
     });
 
-    // Schedule checkAndSaveInactiveAccounts to run daily at 12:45
     cron.schedule("45 12 * * *", () => {
         checkAndSaveInactiveAccounts();
     });
 
-    // Schedule sendAutomatedConsistencyBreakEmail to run daily at 22:50
     cron.schedule("50 22 * * *", () => {
         sendAutomatedConsistencyBreakEmail();
     });
 
-    // Schedule sendAutomatedStopLossEmail to run daily at 23:10
     cron.schedule("10 23 * * *", () => {
         sendAutomatedStopLossEmail();
-
-        const nextExecutionTime = new Date();
-        nextExecutionTime.setHours(nextExecutionTime.getHours() + 6);
-
-        cron.schedule("0 */6 * * *", () => {
-            sendAutomatedStopLossEmail();
-        });
     });
 
-    // Schedule lotSizeRisk to run daily at 23:25
     cron.schedule("25 23 * * *", () => {
         sendAutomatedLotSizeEmail();
     });
 
-    // Schedule sendAutomatedTwoPercentEmail to run daily at 00:19
     cron.schedule("19 0 * * *", () => {
         sendAutomatedTwoPercentEmail();
     });
