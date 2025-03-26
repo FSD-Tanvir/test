@@ -38,11 +38,15 @@ const stopLossRiskSchema = new mongoose.Schema(
         },
         emailCount: {
             type: Number,
-            default: 0, // Track the number of emails sent
+            default: 0,
         },
         isDisabled: {
             type: Boolean,
             default: false,
+        },
+        lastEmailSentAt: {
+            type: Date,
+            default: null,
         },
     },
     { timestamps: true }
