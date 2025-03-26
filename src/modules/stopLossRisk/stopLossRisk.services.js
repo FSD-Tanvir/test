@@ -518,12 +518,19 @@ const sendAutomatedStopLossEmail = async () => {
             //         await disableAccount(accNumb, accountDetails);
             // }
             //  Handle case where two emails have been sent
-            if (currentEmailCount === 2) {
-                if (!account.accounts[0].isDisabled && count >= 3)
-                    await disableAccount(accNumb, accountDetails);
+
+            if (!account.accounts[0].isDisabled && count >= 3) {
+                await disableAccount(accNumb, accountDetails);
             } else {
                 console.log("No action taken");
             }
+
+            // if (currentEmailCount === 2) {
+            //     if (!account.accounts[0].isDisabled && count >= 3)
+            //         await disableAccount(accNumb, accountDetails);
+            // } else {
+            //     console.log("No action taken");
+            // }
         }
 
         console.log("Email processing for Stop Loss completed successfully.");

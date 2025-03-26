@@ -495,12 +495,18 @@ const sendAutomatedConsistencyBreakEmail = async () => {
             // 		await disableAccount(accNumb, accountDetails);
             // }
             //  Handle case where two emails have been sent
-            if (currentEmailCount === 2) {
-                if (!account.trades[0].isDisabled && totalTrades >= 3)
-                    await disableAccount(accNumb, accountDetails);
+            if (!account.trades[0].isDisabled && totalTrades >= 3) {
+                await disableAccount(accNumb, accountDetails);
             } else {
                 console.log("No action taken");
             }
+
+            // if (currentEmailCount === 2) {
+            //     if (!account.trades[0].isDisabled && totalTrades >= 3)
+            //         await disableAccount(accNumb, accountDetails);
+            // } else {
+            //     console.log("No action taken");
+            // }
         }
 
         console.log("Email processing for Consistency completed successfully.");
