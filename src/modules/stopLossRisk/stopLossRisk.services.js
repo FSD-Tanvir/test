@@ -490,35 +490,35 @@ const sendAutomatedStopLossEmail = async () => {
             };
 
             // Handle case where no emails have been sent yet
-            if (currentEmailCount === 0) {
-                if (count >= 1)
-                    await sendEmail(
-                        "Stop-Loss Warning 1: Compliance with Trading Policies",
-                        sendStopLossWarningEmail1
-                    );
-                if (count >= 2)
-                    await sendEmail(
-                        "Stop-Loss Warning 2: Urgent Compliance Required",
-                        sendStopLossWarningEmail2
-                    );
+            // if (currentEmailCount === 0) {
+            //     if (count >= 1)
+            //         await sendEmail(
+            //             "Stop-Loss Warning 1: Compliance with Trading Policies",
+            //             sendStopLossWarningEmail1
+            //         );
+            //     if (count >= 2)
+            //         await sendEmail(
+            //             "Stop-Loss Warning 2: Urgent Compliance Required",
+            //             sendStopLossWarningEmail2
+            //         );
 
-                if (!account.accounts[0].isDisabled && count >= 3) {
-                    await disableAccount(accNumb, accountDetails);
-                }
-            }
-            //  Handle case where one email has been sent
-            else if (currentEmailCount === 1) {
-                if (count >= 2) {
-                    await sendEmail(
-                        "Stop-Loss Warning 2: Urgent Compliance Required",
-                        sendStopLossWarningEmail2
-                    );
-                }
-                if (!account.accounts[0].isDisabled && count >= 3)
-                    await disableAccount(accNumb, accountDetails);
-            }
+            //     if (!account.accounts[0].isDisabled && count >= 3) {
+            //         await disableAccount(accNumb, accountDetails);
+            //     }
+            // }
+            // //  Handle case where one email has been sent
+            // else if (currentEmailCount === 1) {
+            //     if (count >= 2) {
+            //         await sendEmail(
+            //             "Stop-Loss Warning 2: Urgent Compliance Required",
+            //             sendStopLossWarningEmail2
+            //         );
+            //     }
+            //     if (!account.accounts[0].isDisabled && count >= 3)
+            //         await disableAccount(accNumb, accountDetails);
+            // }
             //  Handle case where two emails have been sent
-            else if (currentEmailCount === 2) {
+            if (currentEmailCount === 2) {
                 if (!account.accounts[0].isDisabled && count >= 3)
                     await disableAccount(accNumb, accountDetails);
             } else {
