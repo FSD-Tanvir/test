@@ -157,7 +157,7 @@ const lotSizeDisabledEmailTemplate = (account, accountDetails) => {
         <!-- Content Section -->
         <div class="content">
             <p>Dear Trader,</p>
-            <p>We regret to inform you that we have observed continued violations of our Lot Size Rules at Foxx Funded. Despite previous warnings, these breaches have persisted, constituting a serious compliance issue.</p>
+            <p>We regret to inform you that we have observed continued violations of our Lot Size Rules at Foxx Funded. </p>
             <p>Breach Details:</p>
     
             <div class="highlight">
@@ -243,6 +243,9 @@ const lotSizeDisabledEmailTemplate = (account, accountDetails) => {
     </p>
 </div>
     
+            <p>We’d love to see you try again — you can restart a new challenge with 40% off using the code:
+                <span style="font-weight: bold; color: #d32f2f;">RETRY40</span>
+            </p>
             <p>For further details on our policies and guidelines, please refer to our <a href="https://foxx-funded.com/faqs">FAQ</a> article.</p>
     
             <p>Best regards,</p>

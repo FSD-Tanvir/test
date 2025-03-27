@@ -155,7 +155,7 @@ const stopLossDisabledEmailTemplate = (account, accountDetails) => {
         <!-- Content Section -->
         <div class="content">
             <p>Dear Trader,</p>
-            <p>Following multiple warnings regarding the failure to comply with our stop-loss policy, we regret to inform you that your trading account with Foxx Funded is now permanently terminated due to continued violations.</p>
+            <p>We regret to inform you that your trading account with Foxx Funded is now permanently terminated due to continued Stop Loss violations.</p>
 
             <p style="font-size: 20px; font-weight: bold; color: #d32f2f; margin-top: 20px; margin-bottom: 15px; text-align: center;">
     Final Breach Details
@@ -179,6 +179,10 @@ const stopLossDisabledEmailTemplate = (account, accountDetails) => {
             </div>
 
             <p>This decision is final and irreversible. We urge all traders to follow risk management guidelines to ensure a fair and responsible trading environment.</p>
+
+            <p>We’d love to see you try again — you can restart a new challenge with 40% off using the code:
+                <span style="font-weight: bold; color: #d32f2f;">RETRY40</span>
+            </p>
 
             <p>For further details on our policies and guidelines, please refer to our <a href="https://foxx-funded.com/faqs">FAQ</a> article.</p>
 
