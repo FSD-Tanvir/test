@@ -1,5 +1,5 @@
 const lotSizeDisabledEmailTemplate = (account, accountDetails) => {
-	return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -157,29 +157,36 @@ const lotSizeDisabledEmailTemplate = (account, accountDetails) => {
         <!-- Content Section -->
         <div class="content">
             <p>Dear Trader,</p>
-            <p>We regret to inform you that we have observed continued violations of our Lot Size Rules at Foxx Funded. </p>
+            <p>We regret to inform you that we have observed continued violations of our Lot Size Rules at Foxx Funded. Despite previous warnings, these breaches have persisted, constituting a serious compliance issue.</p>
             <p>Breach Details:</p>
     
             <div class="highlight">
                 <p><strong>Account Number:</strong> ${account}</p>
-                <p><strong>Initial Account Balance:</strong> $${accountDetails?.accountSize}</p>
-                <p><strong>Lot Size Limit:</strong> ${accountDetails?.totalLotSizeLimit}</p>
+                <p><strong>Initial Account Balance:</strong> $${
+                  accountDetails?.accountSize
+                }</p>
+                <p><strong>Lot Size Limit:</strong> ${
+                  accountDetails?.totalLotSizeLimit
+                }</p>
             </div>
     
             <!-- Trade Details Section -->
             <div class="trade-details">
                 ${accountDetails?.trades
-									?.map((trade) => {
-										const isViolation = trade.lotSize > accountDetails?.totalLotSizeLimit;
-										return `
-                    <div class="trade" ${isViolation ? 'style="border: 2px solid red;"' : ""}>
+                  ?.map((trade) => {
+                    const isViolation =
+                      trade.lotSize > accountDetails?.totalLotSizeLimit;
+                    return `
+                    <div class="trade" ${
+                      isViolation ? 'style="border: 2px solid red;"' : ""
+                    }>
                         <h3>Trade Ticket: ${trade.ticket}</h3>
                         <p><strong>Lot Size:</strong> ${trade.lotSize}</p>
                         <p><strong>Profit:</strong> $${trade.profit}</p>
                     </div>
                 `;
-									})
-									.join("")}
+                  })
+                  .join("")}
             </div>
 
             <p>Lot Size Rules:</p>
@@ -275,12 +282,14 @@ const lotSizeDisabledEmailTemplate = (account, accountDetails) => {
 };
 
 const sendLotSizeWarningEmailTemplate = (account, accountDetails) => {
-	return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lot Size Risk Warning Notification ${accountDetails.emailCount} </title>
+    <title>Lot Size Risk Warning Notification ${
+      accountDetails.emailCount
+    } </title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -440,16 +449,20 @@ const sendLotSizeWarningEmailTemplate = (account, accountDetails) => {
             
             <div class="highlight">
                 <p><strong>Account Number:</strong> ${account}</p>
-                <p><strong>Initial Account Balance:</strong> $${accountDetails.accountSize}</p>
-                <p><strong>Lot Size Limit:</strong> ${accountDetails.totalLotSizeLimit}</p>
+                <p><strong>Initial Account Balance:</strong> $${
+                  accountDetails.accountSize
+                }</p>
+                <p><strong>Lot Size Limit:</strong> ${
+                  accountDetails.totalLotSizeLimit
+                }</p>
                 <p><strong>Exceeding Trades:</strong></p>
                 <div>
                     ${accountDetails.trades
-											.map(
-												(trade) =>
-													`<p><strong>Ticket:</strong> ${trade.ticket}, <strong>Lot Size:</strong> ${trade.lotSize}</p>`
-											)
-											.join("")}
+                      .map(
+                        (trade) =>
+                          `<p><strong>Ticket:</strong> ${trade.ticket}, <strong>Lot Size:</strong> ${trade.lotSize}</p>`
+                      )
+                      .join("")}
                 </div>
             </div>
             
@@ -486,6 +499,6 @@ const sendLotSizeWarningEmailTemplate = (account, accountDetails) => {
 };
 
 module.exports = {
-	lotSizeDisabledEmailTemplate,
-	sendLotSizeWarningEmailTemplate,
+  lotSizeDisabledEmailTemplate,
+  sendLotSizeWarningEmailTemplate,
 };
