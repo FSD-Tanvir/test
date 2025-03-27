@@ -175,7 +175,7 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
             <p>Dear Trader,</p>
             <p>I hope this message finds you well. We are writing to address a serious issue with your trading activities at Fox Funded.</p>
     
-            <p>We regret to inform you that despite previous warnings, we have observed continued violations of our Consistency Rules at Foxx Funded. This constitutes a serious breach of our trading policies, and as a result, your account is now subject to permanent action.</p>
+            <p>We have observed continued violations of our Consistency Rules at Foxx Funded. This constitutes a serious breach of our trading policies, and as a result, your account is now subject to permanent action.</p>
 
             <p>As per our policies, no single trade should generate more than 1.5% of the initial account balance. Below are the details of the trades that violated this rule:</p>
     
@@ -228,6 +228,9 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
             </div>
     
        
+            <p>We’d love to see you try again — you can restart a new challenge with 40% off using the code:
+                <span style="font-weight: bold; color: #d32f2f;">RETRY40</span>
+            </p>
     
             <p>For further details on our policies and guidelines, please refer to our <a href="https://foxx-funded.com/faqs">FAQ</a> article.</p>
     
