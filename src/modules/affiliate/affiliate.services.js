@@ -17,11 +17,11 @@ const createAffiliate = async (affiliateData) => {
 		<img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo" style="max-width: 120px; height: auto;">
 	  </div>
   
-	  <p style="font-size: 16px; color: #333; text-align: left; margin-bottom: 10px;">
+	  <p style="font-size: 16px; color: #333; text-align: left; margin-bottom: 6px;">
 		Hi Admin,
 	  </p>
   
-	  <p style="font-size: 16px; color: #333; text-align: left; margin-bottom: 10px;">
+	  <p style="font-size: 16px; color: #333; text-align: left; margin-bottom: 6px;">
 		You have received a new affiliate request. Please find the details below:
 	  </p>
   
@@ -29,7 +29,7 @@ const createAffiliate = async (affiliateData) => {
 		<strong>Email:</strong> ${savedAffiliateRequest?.email}
 	  </p>
   
-	  <p style="font-size: 16px; color: #333; text-align: left; margin-bottom: 20px;">
+	  <p style="font-size: 16px; color: #333; text-align: left; margin-bottom: 10px;">
 		<strong>WhatsApp:</strong> ${savedAffiliateRequest?.whatsAppNumber}
 	  </p>
   
@@ -37,7 +37,7 @@ const createAffiliate = async (affiliateData) => {
 		Please review and take the necessary action.
 	  </p>
   
-	  <p style="font-size: 16px; color: #333; text-align: left; margin-top: 20px;">
+	  <p style="font-size: 16px; color: #333; text-align: left; margin-top: 10px;">
 		Best regards,<br>
 		<strong>Foxxx Funded</strong>
 	  </p>
@@ -95,7 +95,7 @@ const createAffiliate = async (affiliateData) => {
 	};
 	if (savedAffiliateRequest) {
 		await sendEmailSingleRecipientFromCustomer(
-			"zentexx2023@gmail.com",
+			"Contact@foxx-funded.com",
 			`You have received a new affiliate request. ${savedAffiliateRequest.email}`,
 			htmlTemplate
 		);
