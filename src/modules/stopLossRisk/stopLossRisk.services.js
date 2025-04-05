@@ -78,14 +78,14 @@ const stopLossRisk = async () => {
                     const accountSize = account.accountSize;
 
                     orderHistory.forEach((order) => {
-                        const openTime = new Date(order.openTime);
-                        const closeTime = new Date(order.closeTime);
+                        // const openTime = new Date(order.openTime);
+                        // const closeTime = new Date(order.closeTime);
 
-                        const differenceInMs = closeTime - openTime; // Difference in milliseconds
-                        const differenceInMinutes = differenceInMs / (1000 * 60); // Convert milliseconds to minutes
+                        // const differenceInMs = closeTime - openTime;
+                        // const differenceInMinutes = differenceInMs / (1000 * 60);
 
                         if (
-                            differenceInMinutes >= 2 &&
+                            // differenceInMinutes >= 2 &&
                             order.stopLoss == 0.0 &&
                             !storedTicketSet.has(order.ticket)
                         ) {
@@ -370,66 +370,17 @@ const sendAutomatedStopLossEmail = async () => {
             },
         ]);
 
-        // Process the grouped data
-        const processedData = groupedData.map((group) => {
-            const uniqueDatesMap = new Map();
-
-            // Calculate unique closeTime dates and their counts
-            group.accounts.forEach((account) => {
-                const closeDate = new Date(account.closeTime).toISOString().split("T")[0]; // Extract only the date part
-                uniqueDatesMap.set(closeDate, (uniqueDatesMap.get(closeDate) || 0) + 1);
-            });
-
-            const uniqueCloseTimes = Array.from(uniqueDatesMap.entries()).map(([date, count]) => ({
-                date,
-                count,
-            }));
-
-            // Calculate today's violations
-            const today = new Date();
-            const startOfToday = new Date(today.setHours(0, 0, 0, 0));
-            const endOfToday = new Date(today.setHours(23, 59, 59, 999));
-
-            const todaysViolations = group.accounts.filter((account) => {
-                const closeTime = new Date(account.closeTime);
-                return closeTime >= startOfToday && closeTime <= endOfToday;
-            }).length;
-
-            return {
-                ...group,
-                uniqueCloseTimes,
-                todaysViolations,
-            };
-        });
-
-        for (const account of processedData) {
+        for (const account of groupedData) {
             const tickets = account.accounts.map((account) => account.ticket);
             const count = account.count;
             const currentEmailCount = account.accounts[0].emailCount;
             const accNumb = account.accounts[0].account;
             const accountDetails = {
                 email: account.accounts[0].email,
-                account: account.accounts[0].account,
+                account: accNumb,
                 accountSize: account.accounts[0].accountSize,
                 emailCount: currentEmailCount,
                 tickets,
-            };
-
-            // Helper function to send an email and update the database
-            const sendEmail = async (subject, template) => {
-                const htmlContent = template(accNumb, accountDetails);
-                const info = await sendEmailSingleRecipient(
-                    accountDetails.email,
-                    subject,
-                    null,
-                    htmlContent
-                );
-                if (typeof info === "string" && info.includes("OK")) {
-                    await StopLossRiskModel.updateMany(
-                        { account: accNumb },
-                        { $set: { emailSent: true }, $inc: { emailCount: 1 } }
-                    );
-                }
             };
 
             // Helper function to send the final breach notice and disable the account
@@ -489,48 +440,11 @@ const sendAutomatedStopLossEmail = async () => {
                 }
             };
 
-            // Handle case where no emails have been sent yet
-            // if (currentEmailCount === 0) {
-            //     if (count >= 1)
-            //         await sendEmail(
-            //             "Stop-Loss Warning 1: Compliance with Trading Policies",
-            //             sendStopLossWarningEmail1
-            //         );
-            //     if (count >= 2)
-            //         await sendEmail(
-            //             "Stop-Loss Warning 2: Urgent Compliance Required",
-            //             sendStopLossWarningEmail2
-            //         );
-
-            //     if (!account.accounts[0].isDisabled && count >= 3) {
-            //         await disableAccount(accNumb, accountDetails);
-            //     }
-            // }
-            // //  Handle case where one email has been sent
-            // else if (currentEmailCount === 1) {
-            //     if (count >= 2) {
-            //         await sendEmail(
-            //             "Stop-Loss Warning 2: Urgent Compliance Required",
-            //             sendStopLossWarningEmail2
-            //         );
-            //     }
-            //     if (!account.accounts[0].isDisabled && count >= 3)
-            //         await disableAccount(accNumb, accountDetails);
-            // }
-            //  Handle case where two emails have been sent
-
             if (!account.accounts[0].isDisabled && count >= 3) {
                 await disableAccount(accNumb, accountDetails);
             } else {
                 console.log("No action taken");
             }
-
-            // if (currentEmailCount === 2) {
-            //     if (!account.accounts[0].isDisabled && count >= 3)
-            //         await disableAccount(accNumb, accountDetails);
-            // } else {
-            //     console.log("No action taken");
-            // }
         }
 
         console.log("Email processing for Stop Loss completed successfully.");
