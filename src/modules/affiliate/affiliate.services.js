@@ -36,11 +36,11 @@ const updateAffiliate = async (id, affiliateData) => {
 
 		if (!currentAffiliate) {
 			console.log(`No affiliate found with ID: ${id}`);
-			return null; 
+			return null;
 		}
 		const updatedAffiliate = await MAffiliate.findByIdAndUpdate(id, affiliateData, {
 			new: true,
-			runValidators: true, 
+			runValidators: true,
 		});
 
 		// Check if status has changed to 'approved' and was not previously 'approved'
@@ -108,7 +108,7 @@ const updateAffiliate = async (id, affiliateData) => {
 		return updatedAffiliate;
 	} catch (error) {
 		console.error("Error updating affiliate:", error);
-		throw error; 
+		throw error;
 	}
 };
 
