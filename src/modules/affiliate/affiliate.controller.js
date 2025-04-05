@@ -7,8 +7,6 @@ const {
 
 const createAffiliate = async (req, res) => {
   const affiliateData = req.body;
-  console.log(affiliateData);
-
   if (!affiliateData.email) {
     return res.status(400).json({ message: "Email is required." });
   }

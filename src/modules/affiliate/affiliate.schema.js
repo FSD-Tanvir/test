@@ -39,7 +39,7 @@ const affiliateSchema = new Schema({
     percentage: {
         type: Number,
         default: 0,
-        min: 0, 
+        min: 0,
     },
     commissionsAmount: {
         type: Number,
@@ -54,6 +54,12 @@ const affiliateSchema = new Schema({
         type: String,
         enum: ["approved", "rejected", "pending"],
         default: "pending",
+    },
+    whatsAppNumber: {
+        type: Number,
+        trim: true,
+        unique: true,
+        required: true,
     },
 }, {
     timestamps: true
