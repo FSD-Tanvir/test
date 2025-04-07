@@ -4,7 +4,6 @@ const nodemailer = require("nodemailer")
 const createRequester = async (data) => {
     const newRequester = new MBecomeAffiliateRequester(data);
     const savedRequester = await newRequester.save();
-    console.log("savedRequester", savedRequester);
     const htmlTemplate = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 15px; border: 2px solid #DB8112; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
       <div style="text-align: center; margin-bottom: 10px;">
