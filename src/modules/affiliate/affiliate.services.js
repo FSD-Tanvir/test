@@ -1,8 +1,7 @@
 // services/affiliate.services.js
 const MAffiliate = require("./affiliate.schema.js");
 const nodemailer = require("nodemailer");
-const fs = require("node:fs");
-const path = require("node:path");
+
 
 
 
