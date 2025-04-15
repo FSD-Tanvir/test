@@ -7,55 +7,55 @@ const newsTradingRiskAccountDetails = new mongoose.Schema(
     {
         email: {
             type: String,
-            default: '', 
+            default: '',
         },
         account: {
             type: Number,
-            default: null, 
+            default: null,
         },
         ticket: {
             type: Number,
-            default: null, 
+            default: null,
         },
-        openTime: { 
-            type: Date, 
-            default: null, 
+        openTime: {
+            type: Date,
+            default: null,
         },
-        closeTime: {        
-            type: Date, 
-            default: null, 
+        closeTime: {
+            type: Date,
+            default: null,
         },
         emailSent: {
             type: Boolean,
-            default: false, 
+            default: false,
         },
         isDisabled: {
             type: Boolean,
-            default: false, 
+            default: false,
         },
         message: {
             type: String,
-            default: "", 
+            default: "",
         },
     }
 )
 
 const newsTradingRiskSchema = new mongoose.Schema(
     {
-       newsTradingRiskAccountDetails: {
+        newsTradingRiskAccountDetails: {
             type: [newsTradingRiskAccountDetails],
         },
         newsDate: {
             type: Date,
-            required: true, 
+            required: true,
         },
         currency: {
             type: String,
-            required: true, 
+            required: true,
         },
         heading: {
             type: String,
-            required: true, 
+            required: true,
         },
     },
     { timestamps: true }
