@@ -1,27 +1,28 @@
 const express = require("express");
 const router = express.Router();
 const {
-    forgotPassword,
-    verifyOtp,
-    resetPassword,
-    normalRegister,
-    normalLogin,
-    updatePurchasedProductsHandler,
-    updateUser,
-    getAllUsers,
-    getAllMt5Accounts,
-    loginUser,
-    getPhasedUsers,
-    getOnlyUserHandler,
-    createMt5Account,
-    getUserById,
-    credentials,
-    changePasswordController,
-    updateMt5AccountStatusHandler,
-    getFundedUsers,
-    manualChallengePassHandler,
-    getOnlyUserHandlerByEmail,
-    downloadAllUsersCsvHandler,
+	forgotPassword,
+	verifyOtp,
+	resetPassword,
+	normalRegister,
+	normalLogin,
+	updatePurchasedProductsHandler,
+	updateUser,
+	getAllUsers,
+	getAllMt5Accounts,
+	loginUser,
+	getPhasedUsers,
+	getOnlyUserHandler,
+	createMt5Account,
+	getUserById,
+	credentials,
+	changePasswordController,
+	updateMt5AccountStatusHandler,
+	getFundedUsers,
+	manualChallengePassHandler,
+	getOnlyUserHandlerByEmail,
+	downloadAllUsersCsvHandler,
+	downloadAllAccountsCsvHandler,
 } = require("./users.controller.js");
 // Route to create a new user in database and in mt5 manager
 router.post("/create-user", createMt5Account);
@@ -38,7 +39,11 @@ router.get("/mt5-accounts", getAllMt5Accounts);
 // Route to get users with 'funded' challenge stage
 router.get("/funded", getFundedUsers);
 
+// Route to get users (for download)
 router.get("/download-all-users-csv", downloadAllUsersCsvHandler);
+
+// Route to get users (for download)
+router.get("/download-all-users-accounts-csv", downloadAllAccountsCsvHandler);
 
 // get phase based accounts
 router.get("/phased-users/:account", getPhasedUsers);
