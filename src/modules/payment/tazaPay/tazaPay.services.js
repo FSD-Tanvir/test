@@ -170,7 +170,7 @@ const checkMt5AccountService = async (orderId) => {
     }
 };
 
-const sendToZapier = async () => {
+const sendToZapier = async (payload) => {
     try {
         const ZAPIER_WEBHOOK_URL = "https://hooks.zapier.com/hooks/catch/22372245/2cj1ham/";
         const response = await axios.post(ZAPIER_WEBHOOK_URL, payload, {

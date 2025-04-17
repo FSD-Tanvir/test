@@ -3,6 +3,7 @@ const {
     createTazaPayCheckout,
     getTazaPayCheckout,
     checkMt5AccountService,
+    sendToZapier,
 } = require("./tazaPay.services");
 
 const createCheckout = async (req, res) => {
