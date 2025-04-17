@@ -164,7 +164,7 @@ const controllerPaytikoWebhook = async (req, res) => {
                     OrderId: OrderId,
                     Email: buyerDetails?.email,
                     Challenge: challengeData.challengeName,
-                    Amount: order.totalPrice,
+                    Amount: order.totalPrice ? order.totalPrice.toString().replace(".", ",") : null,
                     PaymentMethod: "Paytiko",
                 };
 
