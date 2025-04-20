@@ -69,7 +69,8 @@ const getOrdersOverTimeHandler = async (req, res) => {
 
 const getMetaSalesHandler = async (req, res) => {
 	try {
-		const data = await getMetaSales();
+		const { startDate, endDate } = req.query;
+		const data = await getMetaSales(startDate, endDate);
 		return res.status(200).json({
 			success: true,
 			data,
@@ -81,7 +82,6 @@ const getMetaSalesHandler = async (req, res) => {
 		});
 	}
 };
-
 const getSpecificChallengeSalesMetaHandler = async (req, res) => {
 	try {
 		// Extract optional startDate and endDate from query parameters

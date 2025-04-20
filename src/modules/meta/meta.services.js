@@ -477,7 +477,7 @@ const getOrdersOverTime = async (startDate, endDate) => {
 	}
 };
 
-const getMetaSales = async () => {
+const getMetaSales = async (startDate, endDate) => {
 	try {
 		// Helper function to round numbers to two decimal places without converting to string
 		const roundToTwo = (num) => Math.round(num * 100) / 100;
@@ -573,10 +573,37 @@ const getMetaSales = async () => {
 			{ $group: { _id: null, totalOrdersCurrentMonth: { $sum: 1 } } },
 		];
 
-		// New Pipeline: Orders by Country
+		// Create date filter for orders by country
+		const dateFilter = {};
+		if (startDate) {
+			dateFilter.$gte = new Date(startDate);
+		}
+		if (endDate) {
+			dateFilter.$lt = new Date(endDate);
+		}
+
+		// Orders by Country Pipeline with date filter
 		const ordersByCountryPipeline = [
-			{ $group: { _id: "$buyerDetails.country", count: { $sum: 1 } } },
-			{ $project: { country: "$_id", count: 1, _id: 0 } },
+			{
+				$match: {
+					...(startDate || endDate ? { createdAt: dateFilter } : {}),
+				},
+			},
+			{
+				$group: {
+					_id: "$buyerDetails.country",
+					count: { $sum: 1 },
+					totalSales: { $sum: "$totalPrice" },
+				},
+			},
+			{
+				$project: {
+					country: "$_id",
+					count: 1,
+					totalSales: 1,
+					_id: 0,
+				},
+			},
 		];
 
 		// Count all the orders in the collection with filters
@@ -591,7 +618,7 @@ const getMetaSales = async () => {
 			currentMonthSalesResult,
 			lastMonthOrdersResult,
 			currentMonthOrdersResult,
-			ordersByCountryResult, // New Aggregation Result
+			ordersByCountryResult,
 		] = await Promise.all([
 			MOrder.aggregate(totalSalesPipeline),
 			MOrder.aggregate(todaySalesPipeline),
@@ -600,7 +627,7 @@ const getMetaSales = async () => {
 			MOrder.aggregate(currentMonthSalesPipeline),
 			MOrder.aggregate(lastMonthOrdersPipeline),
 			MOrder.aggregate(currentMonthOrdersPipeline),
-			MOrder.aggregate(ordersByCountryPipeline), // Execute New Pipeline
+			MOrder.aggregate(ordersByCountryPipeline),
 		]);
 
 		// Extract sales data
@@ -609,38 +636,49 @@ const getMetaSales = async () => {
 		const currentMonthSales = currentMonthSalesResult[0]?.totalSalesCurrentMonth || 0;
 		const yesterdaySales = yesterdaySalesResult[0]?.totalSalesYesterday || 0;
 
-		const today = new Date("2024-10-14T00:00:00Z");
+		// Calculate total orders in the filtered date range for percentage calculation
+		const totalFilteredOrders = ordersByCountryResult.reduce(
+			(sum, country) => sum + country.count,
+			0
+		);
 
-		const futureOrders = await MOrder.find({
-			createdAt: { $gte: today }, // Only filter by date
-		});
+		const ordersWithPercentage = ordersByCountryResult
+			.map((countryData) => ({
+				country: countryData.country
+					? countryData.country.charAt(0).toUpperCase() + countryData.country.slice(1)
+					: "Unknown",
+				count: countryData.count,
+				totalSales: roundToTwo(countryData.totalSales || 0),
+				percentage: totalFilteredOrders
+					? Math.round((countryData.count / totalFilteredOrders) * 10000) / 100
+					: 0,
+			}))
+			.filter((country) => country.country !== "Unknown"); // Filter out Unknown countries
 
-		const totalOrdersFromToday = futureOrders.length;
+		// Calculate total filtered sales excluding Unknown countries
+		const totalFilteredSalesKnownCountries = ordersWithPercentage.reduce(
+			(sum, country) => sum + country.totalSales,
+			0
+		);
 
-		const ordersByCountry = futureOrders.reduce((acc, order) => {
-			const country = order.buyerDetails.country?.toLowerCase(); // Normalize to lowercase
-			if (!country) return acc; // Skip if country is undefined
-
-			if (!acc[country]) {
-				acc[country] = { count: 0 };
-			}
-			acc[country].count++;
-			return acc;
-		}, {});
-
-		// Convert to the desired format
-		const ordersWithPercentage = Object.entries(ordersByCountry).map(([country, data]) => ({
-			country: country.charAt(0).toUpperCase() + country.slice(1), // Capitalize the first letter for display
-			count: data.count,
-			percentage: totalOrdersFromToday
-				? Math.round((data.count / totalOrdersFromToday) * 10000) / 100
-				: 0,
-		}));
-
-		// Determine the top country
+		// Determine the top country (excluding Unknown)
 		const topCountry = ordersWithPercentage.reduce((max, country) => {
-			return country.percentage > (max?.percentage || 0) ? country : max;
+			return country.count > (max?.count || 0) ? country : max;
 		}, null);
+
+		// Include Unknown country data separately if needed
+		const unknownCountryData = ordersByCountryResult
+			.map((countryData) => ({
+				country: countryData.country
+					? countryData.country.charAt(0).toUpperCase() + countryData.country.slice(1)
+					: "Unknown",
+				count: countryData.count,
+				totalSales: roundToTwo(countryData.totalSales || 0),
+				percentage: totalFilteredOrders
+					? Math.round((countryData.count / totalFilteredOrders) * 10000) / 100
+					: 0,
+			}))
+			.find((country) => country.country === "Unknown");
 
 		return {
 			totalSales: roundToTwo(totalSales),
@@ -651,14 +689,24 @@ const getMetaSales = async () => {
 			lastMonthOrders: lastMonthOrdersResult[0]?.totalOrdersLastMonth || 0,
 			currentMonthOrders: currentMonthOrdersResult[0]?.totalOrdersCurrentMonth || 0,
 			totalOrders: totalOrdersResult || 0,
-			ordersByCountry: ordersWithPercentage, // Include Orders by Country with Percentages
-			topCountry, // Include the Top Country
+			ordersByCountry: [
+				...ordersWithPercentage,
+				...(unknownCountryData ? [unknownCountryData] : []),
+			],
+			topCountry,
+			topCountryIncludingUnknown: unknownCountryData,
+			totalFilteredOrders,
+			totalFilteredSales: roundToTwo(
+				ordersByCountryResult.reduce((sum, country) => sum + (country.totalSales || 0), 0)
+			),
+			totalFilteredSalesKnownCountries: roundToTwo(totalFilteredSalesKnownCountries),
 		};
 	} catch (error) {
 		console.error("Error calculating order sales:", error.message);
 		throw new Error("Failed to calculate order sales");
 	}
 };
+
 const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 	try {
 		const challenges = {
