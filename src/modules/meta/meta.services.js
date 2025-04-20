@@ -479,19 +479,16 @@ const getOrdersOverTime = async (startDate, endDate) => {
 
 const getMetaSales = async (startDate, endDate) => {
 	try {
-		// Helper function to round numbers to two decimal places without converting to string
 		const roundToTwo = (num) => Math.round(num * 100) / 100;
 
-		// Get the current date and time for reuse
 		const now = new Date();
 		const startOfToday = new Date(now.setHours(0, 0, 0, 0));
 		const endOfToday = new Date(now.setHours(23, 59, 59, 999));
-		const startOfYesterday = new Date(startOfToday.getTime() - 86400000); // 24 hours in milliseconds
+		const startOfYesterday = new Date(startOfToday.getTime() - 86400000);
 		const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 		const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 		const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-		// Define the pipeline for total sales, today's sales, etc.
 		const totalSalesPipeline = [
 			{
 				$match: {
@@ -586,6 +583,9 @@ const getMetaSales = async (startDate, endDate) => {
 		const ordersByCountryPipeline = [
 			{
 				$match: {
+					paymentStatus: "Paid",
+					orderStatus: "Delivered",
+					$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
 					...(startDate || endDate ? { createdAt: dateFilter } : {}),
 				},
 			},
@@ -642,43 +642,39 @@ const getMetaSales = async (startDate, endDate) => {
 			0
 		);
 
+		// Process orders by country data - EXCLUDE Unknown countries entirely
 		const ordersWithPercentage = ordersByCountryResult
+			.filter((countryData) => countryData.country) // Filter out entries with no country
 			.map((countryData) => ({
-				country: countryData.country
-					? countryData.country.charAt(0).toUpperCase() + countryData.country.slice(1)
-					: "Unknown",
+				country: countryData.country.charAt(0).toUpperCase() + countryData.country.slice(1),
 				count: countryData.count,
 				totalSales: roundToTwo(countryData.totalSales || 0),
 				percentage: totalFilteredOrders
 					? Math.round((countryData.count / totalFilteredOrders) * 10000) / 100
 					: 0,
-			}))
-			.filter((country) => country.country !== "Unknown"); // Filter out Unknown countries
+			}));
 
-		// Calculate total filtered sales excluding Unknown countries
+		// Calculate total filtered sales of known countries only
 		const totalFilteredSalesKnownCountries = ordersWithPercentage.reduce(
 			(sum, country) => sum + country.totalSales,
 			0
 		);
 
-		// Determine the top country (excluding Unknown)
-		const topCountry = ordersWithPercentage.reduce((max, country) => {
-			return country.count > (max?.count || 0) ? country : max;
+		// Calculate total orders of known countries only
+		const totalKnownCountryOrders = ordersWithPercentage.reduce(
+			(sum, country) => sum + country.count,
+			0
+		);
+
+		// Determine the top country based on SALES (totalPrice) rather than count
+		const topCountryBySales = ordersWithPercentage.reduce((max, country) => {
+			return country.totalSales > (max?.totalSales || 0) ? country : max;
 		}, null);
 
-		// Include Unknown country data separately if needed
-		const unknownCountryData = ordersByCountryResult
-			.map((countryData) => ({
-				country: countryData.country
-					? countryData.country.charAt(0).toUpperCase() + countryData.country.slice(1)
-					: "Unknown",
-				count: countryData.count,
-				totalSales: roundToTwo(countryData.totalSales || 0),
-				percentage: totalFilteredOrders
-					? Math.round((countryData.count / totalFilteredOrders) * 10000) / 100
-					: 0,
-			}))
-			.find((country) => country.country === "Unknown");
+		// Also keep the top country by count if needed
+		const topCountryByCount = ordersWithPercentage.reduce((max, country) => {
+			return country.count > (max?.count || 0) ? country : max;
+		}, null);
 
 		return {
 			totalSales: roundToTwo(totalSales),
@@ -689,17 +685,11 @@ const getMetaSales = async (startDate, endDate) => {
 			lastMonthOrders: lastMonthOrdersResult[0]?.totalOrdersLastMonth || 0,
 			currentMonthOrders: currentMonthOrdersResult[0]?.totalOrdersCurrentMonth || 0,
 			totalOrders: totalOrdersResult || 0,
-			ordersByCountry: [
-				...ordersWithPercentage,
-				...(unknownCountryData ? [unknownCountryData] : []),
-			],
-			topCountry,
-			topCountryIncludingUnknown: unknownCountryData,
-			totalFilteredOrders,
-			totalFilteredSales: roundToTwo(
-				ordersByCountryResult.reduce((sum, country) => sum + (country.totalSales || 0), 0)
-			),
-			totalFilteredSalesKnownCountries: roundToTwo(totalFilteredSalesKnownCountries),
+			ordersByCountry: ordersWithPercentage,
+			topCountry: topCountryBySales, // Now based on sales amount
+			topCountryByCount, // Also include top by count if needed
+			totalFilteredOrders: totalKnownCountryOrders,
+			totalFilteredSales: roundToTwo(totalFilteredSalesKnownCountries),
 		};
 	} catch (error) {
 		console.error("Error calculating order sales:", error.message);
