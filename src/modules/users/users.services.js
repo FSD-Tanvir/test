@@ -295,12 +295,10 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 			const parsedSearchQuery = parseInt(searchQuery);
 
 			// Check if searchQuery is a valid number
-			// biome-ignore lint/suspicious/noGlobalIsNan: <explanation>
 			if (!isNaN(parsedSearchQuery)) {
 				matchQuery["mt5Accounts.account"] = parsedSearchQuery;
 			} else {
 				// Use regex for email search if searchQuery is not a number
-				// biome-ignore lint/complexity/useLiteralKeys: <explanation>
 				matchQuery["email"] = { $regex: searchQuery, $options: "i" };
 			}
 		}
@@ -312,9 +310,9 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 
 		// Define the aggregation pipeline for counting
 		const countPipeline = [
-			{ $unwind: "$mt5Accounts" }, // Unwind mt5Accounts array
-			{ $match: matchQuery }, // Filter users based on the search query and challenge stage
-			{ $count: "total" }, // Count the total number of documents
+			{ $unwind: "$mt5Accounts" },
+			{ $match: matchQuery },
+			{ $count: "total" },
 		];
 
 		const countResult = await MUser.aggregate(countPipeline);
@@ -322,11 +320,11 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 
 		// Define the aggregation pipeline for fetching paginated results
 		const pipeline = [
-			{ $unwind: "$mt5Accounts" }, // Unwind mt5Accounts array
-			{ $match: matchQuery }, // Filter users based on the search query and challenge stage
+			{ $unwind: "$mt5Accounts" },
+			{ $match: matchQuery },
 			{
 				$sort: {
-					_id: -1, // Sort by users._id (userId) in descending order
+					_id: -1,
 				},
 			},
 			{
@@ -335,6 +333,8 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 					firstName: "$first",
 					lastName: "$last",
 					"mt5Accounts.account": 1,
+					"mt5Accounts.productId": 1,
+					"mt5Accounts.accountStatus": 1,
 					"mt5Accounts.challengeStatus": 1,
 					"mt5Accounts.createdAt": 1,
 					"mt5Accounts.challengeStage": 1,
