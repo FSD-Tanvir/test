@@ -22,9 +22,12 @@ const chunkArray = (array, size) => {
 };
 
 const fetchAndSaveData = async () => {
+    console.log("Fetching and saving data for news trading risk...");
     try {
         const instantFunding = await instantFundingAccount();
+        console.log(instantFunding)
         const newsTradingData = await MNewsTradingRisk.find({});
+        console.log(newsTradingData)
 
         const startDate = "1970-01-01";
         const endDate = "2100-01-01";
@@ -45,31 +48,106 @@ const fetchAndSaveData = async () => {
                 }
 
                 for (const news of newsTradingData) {
-                    const newsTime = new Date(news.newsDate);
-                  
+                    // const newsTime = new Date(news.newsDate);
+
+
+                    // for (const order of orders) {
+                    //     const openTime = new Date(order.openTime);
+                    //     console.log("openTime", openTime)
+
+                    //     const closeTime = new Date(order.closeTime);
+                    //     console.log("closeTime", closeTime)
+
+
+
+
+                    //     if (
+                    //         Math.abs(openTime - newsTime) <= 2 * 60 * 1000 ||
+                    //         Math.abs(closeTime - newsTime) <= 2 * 60 * 1000
+                    //     ) {
+                    //         const matchedData = {
+                    //             ticket: order.ticket,
+                    //             account: order.login,
+                    //             email,
+                    //             openTime: order.openTime,
+                    //             closeTime: order.closeTime,
+                    //             emailSent: false,
+                    //             isDisabled: false,
+                    //             message: "Matched order within news trading window."
+                    //         };
+
+                    //         bulkOps.push({
+                    //             updateOne: {
+                    //                 filter: { _id: news._id },
+                    //                 update: { $push: { newsTradingRiskAccountDetails: matchedData } }
+                    //             }
+                    //         });
+
+                    //         dataSaved = true;
+                    //     }
+                    // }
+                    // for (const order of orders) {
+                    //     const openTime = new Date(order.openTime);
+                    //     const closeTime = new Date(order.closeTime);
+                    //     const accountNumber = order.login || funding.account;
+
+                    //     // Parsing news date
+                    //     const newsTime = new Date(news.newsDate);
+
+                    //     // Log account number, openTime, closeTime, and newsTime
+                    //     console.log("Account:", accountNumber);
+                    //     console.log("Open Time:", openTime.toISOString());
+                    //     console.log("Close Time:", closeTime.toISOString());
+                    //     console.log("News Date:", newsTime.toISOString());
+
+                    //     const TWO_MINUTES = 2 * 60 * 1000;
+                    //     const openDiff = Math.abs(openTime - newsTime);
+                    //     const closeDiff = Math.abs(closeTime - newsTime);
+
+                    //     // Check if openTime or closeTime is within ±2 minutes of newsTime
+                    //     if (openDiff <= TWO_MINUTES || closeDiff <= TWO_MINUTES) {
+                    //         const matchedData = {
+                    //             ticket: order.ticket,
+                    //             account: accountNumber,
+                    //             email,
+                    //             openTime: order.openTime,
+                    //             closeTime: order.closeTime,
+                    //             emailSent: false,
+                    //             isDisabled: false,
+                    //             message: "Matched order within news trading window."
+                    //         };
+
+                    //         bulkOps.push({
+                    //             updateOne: {
+                    //                 filter: { _id: news._id },
+                    //                 update: { $push: { newsTradingRiskAccountDetails: matchedData } }
+                    //             }
+                    //         });
+
+                    //         dataSaved = true;
+                    //     }
+                    // }
 
                     for (const order of orders) {
-                        const openTime = new Date(order.openTime);
-                     
-                        const closeTime = new Date(order.closeTime);
+                        const openTime = new Date(new Date(order.openTime).getTime() + 6 * 60 * 60 * 1000); // 6 hours added
+                        const closeTime = new Date(new Date(order.closeTime).getTime() + 6 * 60 * 60 * 1000); // 6 hours added
+                        const accountNumber = order.login || funding.account;
 
-                        const fourHoursLaterOpenTime = new Date(openTime);  
-                        
-                        fourHoursLaterOpenTime.setHours(fourHoursLaterOpenTime.getHours() + 4);
-                        const resultForFourHoursFirstOpenTime = fourHoursLaterOpenTime.toISOString();
-                
-                        const fourHoursLaterCloseTime = new Date(closeTime)
-                        fourHoursLaterCloseTime.setHours(fourHoursLaterCloseTime.getHours() + 4);
-                        const resultForFourHoursFirstCloseTime = fourHoursLaterCloseTime.toISOString();
-                        
+                        const newsTime = new Date(news.newsDate);
 
-                        if (
-                            Math.abs(resultForFourHoursFirstOpenTime - newsTime) <= 2 * 60 * 1000 ||
-                            Math.abs(resultForFourHoursFirstCloseTime - newsTime) <= 2 * 60 * 1000
-                        ) {
+                        console.log("Account:", accountNumber);
+                        console.log("Open Time (+6h):", openTime.toISOString());
+                        console.log("Close Time:", closeTime.toISOString());
+                        console.log("News Date:", newsTime.toISOString());
+
+                        const TWO_MINUTES = 2 * 60 * 1000;
+                        const openDiff = Math.abs(openTime - newsTime);
+                        const closeDiff = Math.abs(closeTime - newsTime);
+
+                        if (openDiff <= TWO_MINUTES || closeDiff <= TWO_MINUTES) {
                             const matchedData = {
                                 ticket: order.ticket,
-                                account: order.login,
+                                account: accountNumber,
                                 email,
                                 openTime: order.openTime,
                                 closeTime: order.closeTime,
@@ -85,9 +163,11 @@ const fetchAndSaveData = async () => {
                                 }
                             });
 
-                            dataSaved = true; 
+                            dataSaved = true;
                         }
                     }
+
+
                 }
             }
 
@@ -115,13 +195,13 @@ const fetchAndSaveData = async () => {
 
 
 
-const storeNewTradingAccount = () => {
-    cron.schedule("12 08 * * *", () => {
-    	console.log("Cron job triggered");
-    	fetchAndSaveData();
-    });
+// const storeNewTradingAccount = () => {
+//     cron.schedule("13 18 * * *", () => {
+//         console.log("Cron job triggered");
+//         fetchAndSaveData();
+//     });
 
-};
+// };
 
 const getAccountRiskDataHandlerForNewsTrading = async (req, res) => {
     try {
@@ -173,7 +253,7 @@ const disableRiskedAccountHandlerForNewsTrading = async (req, res) => {
 
 module.exports = {
     fetchAndSaveData,
-    storeNewTradingAccount,
+    // storeNewTradingAccount,
     sendWarningEmailHandlerForNewsTrading,
     disableRiskedAccountHandlerForNewsTrading,
     getAccountRiskDataHandlerForNewsTrading,

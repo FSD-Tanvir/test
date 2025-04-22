@@ -18,8 +18,11 @@ const cron = require("node-cron");
 const {
     sendAutomatedTwoPercentEmail,
 } = require("../modules/twoPercentRisk/twoPercentRisk.services");
+// const { storeNewTradingAccount, fetchAndSaveData } = require("../modules/newsTradingRisk/newsTradingRisk.controller");
 
 const runAllFunctions = () => {
+    // storeNewTradingAccount();
+    // fetchAndSaveData();
     storeDailyDataController();
 
     // Schedule lotSizeRisk to run daily at 21:30
@@ -56,5 +59,13 @@ const runAllFunctions = () => {
     cron.schedule("19 0 * * *", () => {
         sendAutomatedTwoPercentEmail();
     });
+
+
+    // cron.schedule("13 14 * * *", () => {
+    //     console.log("Cron job triggered");
+    //     fetchAndSaveData();
+    // });
+
+
 };
 module.exports = { runAllFunctions };
