@@ -378,6 +378,27 @@ const getOrderHistoryController = async (req, res) => {
 	}
 };
 
+const getOrderHistoryControllerInstantFunding = async (req, res) => {
+	const { account, startDate, endDate } = req.query;
+	// console.log(account, startDate, endDate);
+	try {
+		// Call the service function
+		const orderHistory = await getOrderHistory(account, startDate, endDate);
+
+		// Send success response with order history data
+		res.status(200).json({
+			success: true,
+			data: orderHistory
+		});
+	} catch (error) {
+		// Send error response
+		res.status(500).json({
+			success: false,
+			message: error.message
+		});
+	}
+}
+
 
 
 
@@ -439,5 +460,6 @@ module.exports = {
 	getOrderHistoryController,
 	getApprovedRequestsController,
 	getPendingRequestsController,
-	getAccountDetailsController
+	getAccountDetailsController,
+	getOrderHistoryControllerInstantFunding
 };
