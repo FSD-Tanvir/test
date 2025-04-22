@@ -1,6 +1,7 @@
 // withdrawRequestController.js
 
-const { getUniqueTradingDays } = require("../../helper/utils/dateUtils");
+// const { getUniqueTradingDays } = require("../../helper/utils/dateUtils");
+const { getUniqueTradingDays } = require("../../helper/utils/payoutDateItilis");
 const { accountDetails } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const MWithDrawRequest = require("./withDrawRequests.schema");
 const {
@@ -329,15 +330,32 @@ const getPayoutRequestHandler = async (req, res) => {
 
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
+
 	try {
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
 
-		const getOpenTrades = getUniqueTradingDays(orderHistory);
+		const approvedAcc = await MWithDrawRequest.findOne({ accountNumber: account });
+
+		let filteredTrades = orderHistory;
+
+		if (approvedAcc) {
+			// Filter trades that are after approvedAcc.updatedAt
+			const updatedAtTime = new Date(approvedAcc.updatedAt);
+
+			filteredTrades = orderHistory.filter(trade => {
+				const tradeTime = new Date(trade.openTime);
+				return tradeTime > updatedAtTime;
+			});
+		}
+
+		const getOpenTrades = getUniqueTradingDays(filteredTrades);
+
 		if (getOpenTrades === 0) {
 			return res.status(200).json({
 				message: "No open trades found for this account.",
 			});
 		}
+
 		res.status(200).json(getOpenTrades);
 
 	} catch (error) {
@@ -346,7 +364,8 @@ const getOrderHistoryController = async (req, res) => {
 			message: error.message
 		});
 	}
-}
+};
+
 
 
 const getApprovedRequestsController = async (req, res) => {
