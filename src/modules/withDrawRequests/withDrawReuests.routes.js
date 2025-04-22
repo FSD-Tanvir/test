@@ -28,21 +28,23 @@ router.get('/check-request/:accountNumber', getPayoutRequestHandler);
 router.get('/approved/:email', getAllApprovedWithDrawRequestsByEmail);
 router.get('/pending/:email', getAllPendingWithDrawRequestsByEmail);
 router.get('/all-payout/:email', getAllPayoutsWithDrawRequestsByEmail);
-router.get('/approved/:accountNumber', getApprovedAccountByNumber);
+
 
 // Generic routes come later
 router.post("/", createWithDrawRequest);
-router.get("/by-id/:id", getWithDrawRequestById); 
+router.get("/by-id/:id", getWithDrawRequestById);
 router.get('/:accountNumber', (req, res, next) => {
-    if (isNaN(req.params.accountNumber)) {
-        return res.status(400).json({ message: "Invalid account number" });
-    }
-    next();
+	if (isNaN(req.params.accountNumber)) {
+		return res.status(400).json({ message: "Invalid account number" });
+	}
+	next();
 }, getWithDrawRequestByAccountNumber);;
 router.get("/", getAllWithDrawRequests);
 router.get("/accountDetails/:account", getAccountDetailsController);
 router.patch("/:id", updateWithDrawRequestById);
 
+
+router.get('/approved/account/:accountNumber', getApprovedAccountByNumber);
 
 
 

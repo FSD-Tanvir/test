@@ -1,5 +1,6 @@
 // withdrawRequestController.js
 
+const { getUniqueTradingDays } = require("../../helper/utils/dateUtils");
 const { accountDetails } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const MWithDrawRequest = require("./withDrawRequests.schema");
 const {
@@ -328,18 +329,18 @@ const getPayoutRequestHandler = async (req, res) => {
 
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
-	// console.log(account, startDate, endDate);
 	try {
-		// Call the service function
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
 
-		// Send success response with order history data
-		res.status(200).json({
-			success: true,
-			data: orderHistory
-		});
+		const getOpenTrades = getUniqueTradingDays(orderHistory);
+		if (getOpenTrades === 0) {
+			return res.status(200).json({
+				message: "No open trades found for this account.",
+			});
+		}
+		res.status(200).json(getOpenTrades);
+
 	} catch (error) {
-		// Send error response
 		res.status(500).json({
 			success: false,
 			message: error.message

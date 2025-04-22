@@ -4,6 +4,7 @@ const MUser = require("../users/users.schema");
 const { userDetails, balanceDepositAndWithdrawal, orderHistories } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const { updateLastDailyDataByMt5Account } = require("../breach/breach.services");
 
+
 // Create a new withdrawal request
 const createWithDrawRequestService = async (data) => {
 	try {
@@ -153,13 +154,13 @@ const updateWithDrawRequestByIdService = async (id, updateData) => {
 		// Check if the status is being updated to "approved" from "pending"
 		if (updateData.status === "approved") {
 			const currentBalance = updateData.amount;
-			
+
 			// Assuming balanceDepositAndWithdrawal is defined elsewhere
 			const accountData = await balanceDepositAndWithdrawal(
 				withdrawRequest.accountNumber,
 				-currentBalance,
 			);
-			
+
 
 			// Check if accountData is a number
 			if (typeof accountData === "number") {
@@ -322,7 +323,6 @@ const getOrderHistory = async (account, startDate, endDate) => {
 
 	try {
 		const response = await orderHistories(account, startDate, endDate);
-		console.log(response);
 		return response;
 
 	} catch (error) {
