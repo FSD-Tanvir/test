@@ -43,20 +43,17 @@ const getAccountsOverTimeHandler = async (req, res) => {
 // Controller function to get users over time
 const getOrdersOverTimeHandler = async (req, res) => {
 	try {
-		// Extract the startDate and endDate from the request query (or body, if preferred)
-		const { startDate, endDate } = req.query; // or req.body for POST request
+		const { startDate, endDate } = req.query;
 
-		// Call the service function with the date range
 		const result = await getOrdersOverTime(startDate, endDate);
 
-		// Extract data and totalCount from the result
-		const { data, totalCount } = result;
+		const { data, totalCount, totalSum } = result;
 
-		// Send the result back as a JSON response with the existing structure
 		return res.status(200).json({
 			success: true,
-			data, // Orders over time data
-			totalCount, // Total count of orders in the selected date range
+			data,
+			totalCount,
+			totalSum,
 		});
 	} catch (error) {
 		// Handle any errors and send an appropriate response
@@ -69,7 +66,8 @@ const getOrdersOverTimeHandler = async (req, res) => {
 
 const getMetaSalesHandler = async (req, res) => {
 	try {
-		const data = await getMetaSales();
+		const { startDate, endDate } = req.query;
+		const data = await getMetaSales(startDate, endDate);
 		return res.status(200).json({
 			success: true,
 			data,
@@ -81,7 +79,6 @@ const getMetaSalesHandler = async (req, res) => {
 		});
 	}
 };
-
 const getSpecificChallengeSalesMetaHandler = async (req, res) => {
 	try {
 		// Extract optional startDate and endDate from query parameters

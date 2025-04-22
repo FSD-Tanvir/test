@@ -208,6 +208,49 @@ const generateAllUsersCSV = async () => {
 	}
 };
 
+const generateAllAccountsCSV = async (filters = {}) => {
+	try {
+		// Destructure filters for easier access
+		const { challengeStage, startDate, endDate } = filters;
+
+		// Fetch all users from the database
+		const users = await MUser.find({}).lean();
+
+		const filteredData = users.flatMap((user) => {
+			const filteredAccounts = user.mt5Accounts.filter((account) => {
+				const stageMatch = !challengeStage || account.challengeStage === challengeStage;
+
+				const createdAt = new Date(account.createdAt);
+				const dateMatch =
+					(!startDate || createdAt >= new Date(startDate)) &&
+					(!endDate || createdAt <= new Date(endDate));
+
+				return stageMatch && dateMatch;
+			});
+
+			if (filteredAccounts.length === 0) return [];
+
+			return {
+				email: user.email,
+				first: user.first.trim(),
+				last: user.last.trim(),
+				country: user.country,
+				phone: user.phone,
+				role: user.role,
+				affiliate: user.affiliate,
+				mt5Accounts: filteredAccounts,
+				createdAt: user.createdAt,
+				updatedAt: user.updatedAt,
+			};
+		});
+
+		// Return the filtered data
+		return filteredData;
+	} catch (error) {
+		throw new Error(`Error generating CSV data: ${error.message}`);
+	}
+};
+
 // get all user
 const getAllUsers = async (page = 1, limit = 10, searchQuery = "") => {
 	try {
@@ -252,12 +295,10 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 			const parsedSearchQuery = parseInt(searchQuery);
 
 			// Check if searchQuery is a valid number
-			// biome-ignore lint/suspicious/noGlobalIsNan: <explanation>
 			if (!isNaN(parsedSearchQuery)) {
 				matchQuery["mt5Accounts.account"] = parsedSearchQuery;
 			} else {
 				// Use regex for email search if searchQuery is not a number
-				// biome-ignore lint/complexity/useLiteralKeys: <explanation>
 				matchQuery["email"] = { $regex: searchQuery, $options: "i" };
 			}
 		}
@@ -269,9 +310,9 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 
 		// Define the aggregation pipeline for counting
 		const countPipeline = [
-			{ $unwind: "$mt5Accounts" }, // Unwind mt5Accounts array
-			{ $match: matchQuery }, // Filter users based on the search query and challenge stage
-			{ $count: "total" }, // Count the total number of documents
+			{ $unwind: "$mt5Accounts" },
+			{ $match: matchQuery },
+			{ $count: "total" },
 		];
 
 		const countResult = await MUser.aggregate(countPipeline);
@@ -279,11 +320,11 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 
 		// Define the aggregation pipeline for fetching paginated results
 		const pipeline = [
-			{ $unwind: "$mt5Accounts" }, // Unwind mt5Accounts array
-			{ $match: matchQuery }, // Filter users based on the search query and challenge stage
+			{ $unwind: "$mt5Accounts" },
+			{ $match: matchQuery },
 			{
 				$sort: {
-					_id: -1, // Sort by users._id (userId) in descending order
+					_id: -1,
 				},
 			},
 			{
@@ -292,6 +333,8 @@ const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
 					firstName: "$first",
 					lastName: "$last",
 					"mt5Accounts.account": 1,
+					"mt5Accounts.productId": 1,
+					"mt5Accounts.accountStatus": 1,
 					"mt5Accounts.challengeStatus": 1,
 					"mt5Accounts.createdAt": 1,
 					"mt5Accounts.challengeStage": 1,
@@ -1044,4 +1087,5 @@ module.exports = {
 	manualChallengePass,
 	getOnlyUserHandlerBYEmailService,
 	generateAllUsersCSV,
+	generateAllAccountsCSV,
 };
