@@ -333,18 +333,27 @@ const getOrderHistoryController = async (req, res) => {
 
 	try {
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
-
 		const approvedAcc = await MWithDrawRequest.findOne({ accountNumber: account });
 
 		let filteredTrades = orderHistory;
 
 		if (approvedAcc) {
-			// Filter trades that are after approvedAcc.updatedAt
-			const updatedAtTime = new Date(approvedAcc.updatedAt);
+			const updatedAt = new Date(approvedAcc.updatedAt);
+			const today = new Date();
 
-			filteredTrades = orderHistory.filter(trade => {
+			// Extract today's year, month, and day
+			const todayYear = today.getFullYear();
+			const todayMonth = today.getMonth();
+			const todayDate = today.getDate();
+
+			filteredTrades = orderHistory.filter((trade) => {
 				const tradeTime = new Date(trade.openTime);
-				return tradeTime > updatedAtTime;
+				return (
+					tradeTime > updatedAt &&
+					tradeTime.getFullYear() === todayYear &&
+					tradeTime.getMonth() === todayMonth &&
+					tradeTime.getDate() === todayDate
+				);
 			});
 		}
 
@@ -356,7 +365,10 @@ const getOrderHistoryController = async (req, res) => {
 			});
 		}
 
-		res.status(200).json(getOpenTrades);
+		res.status(200).json({
+			success: true,
+			openTradeDays: getOpenTrades,
+		});
 
 	} catch (error) {
 		res.status(500).json({
@@ -365,6 +377,7 @@ const getOrderHistoryController = async (req, res) => {
 		});
 	}
 };
+
 
 
 
