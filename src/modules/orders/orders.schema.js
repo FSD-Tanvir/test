@@ -56,6 +56,7 @@ const orderSchema = new Schema(
             ref: "Coupon",
             default: null,
         },
+
         addOns: { type: [String], default: [] },
         addOnsName: { type: String, default: null },
         isGiveAway: { type: Boolean, default: false },
