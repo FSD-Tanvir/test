@@ -567,6 +567,9 @@ const assignNewMT5Account = async (
                 },
             },
             group: group,
+            noStopLoss: mt5SignUpData.noStopLoss,
+            noConsistency: mt5SignUpData.noConsistency,
+            noNewsTrading: mt5SignUpData.noNewsTrading,
         };
 
         const passedHTMLTemplate = `<!DOCTYPE html>

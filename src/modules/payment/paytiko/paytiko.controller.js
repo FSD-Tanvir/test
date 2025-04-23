@@ -156,6 +156,9 @@ const controllerPaytikoWebhook = async (req, res) => {
                     challengeStage,
                     challengeStageData: { ...challengeData, challengeStages },
                     group: mt5SignUpData.Group,
+                    noStopLoss: mt5SignUpData.noStopLoss,
+                    noConsistency: mt5SignUpData.noConsistency,
+                    noNewsTrading: mt5SignUpData.noNewsTrading,
                 };
 
                 console.log("MT5 Data prepared for update:", mt5Data);
