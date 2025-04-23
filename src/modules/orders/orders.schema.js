@@ -48,7 +48,7 @@ const orderSchema = new Schema(
         },
 
         referralCode: { type: String, default: "" },
-        subtotal: { type: Number, default: null }, // challenge_price
+        subtotal: { type: Number, default: null }, // Challenge Price
         discountPrice: { type: Number, default: null },
         totalPrice: { type: Number, default: null },
         couponClaimed: {
@@ -56,7 +56,7 @@ const orderSchema = new Schema(
             ref: "Coupon",
             default: null,
         },
-        addOns: { type: Number, default: null },
+        addOns: { type: [String], default: [] },
         addOnsName: { type: String, default: null },
         isGiveAway: { type: Boolean, default: false },
     },
