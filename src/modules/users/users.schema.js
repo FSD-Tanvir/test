@@ -36,6 +36,7 @@ const mt5Account = new Schema(
         productId: { type: String },
         noStopLoss: { type: Boolean, default: false },
         noConsistency: { type: Boolean, default: false },
+        noNewsTrading: { type: Boolean, default: false },
         accountStatus: {
             type: String,
             enum: ["active", "inActive", "breached"], // Allowed roles
