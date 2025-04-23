@@ -6,8 +6,9 @@ const {
     disableRiskedAccountForNewsTrading,
     getAccountRiskDataForNews,
 } = require("./newsTradingRisk.services");
-const { instantFundingAccount } = require("../../helper/utils/instantFunding");
+// const { instantFundingAccount } = require("../../helper/utils/instantFunding");
 const { MNewsTradingRisk } = require("./newsTradingRisk.schema");
+const { allAccounts } = require("../../helper/utils/allAccounts");
 
 
 
@@ -24,7 +25,7 @@ const chunkArray = (array, size) => {
 const fetchAndSaveData = async () => {
     console.log("Fetching and saving data for news trading risk...");
     try {
-        const instantFunding = await instantFundingAccount();
+        const instantFunding = await allAccounts();
         console.log(instantFunding)
         const newsTradingData = await MNewsTradingRisk.find({});
         console.log(newsTradingData)
@@ -135,10 +136,10 @@ const fetchAndSaveData = async () => {
 
                         const newsTime = new Date(news.newsDate);
 
-                        console.log("Account:", accountNumber);
-                        console.log("Open Time (+6h):", openTime.toISOString());
-                        console.log("Close Time:", closeTime.toISOString());
-                        console.log("News Date:", newsTime.toISOString());
+                        // console.log("Account:", accountNumber);
+                        // console.log("Open Time (+6h):", openTime.toISOString());
+                        // console.log("Close Time:", closeTime.toISOString());
+                        // console.log("News Date:", newsTime.toISOString());
 
                         const TWO_MINUTES = 2 * 60 * 1000;
                         const openDiff = Math.abs(openTime - newsTime);
@@ -149,8 +150,8 @@ const fetchAndSaveData = async () => {
                                 ticket: order.ticket,
                                 account: accountNumber,
                                 email,
-                                openTime: order.openTime,
-                                closeTime: order.closeTime,
+                                openTime: new Date(new Date(order.openTime).getTime() + 6 * 60 * 60 * 1000),
+                                closeTime: new Date(new Date(order.closeTime).getTime() + 6 * 60 * 60 * 1000),
                                 emailSent: false,
                                 isDisabled: false,
                                 message: "Matched order within news trading window."
