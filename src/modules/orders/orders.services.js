@@ -30,7 +30,6 @@ const createOrder = async (orderData) => {
         const newOrder = await MOrder.create({
             ...orderData,
             orderItems: orderData.orderItems || [],
-            totalPrice,
         });
 
         const { orderId, buyerDetails } = newOrder;
