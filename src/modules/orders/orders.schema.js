@@ -59,6 +59,7 @@ const orderSchema = new Schema(
         },
 
         addOns: { type: [String], default: [] },
+        addOnsAmount: { type: Number, default: null },
         addOnsName: { type: String, default: null },
         isGiveAway: { type: Boolean, default: false },
     },
