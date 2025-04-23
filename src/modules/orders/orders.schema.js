@@ -50,7 +50,8 @@ const orderSchema = new Schema(
         referralCode: { type: String, default: "" },
         subtotal: { type: Number, default: null }, // Challenge Price
         discountPrice: { type: Number, default: null },
-        totalPrice: { type: Number, default: null },
+        totalPrice: { type: Number, default: null }, // Total Price (Challenge Price + AddOns + Coupon)
+
         couponClaimed: {
             type: Schema.Types.ObjectId,
             ref: "Coupon",
