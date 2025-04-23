@@ -80,8 +80,11 @@ const controllerPaytikoWebhook = async (req, res) => {
         }
 
         // destructure the order data for buyer details, order items, and group also challenge data
-        const { buyerDetails, orderItems, group } = order;
+        const { buyerDetails, orderItems, group, addOns } = order;
         const challengeData = orderItems[0];
+
+        // Validate if addons is a valid array
+        const isValidAddonsArray = Array.isArray(addOns) && addOns.length > 0;
 
         // Find the user
         const user = await MUser.findOne({ email: buyerDetails?.email });
@@ -112,7 +115,17 @@ const controllerPaytikoWebhook = async (req, res) => {
                 Phone: buyerDetails.phone,
                 Leverage: challengeData.challengeType === "funded" ? 50 : 100,
                 Group: group,
+                noStopLoss: false, // Default value
+                noConsistency: false, // Default value
+                noNewsTrading: false, // Default value
             };
+
+            // Update mt5SignUpData based on addOns array
+            if (isValidAddonsArray) {
+                mt5SignUpData.noStopLoss = addOns.includes("noStopLoss");
+                mt5SignUpData.noConsistency = addOns.includes("noConsistency");
+                mt5SignUpData.noNewsTrading = addOns.includes("noNewsTrading");
+            }
 
             console.log("MT5 Sign Up Data:", mt5SignUpData);
 
@@ -143,6 +156,9 @@ const controllerPaytikoWebhook = async (req, res) => {
                     challengeStage,
                     challengeStageData: { ...challengeData, challengeStages },
                     group: mt5SignUpData.Group,
+                    noStopLoss: mt5SignUpData.noStopLoss,
+                    noConsistency: mt5SignUpData.noConsistency,
+                    noNewsTrading: mt5SignUpData.noNewsTrading,
                 };
 
                 console.log("MT5 Data prepared for update:", mt5Data);

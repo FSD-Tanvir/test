@@ -460,6 +460,11 @@ const assignNewMT5Account = async (
             return;
         }
 
+        const addOns = order.addOns;
+
+        // Validate if addons is a valid array
+        const isValidAddonsArray = Array.isArray(addOns) && addOns.length > 0;
+
         // Prepare data for creating a new MT5 account.
         const mt5SignUpData = {
             EMail: user.email,
@@ -478,7 +483,17 @@ const assignNewMT5Account = async (
             Leverage: updatedLeverage,
             Group: group,
             Rights: newChallengeStage === "funded" && "USER_RIGHT_TRADE_DISABLED",
+            noStopLoss: false, // Default value
+            noConsistency: false, // Default value
+            noNewsTrading: false, // Default value
         };
+
+        // Update mt5SignUpData based on addOns array
+        if (isValidAddonsArray) {
+            mt5SignUpData.noStopLoss = addOns.includes("noStopLoss");
+            mt5SignUpData.noConsistency = addOns.includes("noConsistency");
+            mt5SignUpData.noNewsTrading = addOns.includes("noNewsTrading");
+        }
 
         // API call to create a new MT5 account.
         const createUser = await accountCreateAndDeposit(mt5SignUpData);
@@ -552,6 +567,9 @@ const assignNewMT5Account = async (
                 },
             },
             group: group,
+            noStopLoss: mt5SignUpData.noStopLoss,
+            noConsistency: mt5SignUpData.noConsistency,
+            noNewsTrading: mt5SignUpData.noNewsTrading,
         };
 
         const passedHTMLTemplate = `<!DOCTYPE html>
