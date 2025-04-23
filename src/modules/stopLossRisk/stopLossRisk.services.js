@@ -22,7 +22,16 @@ const stopLossRisk = async () => {
                     $filter: {
                         input: "$mt5Accounts",
                         as: "account",
-                        cond: { $eq: ["$$account.accountStatus", "active"] },
+                        cond: {
+                            $and: [
+                                { $eq: ["$$account.accountStatus", "active"] },
+                                {
+                                    $not: {
+                                        $and: [{ $eq: ["$$account.noStopLoss", true] }],
+                                    },
+                                },
+                            ],
+                        },
                     },
                 },
             },
