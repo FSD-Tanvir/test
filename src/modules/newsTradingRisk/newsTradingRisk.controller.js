@@ -49,98 +49,12 @@ const fetchAndSaveData = async () => {
                 }
 
                 for (const news of newsTradingData) {
-                    // const newsTime = new Date(news.newsDate);
-
-
-                    // for (const order of orders) {
-                    //     const openTime = new Date(order.openTime);
-                    //     console.log("openTime", openTime)
-
-                    //     const closeTime = new Date(order.closeTime);
-                    //     console.log("closeTime", closeTime)
-
-
-
-
-                    //     if (
-                    //         Math.abs(openTime - newsTime) <= 2 * 60 * 1000 ||
-                    //         Math.abs(closeTime - newsTime) <= 2 * 60 * 1000
-                    //     ) {
-                    //         const matchedData = {
-                    //             ticket: order.ticket,
-                    //             account: order.login,
-                    //             email,
-                    //             openTime: order.openTime,
-                    //             closeTime: order.closeTime,
-                    //             emailSent: false,
-                    //             isDisabled: false,
-                    //             message: "Matched order within news trading window."
-                    //         };
-
-                    //         bulkOps.push({
-                    //             updateOne: {
-                    //                 filter: { _id: news._id },
-                    //                 update: { $push: { newsTradingRiskAccountDetails: matchedData } }
-                    //             }
-                    //         });
-
-                    //         dataSaved = true;
-                    //     }
-                    // }
-                    // for (const order of orders) {
-                    //     const openTime = new Date(order.openTime);
-                    //     const closeTime = new Date(order.closeTime);
-                    //     const accountNumber = order.login || funding.account;
-
-                    //     // Parsing news date
-                    //     const newsTime = new Date(news.newsDate);
-
-                    //     // Log account number, openTime, closeTime, and newsTime
-                    //     console.log("Account:", accountNumber);
-                    //     console.log("Open Time:", openTime.toISOString());
-                    //     console.log("Close Time:", closeTime.toISOString());
-                    //     console.log("News Date:", newsTime.toISOString());
-
-                    //     const TWO_MINUTES = 2 * 60 * 1000;
-                    //     const openDiff = Math.abs(openTime - newsTime);
-                    //     const closeDiff = Math.abs(closeTime - newsTime);
-
-                    //     // Check if openTime or closeTime is within ±2 minutes of newsTime
-                    //     if (openDiff <= TWO_MINUTES || closeDiff <= TWO_MINUTES) {
-                    //         const matchedData = {
-                    //             ticket: order.ticket,
-                    //             account: accountNumber,
-                    //             email,
-                    //             openTime: order.openTime,
-                    //             closeTime: order.closeTime,
-                    //             emailSent: false,
-                    //             isDisabled: false,
-                    //             message: "Matched order within news trading window."
-                    //         };
-
-                    //         bulkOps.push({
-                    //             updateOne: {
-                    //                 filter: { _id: news._id },
-                    //                 update: { $push: { newsTradingRiskAccountDetails: matchedData } }
-                    //             }
-                    //         });
-
-                    //         dataSaved = true;
-                    //     }
-                    // }
-
                     for (const order of orders) {
-                        const openTime = new Date(new Date(order.openTime).getTime() + 6 * 60 * 60 * 1000); // 6 hours added
-                        const closeTime = new Date(new Date(order.closeTime).getTime() + 6 * 60 * 60 * 1000); // 6 hours added
+                        const openTime = new Date(new Date(order.openTime).getTime() + 6 * 60 * 60 * 1000);
+                        const closeTime = new Date(new Date(order.closeTime).getTime() + 6 * 60 * 60 * 1000);
                         const accountNumber = order.login || funding.account;
 
                         const newsTime = new Date(news.newsDate);
-
-                        // console.log("Account:", accountNumber);
-                        // console.log("Open Time (+6h):", openTime.toISOString());
-                        // console.log("Close Time:", closeTime.toISOString());
-                        // console.log("News Date:", newsTime.toISOString());
-
                         const TWO_MINUTES = 2 * 60 * 1000;
                         const openDiff = Math.abs(openTime - newsTime);
                         const closeDiff = Math.abs(closeTime - newsTime);
@@ -167,17 +81,12 @@ const fetchAndSaveData = async () => {
                             dataSaved = true;
                         }
                     }
-
-
                 }
             }
 
             if (bulkOps.length > 0) {
                 await MNewsTradingRisk.bulkWrite(bulkOps);
-                // console.log("Bulk write completed for this chunk.");
             }
-
-            // console.log("Finished processing a chunk of 50 accounts.");
         }
 
         if (dataSaved) {
@@ -190,19 +99,6 @@ const fetchAndSaveData = async () => {
     }
 };
 
-
-
-
-
-
-
-// const storeNewTradingAccount = () => {
-//     cron.schedule("13 18 * * *", () => {
-//         console.log("Cron job triggered");
-//         fetchAndSaveData();
-//     });
-
-// };
 
 const getAccountRiskDataHandlerForNewsTrading = async (req, res) => {
     try {
