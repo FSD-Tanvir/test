@@ -21,6 +21,31 @@ const getAllNewsTradingRisks = async () => {
 };
 
 
+
+const getAccountDetailsByAccountNumber = async (accountNumber) => {
+    const data = await MNewsTradingRisk.aggregate([
+        { $unwind: "$newsTradingRiskAccountDetails" },
+        { $match: { "newsTradingRiskAccountDetails.account": accountNumber } },
+        {
+            $group: {
+                _id: "$newsTradingRiskAccountDetails.account",
+                entries: { $push: "$newsTradingRiskAccountDetails" },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                account: "$_id",
+                entries: 1,
+                flag: "$count"
+            }
+        }
+    ]);
+
+    return data.length > 0 ? data[0] : null;
+};
+
 const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
 	console.log("accountDetails", accountDetails);
 	try {
@@ -390,4 +415,5 @@ module.exports = {
 	sendWarningEmailForNewsTrading,
 	disableRiskedAccountForNewsTrading,
 	getAllNewsTradingRisks,
+	getAccountDetailsByAccountNumber,
 };

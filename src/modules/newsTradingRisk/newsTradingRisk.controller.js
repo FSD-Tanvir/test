@@ -4,6 +4,7 @@ const {
     sendWarningEmailForNewsTrading,
     disableRiskedAccountForNewsTrading,
     getAllNewsTradingRisks,
+    getAccountDetailsByAccountNumber,
 } = require("./newsTradingRisk.services");
 const { MNewsTradingRisk } = require("./newsTradingRisk.schema");
 const { allAccounts } = require("../../helper/utils/allAccounts");
@@ -45,19 +46,25 @@ const fetchAndSaveData = async () => {
                 }
 
                 for (const news of newsTradingData) {
-                    const newsDate = new Date(news.newsDate);
-                    const dayStart = new Date(newsDate.setHours(0, 0, 0, 0));
-                    const dayEnd = new Date(newsDate.setHours(24, 0, 0, 0));
-
+                    const newsDateOriginal = new Date(news.newsDate);
+                    const newsDate = new Date(newsDateOriginal); 
+                    // console.log("newsDate", newsDate);
+                
+                    const dayStart = new Date(newsDateOriginal); // New copy again
+                    dayStart.setHours(0, 0, 0, 0);
+                
+                    const dayEnd = new Date(newsDateOriginal);
+                    dayEnd.setHours(23, 59, 59, 999); // Use this instead of 24:00 which is invalid
+                
                     for (const order of orders) {
                         const openTime = new Date(new Date(order.openTime).getTime() + 6 * 60 * 60 * 1000);
                         const closeTime = new Date(new Date(order.closeTime).getTime() + 6 * 60 * 60 * 1000);
                         const accountNumber = order.login || funding.account;
-
+                
                         const TWO_MINUTES = 2 * 60 * 1000;
-                        const openDiff = Math.abs(openTime - newsDate);
+                        const openDiff = Math.abs(openTime - newsDate); // Now correct
                         const closeDiff = Math.abs(closeTime - newsDate);
-
+                
                         if (openDiff <= TWO_MINUTES || closeDiff <= TWO_MINUTES) {
                             const matchedData = {
                                 ticket: order.ticket,
@@ -69,7 +76,7 @@ const fetchAndSaveData = async () => {
                                 isDisabled: false,
                                 message: "Matched order within news trading window."
                             };
-
+                
                             bulkOps.push({
                                 updateOne: {
                                     filter: {
@@ -90,7 +97,7 @@ const fetchAndSaveData = async () => {
                                     }
                                 }
                             });
-
+                
                             dataSaved = true;
                         }
                     }
@@ -112,7 +119,17 @@ const fetchAndSaveData = async () => {
     }
 };
 
+const getAccountDetails = async (req, res) => {
+    const { account } = req.params;
 
+    const result = await getAccountDetailsByAccountNumber(Number(account));
+
+    if (!result || result.length === 0) {
+        return res.status(404).json({ success: false, message: 'Account not found' });
+    }
+
+    return res.status(200).json({ success: true, data: result });
+};
 
 
 const getAllNewsTradingRiskController = async (req, res) => {
@@ -159,6 +176,7 @@ module.exports = {
     sendWarningEmailHandlerForNewsTrading,
     disableRiskedAccountHandlerForNewsTrading,
     getAllNewsTradingRiskController,
+    getAccountDetails,
 };
 
 
