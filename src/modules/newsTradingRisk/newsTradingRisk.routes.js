@@ -1,12 +1,14 @@
 const express = require("express");
-const { sendWarningEmailHandlerForNewsTrading, disableRiskedAccountHandlerForNewsTrading, getAccountRiskDataHandlerForNewsTrading } = require("./newsTradingRisk.controller");
+const { sendWarningEmailHandlerForNewsTrading, disableRiskedAccountHandlerForNewsTrading, getAllNewsTradingRiskController, getAccountDetails } = require("./newsTradingRisk.controller");
 
 
 const router = express.Router();
 
 
 
-router.get("/get-trading-risk", getAccountRiskDataHandlerForNewsTrading);
+router.get("/", getAllNewsTradingRiskController);
+
+router.get('/:account', getAccountDetails);
 
 router.post("/news-disable-risk-account/:account", disableRiskedAccountHandlerForNewsTrading);
 

@@ -3,56 +3,48 @@ const { OrderCloseAll, accountUpdate } = require("../../thirdPartyMt5Api/thirdPa
 const { saveRealTimeLog } = require("../disableAccounst/disableAccounts.services");
 const { MNewsTradingRisk } = require("./newsTradingRisk.schema");
 
+const getAllNewsTradingRisks = async () => {
+	const risks = await MNewsTradingRisk.find().sort({ createdAt: -1 });
 
-const getAccountRiskDataForNews = async (openTime, account, page, limit) => {
-	try {
-		const query = {};
-		if (openTime) {
-			const parsedDate = new Date(openTime);
-			const startOfDay = new Date(parsedDate.setHours(0, 0, 0, 0));
-			const endOfDay = new Date(parsedDate.setHours(23, 59, 59, 999));
+	return risks.map(risk => {
+		// Only include non-null accounts
+		const filteredDetails = risk.newsTradingRiskAccountDetails.filter(
+			detail => detail.account !== null
+		);
 
-			query.openTime = { $gte: startOfDay, $lt: endOfDay };
-		}
-		if (account) query.account = account;
-		const pipeline = [
-			{ $match: query },
-			{ $sort: { openTime: -1 } },
-			{
-				$group: {
-					_id: "$account",
-					totalCount: { $sum: 1 },
-					records: { $push: "$$ROOT" },
-				},
-			},
-			{
-				$project: {
-					account: "$_id",
-					_id: 0,
-					totalCount: 1,
-					records: 1,
-				},
-			},
-			{ $skip: (page - 1) * limit },
-			{ $limit: limit },
-		];
-
-		const groupedData = await MNewsTradingRisk.aggregate(pipeline);
-		const totalRecords = await MNewsTradingRisk.countDocuments(query);
-
+		// Convert to plain JS object and replace the array
 		return {
-			totalRecords,
-			data: groupedData,
-			totalPages: Math.ceil(totalRecords / limit),
-			page,
-			limit,
+			...risk.toObject(),
+			newsTradingRiskAccountDetails: filteredDetails
 		};
-	} catch (error) {
-		throw new Error(`Error retrieving account risk data: ${error.message}`);
-	}
-};;
+	});
+};
 
 
+
+const getAccountDetailsByAccountNumber = async (accountNumber) => {
+    const data = await MNewsTradingRisk.aggregate([
+        { $unwind: "$newsTradingRiskAccountDetails" },
+        { $match: { "newsTradingRiskAccountDetails.account": accountNumber } },
+        {
+            $group: {
+                _id: "$newsTradingRiskAccountDetails.account",
+                entries: { $push: "$newsTradingRiskAccountDetails" },
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                account: "$_id",
+                entries: 1,
+                flag: "$count"
+            }
+        }
+    ]);
+
+    return data.length > 0 ? data[0] : null;
+};
 
 const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
 	console.log("accountDetails", accountDetails);
@@ -226,7 +218,7 @@ const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
 		const message = "News Trading Violation";
 
 		const userDisableDetails = {
-			Rights: "USER_RIGHT_TRADE_DISABLED", 
+			Rights: "USER_RIGHT_TRADE_DISABLED",
 			enabled: true,
 		};
 
@@ -263,8 +255,8 @@ const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
 		(async () => {
 			try {
 				const tickets = accountDetails.tickets
-  .map(ticket => `<li>Ticket: ${ticket.ticket}, Open Time: ${new Date(ticket.openTime).toLocaleString()}</li>`)
-  .join("");
+					.map(ticket => `<li>Ticket: ${ticket.ticket}, Open Time: ${new Date(ticket.openTime).toLocaleString()}</li>`)
+					.join("");
 				const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -422,5 +414,6 @@ const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
 module.exports = {
 	sendWarningEmailForNewsTrading,
 	disableRiskedAccountForNewsTrading,
-	getAccountRiskDataForNews
+	getAllNewsTradingRisks,
+	getAccountDetailsByAccountNumber,
 };
