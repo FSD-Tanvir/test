@@ -41,18 +41,16 @@ const fetchWithTimeout = async (url, options = {}, timeout = 20000, retries = 3)
 
 // Function to store daily data fetched from an external API
 
-const storeDataDaily = async () => {
+const storeDataDaily = async (retryCount = 0) => {
 	try {
-		const userDetails = await allUserDetails(); // Fetch all user details
-		console.log(userDetails);
+		const userDetails = await allUserDetails();
+		console.log("Fetched user details:", userDetails);
 
-		// Use a loop instead of `map` for better readability when using async/await
 		const storeData = [];
 		for (const userDetail of userDetails) {
 			const userRights = userDetail.rights;
 			const account = userDetail.login;
 
-			// Check if the user rights allow for processing
 			if (typeof userRights === "string" && !userRights.includes("USER_RIGHT_TRADE_DISABLED")) {
 				const accountDetail = await accountDetails(account);
 				if (accountDetail) {
@@ -61,22 +59,16 @@ const storeDataDaily = async () => {
 							? accountDetail.balance
 							: accountDetail.equity;
 
-					const dailyStartingBalance = accountDetail.balance;
-					const dailyStartingEquity = accountDetail.equity;
-
-					console.log(storeData);
-
 					storeData.push({
 						mt5Account: accountDetail.login,
 						asset: asset,
-						dailyStartingBalance: dailyStartingBalance,
-						dailyStartingEquity: dailyStartingEquity,
+						dailyStartingBalance: accountDetail.balance,
+						dailyStartingEquity: accountDetail.equity,
 					});
 				}
 			}
 		}
 
-		// Store the processed data
 		await StoreDataModel.create({
 			dailyData: storeData,
 			createdAt: new Date(),
@@ -84,7 +76,14 @@ const storeDataDaily = async () => {
 
 		console.log("Data stored successfully.");
 	} catch (error) {
-		console.error("Error storing data:", error);
+		console.error(`Error storing data (attempt ${retryCount + 1}/3):`, error);
+
+		if (retryCount < 3) {
+			console.log(`Retrying in 30 minutes (attempt ${retryCount + 2}/3)...`);
+			setTimeout(() => storeDataDaily(retryCount + 1), 30 * 60 * 1000); // 30 minutes
+		} else {
+			console.error("Maximum retry attempts reached. Giving up.");
+		}
 	}
 };
 
