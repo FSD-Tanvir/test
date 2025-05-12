@@ -210,8 +210,8 @@ As a broker-backed prop firm, we’re excited to offer a new feature: you can no
 Please note, after your first withdrawal, you may request your next payout as soon as you place your next trade. For more details, please visit your account dashboard.  </p>
                             <br>
                             <p>Please note, after your first withdrawal, you can request your next withdrawal 14 days after your    next trade is placed. To check your trading and withdrawal history, please visit your account dashboard.</p>
-                            <p>Thank you for choosing Summit Strike!</p>
-                            <p>Best regards,<br>The Summit Strike Team</p>
+                            <p>Thank you for choosing Foxx-Funded!</p>
+                            <p>Best regards,<br>The Foxx-Funded Team</p>
                         `;
 			// Send the approval email
 			await sendEmailSingleRecipient(
@@ -236,8 +236,8 @@ Please note, after your first withdrawal, you may request your next payout as so
                                 <li><strong>Status:</strong> Rejected</li>
                             </ul>
                             <p>Please correct the issue noted above, and you can either resubmit your withdrawal or continue trading.</p>
-                            <p>If you have any questions, feel free to reach out to <a href="mailto:support@summitstrike.com">support@summitstrike.com</a>.</p>
-                            <p>Best regards,<br>The Summit Strike Team</p>
+                            <p>If you have any questions, feel free to reach out to <a href="mailto:supportcontact@fox-funded.com">supportcontact@fox-funded.com</a>.</p>
+                            <p>Best regards,<br>The Foxx-Funded Team</p>
                         `;
 
 			// Send the rejection email
