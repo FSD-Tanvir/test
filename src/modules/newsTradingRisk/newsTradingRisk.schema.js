@@ -29,6 +29,10 @@ const newsTradingRiskAccountDetails = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        emailCount: {
+            type: Number,
+            default: 0,
+        },
         isDisabled: {
             type: Boolean,
             default: false,
