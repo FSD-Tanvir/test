@@ -10,7 +10,7 @@ router.get("/", getAllNewsTradingRiskController);
 
 router.get('/:account', getAccountDetails);
 
-router.post("/news-disable-risk-account/:account", disableRiskedAccountHandlerForNewsTrading);
+// router.post("/news-disable-risk-account/:account", disableRiskedAccountHandlerForNewsTrading);
 
 router.post("/news-warning-email/:account", sendWarningEmailHandlerForNewsTrading);
 
