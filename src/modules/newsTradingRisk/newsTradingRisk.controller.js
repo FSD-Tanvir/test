@@ -47,24 +47,24 @@ const fetchAndSaveData = async () => {
 
                 for (const news of newsTradingData) {
                     const newsDateOriginal = new Date(news.newsDate);
-                    const newsDate = new Date(newsDateOriginal); 
+                    const newsDate = new Date(newsDateOriginal);
                     // console.log("newsDate", newsDate);
-                
+
                     const dayStart = new Date(newsDateOriginal); // New copy again
                     dayStart.setHours(0, 0, 0, 0);
-                
+
                     const dayEnd = new Date(newsDateOriginal);
                     dayEnd.setHours(23, 59, 59, 999); // Use this instead of 24:00 which is invalid
-                
+
                     for (const order of orders) {
                         const openTime = new Date(new Date(order.openTime).getTime() + 6 * 60 * 60 * 1000);
                         const closeTime = new Date(new Date(order.closeTime).getTime() + 6 * 60 * 60 * 1000);
                         const accountNumber = order.login || funding.account;
-                
+
                         const TWO_MINUTES = 2 * 60 * 1000;
                         const openDiff = Math.abs(openTime - newsDate); // Now correct
                         const closeDiff = Math.abs(closeTime - newsDate);
-                
+
                         if (openDiff <= TWO_MINUTES || closeDiff <= TWO_MINUTES) {
                             const matchedData = {
                                 ticket: order.ticket,
@@ -76,7 +76,7 @@ const fetchAndSaveData = async () => {
                                 isDisabled: false,
                                 message: "Matched order within news trading window."
                             };
-                
+
                             bulkOps.push({
                                 updateOne: {
                                     filter: {
@@ -97,7 +97,7 @@ const fetchAndSaveData = async () => {
                                     }
                                 }
                             });
-                
+
                             dataSaved = true;
                         }
                     }
@@ -155,26 +155,26 @@ const sendWarningEmailHandlerForNewsTrading = async (req, res) => {
     }
 };
 
-const disableRiskedAccountHandlerForNewsTrading = async (req, res) => {
-    try {
-        const { account } = req.params;
-        const accountDetails = req.body;
+// const disableRiskedAccountHandlerForNewsTrading = async (req, res) => {
+//     try {
+//         const { account } = req.params;
+//         const accountDetails = req.body;
 
-        const disabledAccountResultForNewsTrading = await disableRiskedAccountForNewsTrading(
-            account,
-            accountDetails
-        );
+//         const disabledAccountResultForNewsTrading = await disableRiskedAccountForNewsTrading(
+//             account,
+//             accountDetails
+//         );
 
-        res.status(200).json(disabledAccountResultForNewsTrading);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
+//         res.status(200).json(disabledAccountResultForNewsTrading);
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 module.exports = {
     fetchAndSaveData,
     sendWarningEmailHandlerForNewsTrading,
-    disableRiskedAccountHandlerForNewsTrading,
+    // disableRiskedAccountHandlerForNewsTrading,
     getAllNewsTradingRiskController,
     getAccountDetails,
 };

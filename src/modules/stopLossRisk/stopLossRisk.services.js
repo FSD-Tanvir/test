@@ -305,11 +305,10 @@ const disableStopLossRiskedAccount = async (account, accountDetails) => {
         // Return a success message but add a warning about email failure
         return {
             success: true,
-            message: `The account "${account}" has been successfully disabled due to Stop Loss Risk. ${
-                emailSent
-                    ? "An email notification has been sent."
-                    : "However, email notification failed."
-            }`,
+            message: `The account "${account}" has been successfully disabled due to Stop Loss Risk. ${emailSent
+                ? "An email notification has been sent."
+                : "However, email notification failed."
+                }`,
             emailSent,
         };
     } catch (error) {
@@ -344,12 +343,11 @@ const sendStopLossWarningEmail = async (account, accountDetails) => {
 
         // Check if the response indicates a successful send
         if (typeof info === "string" && info.includes("OK")) {
-            // Update emailSent field to true in the database
             await StopLossRiskModel.updateMany(
                 { account: account },
                 {
                     $set: { emailSent: true },
-                    $inc: { emailCount: 1 }, // Increment the email count
+                    $inc: { emailCount: 1 },
                 }
             );
         }

@@ -23,38 +23,37 @@ const getAllNewsTradingRisks = async () => {
 
 
 const getAccountDetailsByAccountNumber = async (accountNumber) => {
-    const data = await MNewsTradingRisk.aggregate([
-        { $unwind: "$newsTradingRiskAccountDetails" },
-        { $match: { "newsTradingRiskAccountDetails.account": accountNumber } },
-        {
-            $group: {
-                _id: "$newsTradingRiskAccountDetails.account",
-                entries: { $push: "$newsTradingRiskAccountDetails" },
-                count: { $sum: 1 }
-            }
-        },
-        {
-            $project: {
-                _id: 0,
-                account: "$_id",
-                entries: 1,
-                flag: "$count"
-            }
-        }
-    ]);
+	const data = await MNewsTradingRisk.aggregate([
+		{ $unwind: "$newsTradingRiskAccountDetails" },
+		{ $match: { "newsTradingRiskAccountDetails.account": accountNumber } },
+		{
+			$group: {
+				_id: "$newsTradingRiskAccountDetails.account",
+				entries: { $push: "$newsTradingRiskAccountDetails" },
+				count: { $sum: 1 }
+			}
+		},
+		{
+			$project: {
+				_id: 0,
+				account: "$_id",
+				entries: 1,
+				flag: "$count"
+			}
+		}
+	]);
 
-    return data.length > 0 ? data[0] : null;
+	return data.length > 0 ? data[0] : null;
 };
 
 const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
-	console.log("accountDetails", accountDetails);
 	try {
 		const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Account Breach Notification</title>
+	<title>News Trading Violation Warning</title>
 	<style>
 		body {
 			font-family: 'Arial', sans-serif;
@@ -135,7 +134,7 @@ const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
 	<div class="email-container">
 		<!-- Header Section -->
 		<div class="header">
-			Summit Strike Capital - News Trading Warning
+			Foxx Funded - News Trading Warning
 		</div>
 		
 		<!-- Content Section -->
@@ -150,40 +149,33 @@ const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
 				<strong>${accountDetails.ticket}</strong>
 			</p>
 			
-			<p>Please review the News Trading rules carefully. This message is to inform you that the profit made during this time is deducted from your account. For more information, please refer to the relevant article in our Knowledge Center: https://summitstrike.com/faq/
+			<p>Please review the News Trading rules carefully. This message is to inform you that the profit made during this time is deducted from your account. For more information, please refer to the relevant article in our Knowledge Center: https://foxx-funded.com/en/faqs#faq-section
             </p>
 
 			<p>We will deduct the profits made from these trades and adjust your account balance accordingly.  This message serves as a warning; this is your second violation. Should there be another infraction, your Funded Account will be breached
             </p>
 
-			<p>We appreciate your understanding and patience in this matter and wish you continued success with Summit Strike Capital.</p>
+			<p>We appreciate your understanding and patience in this matter and wish you continued success with Foxx Fund.</p>
 
 			<p>Thank you for your understanding and cooperation.</p>
 
 			<p>Best regards,</p>
-			<p>Summit Strike Capital Risk Team</p>
+			<p>Foxx Funded Risk Team</p>
 
-			<p style="font-size: 14px; color: #777; margin-top: 20px;">
-		    	If you have any questions, feel free to
-		    	<a href="https://summitstrike.com/contact" style="color: #007bff; text-decoration: none; font-weight: bold;">
-		    		contact us or contact our support team
-		    	</a>.
-		  	</p>
-			<div class="social-links">
-  				<a  href="https://t.me/summitsrikecapital">
-    				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
-  				</a>
-  				<a style="margin-left: 20px;" href="https://discord.com/invite/2NpszcabHC">
-    				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRILFgGb5Qgu-Lc9kkKFcnjKso7EI85qQcy8A&s" alt="Discord">
-  				</a>
-			</div>
+		<p>Please keep this information secure and do not share it with anyone.</p>
+            <div class="download-links">
+                <p>Download the MT5 for:</p>
+                <a href="https://play.google.com/store/apps/details?id=net.metaquotes.metatrader5" target="_blank" rel="noopener noreferrer">Android</a>
+                <a href="https://apps.apple.com/us/app/metatrader-5/id413251709" target="_blank" rel="noopener noreferrer">iOS</a>
+                <a href="https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/metatrader5.apk?utm_source=www.metatrader5.com&utm_campaign=install.metaquotes" target="_blank" rel="noopener noreferrer">Desktop</a>
+            </div>
 
 		
 		</div>
 		
 		<!-- Footer Section -->
 		<div class="footer">
-			<p>@2024 Summit Strike All Rights Reserved.</p>
+			<p>@2024 Foxx Funded All Rights Reserved.</p>
 		</div>
 	</div>
 </body>
@@ -193,13 +185,26 @@ const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
 
 		const info = await sendEmailSingleRecipient(
 			accountDetails?.email,
-			"Summit Strike Capital - News Trading Warning",
+			"Foxx Funded - News Trading Warning",
 			null,
 			htmlContent
 		);
 		if (typeof info === "string" && info.includes("OK")) {
-			await MNewsTradingRisk.updateMany({ account: account }, { $set: { emailSent: true } });
+
+			const updateResult = await MNewsTradingRisk.updateOne(
+				{
+					'newsTradingRiskAccountDetails.account': Number(account),
+					'newsTradingRiskAccountDetails.ticket': Number(accountDetails.ticket)
+				},
+				{
+					$set: {
+						'newsTradingRiskAccountDetails.$.emailSent': true,
+						'newsTradingRiskAccountDetails.$.emailCount': 1
+					}
+				}
+			);
 		}
+
 		return {
 			success: true,
 			message: `Warning email successfully sent to ${accountDetails?.email}`,
