@@ -202,14 +202,13 @@ const updateWithDrawRequestByIdService = async (id, updateData) => {
                             <p><strong>Payout details here:</strong></p>
                             <ul>
                                 <li><strong>Date Requested:</strong> ${new Date(
-                                  updatedWithDrawRequest.createdAt
-                                ).toUTCString()}</li>
-                                <li><strong>MetaTrader Account:</strong> ${
-                                  withdrawRequest.accountNumber
-                                }</li>
+        updatedWithDrawRequest.createdAt
+      ).toUTCString()}</li>
+                                <li><strong>MetaTrader Account:</strong> ${withdrawRequest.accountNumber
+        }</li>
                                 <li><strong>Withdrawn Amount:</strong> $${withdrawRequest?.traderSplit.toFixed(
-                                  2
-                                )}</li>
+          2
+        )}</li>
                                 <li><strong>Status:</strong> Approved</li>
                             </ul>
                             <p>While your trading account is currently disabled, we would appreciate it if you could upload your payout proof on our Discord or any social media, after which your account will be re-enabled for trading.
@@ -236,19 +235,18 @@ Please note, after your first withdrawal, you may request your next payout as so
                             <p><strong>Withdrawal Details:</strong></p>
                             <ul>
                                 <li><strong>Date Requested:</strong> ${new Date(
-                                  updatedWithDrawRequest.createdAt
-                                ).toUTCString()}</li>
-                                <li><strong>MetaTrader Account:</strong> ${
-                                  withdrawRequest.accountNumber
-                                }</li>
+        updatedWithDrawRequest.createdAt
+      ).toUTCString()}</li>
+                                <li><strong>MetaTrader Account:</strong> ${withdrawRequest.accountNumber
+        }</li>
                                 <li><strong>Withdrawn Amount:</strong> $${withdrawRequest?.traderSplit.toFixed(
-                                  2
-                                )}</li>
+          2
+        )}</li>
                                 <li><strong>Payout Method:</strong> ${withdrawRequest?.paymentMethod}</li>
                                 <li><strong>Status:</strong> Rejected</li>
                             </ul>
                             <p>Please correct the issue noted above, and you can either resubmit your withdrawal or continue trading.</p>
-                            <p>If you have any questions, feel free to reach out to <a href="mailto:supportcontact@fox-funded.com">supportcontact@fox-funded.com</a>.</p>
+                            <p>If you have any questions, feel free to reach out to <a href="mailto:Contact@foxx-funded.com">Contact@foxx-funded.com</a>.</p>
                             <p>Best regards,<br>The Foxx-Funded Team</p>
                         `;
 
