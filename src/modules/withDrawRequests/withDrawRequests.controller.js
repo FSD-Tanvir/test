@@ -328,55 +328,116 @@ const getPayoutRequestHandler = async (req, res) => {
 	}
 };
 
+// const getOrderHistoryController = async (req, res) => {
+// 	const { account, startDate, endDate } = req.query;
+
+// 	try {
+// 		const orderHistory = await getOrderHistory(account, startDate, endDate);
+// 		const approvedAcc = await MWithDrawRequest.findOne({ accountNumber: account });
+
+// 		let filteredTrades = orderHistory;
+
+// 		if (approvedAcc) {
+// 			const updatedAt = new Date(approvedAcc.updatedAt);
+// 			const today = new Date();
+
+// 			// Extract today's year, month, and day
+// 			const todayYear = today.getFullYear();
+// 			const todayMonth = today.getMonth();
+// 			const todayDate = today.getDate();
+
+// 			filteredTrades = orderHistory.filter((trade) => {
+// 				const tradeTime = new Date(trade.openTime);
+// 				return (
+// 					tradeTime > updatedAt &&
+// 					tradeTime.getFullYear() === todayYear &&
+// 					tradeTime.getMonth() === todayMonth &&
+// 					tradeTime.getDate() === todayDate
+// 				);
+// 			});
+// 		}
+
+// 		const getOpenTrades = getUniqueTradingDays(filteredTrades);
+
+// 		if (getOpenTrades === 0) {
+// 			return res.status(200).json({
+// 				message: "No open trades found for this account.",
+// 			});
+// 		}
+
+// 		res.status(200).json({
+// 			success: true,
+// 			openTradeDays: getOpenTrades,
+// 		});
+
+// 	} catch (error) {
+// 		res.status(500).json({
+// 			success: false,
+// 			message: error.message
+// 		});
+// 	}
+// };
+
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
 
 	try {
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
-		const approvedAcc = await MWithDrawRequest.findOne({ accountNumber: account });
 
-		let filteredTrades = orderHistory;
-
-		if (approvedAcc) {
-			const updatedAt = new Date(approvedAcc.updatedAt);
-			const today = new Date();
-
-			// Extract today's year, month, and day
-			const todayYear = today.getFullYear();
-			const todayMonth = today.getMonth();
-			const todayDate = today.getDate();
-
-			filteredTrades = orderHistory.filter((trade) => {
-				const tradeTime = new Date(trade.openTime);
-				return (
-					tradeTime > updatedAt &&
-					tradeTime.getFullYear() === todayYear &&
-					tradeTime.getMonth() === todayMonth &&
-					tradeTime.getDate() === todayDate
-				);
-			});
-		}
-
-		const getOpenTrades = getUniqueTradingDays(filteredTrades);
-
-		if (getOpenTrades === 0) {
+		if (!orderHistory || orderHistory.length === 0) {
 			return res.status(200).json({
-				message: "No open trades found for this account.",
+				success: true,
+				message: "No trade history found.",
 			});
 		}
 
-		res.status(200).json({
+		// Step 1: Get sorted unique trade dates
+		const uniqueTradeDates = getUniqueTradingDays(orderHistory, true);
+
+		// Step 2: If 14 or more days exist, try resetting
+		if (uniqueTradeDates.length >= 14) {
+			const cutoffDate = new Date(uniqueTradeDates[13]); // 14th date
+			cutoffDate.setDate(cutoffDate.getDate() + 1); // Day after the 14th
+
+			// Step 3: Filter trades after the cutoff date
+			const filteredTrades = orderHistory.filter((trade) => {
+				const tradeTime = new Date(trade.openTime);
+				return tradeTime >= cutoffDate;
+			});
+
+			const recalculatedDays = getUniqueTradingDays(filteredTrades);
+
+			// Step 4: Handle post-reset
+			if (recalculatedDays === 0) {
+				return res.status(200).json({
+					success: true,
+					message: "No open trades found for this account.",
+					reset: true,
+				});
+			}
+
+			return res.status(200).json({
+				success: true,
+				openTradeDays: recalculatedDays,
+				reset: true,
+			});
+		}
+
+		// Step 5: If less than 14 days, return current count
+		return res.status(200).json({
 			success: true,
-			openTradeDays: getOpenTrades,
+			reset: false,
+			openTradeDays: uniqueTradeDates.length,
 		});
 
 	} catch (error) {
-		res.status(500).json({
+		return res.status(500).json({
 			success: false,
-			message: error.message
+			message: error.message,
 		});
 	}
 };
+
 
 const getOrderHistoryControllerInstantFunding = async (req, res) => {
 	const { account, startDate, endDate } = req.query;

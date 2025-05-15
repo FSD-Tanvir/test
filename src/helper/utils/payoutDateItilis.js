@@ -12,34 +12,26 @@ const getDateBeforeDays = (days) => {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
-// const formatDateTime = (date) => {
-//     const year = date.getFullYear();
-//     const month = String(date.getMonth() + 1).padStart(2, "0");
-//     const day = String(date.getDate()).padStart(2, "0");
-//     const hours = String(date.getHours()).padStart(2, "0");
-//     const minutes = String(date.getMinutes()).padStart(2, "0");
-//     const seconds = String(date.getSeconds()).padStart(2, "0");
-//     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-// };
 
-const getUniqueTradingDays = (trades) => {
+const getUniqueTradingDays = (trades, returnDates = false) => {
     const uniqueDates = new Set();
 
     trades.forEach((trade) => {
-        const closeTime = new Date(trade.openTime);
-        console.log("closeTime", closeTime);
+        const openTime = new Date(trade.openTime);
 
-        // Extract the year, month, and day directly
-        const year = closeTime.getFullYear();
-        const month = closeTime.getMonth(); // Month is zero-based (0 = January, 11 = December)
-        const day = closeTime.getDate();
+        const year = openTime.getFullYear();
+        const month = String(openTime.getMonth() + 1).padStart(2, "0");
+        const day = String(openTime.getDate()).padStart(2, "0");
 
-        // Create a unique string by combining year, month, and day
-        const dateString = `${year}-${month + 1}-${day}`; // Adjust month to be 1-based
-        uniqueDates.add(dateString); // Add date string to Set (ensures uniqueness)
+        const dateString = `${year}-${month}-${day}`;
+        uniqueDates.add(dateString);
     });
 
-    return uniqueDates.size; // Number of unique trading days
+    if (returnDates) {
+        return [...uniqueDates].sort((a, b) => new Date(a) - new Date(b));
+    }
+
+    return uniqueDates.size;
 };
 
 
