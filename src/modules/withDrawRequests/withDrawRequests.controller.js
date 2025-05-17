@@ -411,7 +411,7 @@ const getOrderHistoryController = async (req, res) => {
 			if (recalculatedDays === 0) {
 				return res.status(200).json({
 					success: true,
-					message: "No open trades found for this account.",
+					openTradeDays: 0,
 					reset: true,
 				});
 			}
