@@ -156,6 +156,15 @@ const disableMailingHTMLTemplate = async (
         <div class="thank-you">
             Thank you for being with us!
         </div>
+
+         <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
+            </p>
         
         <div class="encouragement">
             Consider purchasing another account to continue your journey with us. We're here to support you!
