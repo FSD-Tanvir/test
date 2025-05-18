@@ -238,10 +238,13 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
             <p>Fox Funded Risk Team</p>
     
             <p style="font-size: 14px; color: #777; margin-top: 20px;">
-                If you have any questions, feel free to
-                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-                    contact us or contact our support team
-                </a>.
+                    <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
+   
             </p>
     
             <div class="social-links">
@@ -434,10 +437,12 @@ const sendConsistencyBreakWarningEmailTemplate = (account, accountDetails) => {
             <p>Fox Funded Risk Team</p>
 
             <p style="font-size: 14px; color: #777; margin-top: 20px;">
-                If you have any questions, feel free to
-                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-                    contact us or contact our support team
-                </a>.
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
             </p>
             <div class="social-links">
                 <a href="https://t.me/+2QVq5aChxiBlOWFk">

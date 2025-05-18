@@ -189,11 +189,14 @@ const stopLossDisabledEmailTemplate = (account, accountDetails) => {
             <p>Best regards,</p>
             <p>Fox Funded Risk Team</p>
 
-            <p style="font-size: 14px; color: #777; margin-top: 20px;">
-                If you have any questions, feel free to
-                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-                    contact us or contact our support team
-                </a>.
+                <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
+   
             </p>
 
             <div class="social-links">
@@ -392,11 +395,13 @@ const sendStopLossWarningEmail1 = (account, accountDetails) => {
             <p>Best regards,</p>
             <p>Foxx Funded Risk Team</p>
 
-            <p style="font-size: 14px; color: #777; margin-top: 20px;">
-                If you have any questions, feel free to
-                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-                    contact us or contact our support team
-                </a>.
+             <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
             </p>
 
             <div class="social-links">
@@ -607,11 +612,14 @@ const sendStopLossWarningEmail2 = (account, accountDetails) => {
             <p>Best regards,</p>
             <p>Foxx Funded Risk Team</p>
 
-            <p style="font-size: 14px; color: #777; margin-top: 20px;">
-                If you have any questions, feel free to
-                <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-                    contact us or contact our support team
-                </a>.
+               <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
+   
             </p>
 
             <div class="social-links">

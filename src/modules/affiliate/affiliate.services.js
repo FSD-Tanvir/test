@@ -2,9 +2,6 @@
 const MAffiliate = require("./affiliate.schema.js");
 const nodemailer = require("nodemailer");
 
-
-
-
 const createAffiliate = async (affiliateData) => {
 	const affiliate = new MAffiliate(affiliateData);
 
@@ -38,14 +35,16 @@ const createAffiliate = async (affiliateData) => {
   
 	  <p style="font-size: 16px; color: #333; text-align: left; margin-top: 10px;">
 		Best regards,<br>
-		<strong>Foxxx Funded</strong>
+		<strong>Foxx Funded</strong>
 	  </p>
-  	<p style="font-size: 14px; color: #777; margin-top: 20px;">
-		  If you have any questions, feel free to
-		  <a href="https://foxx-funded.com/contact-us" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-			contact our support team
-		  </a>.
-		</p>
+  	   <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
+            </p>
 	  <div style="margin-top: 20px; text-align: center;">
 		<a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
 		  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
@@ -99,7 +98,6 @@ const createAffiliate = async (affiliateData) => {
 			htmlTemplate
 		);
 	}
-
 
 	return savedAffiliateRequest;
 };
@@ -165,12 +163,14 @@ const updateAffiliate = async (id, affiliateData) => {
 			Login to your affiliate account and see your affiliate dashboard
 		  </a>
 		</div>
-		<p style="font-size: 14px; color: #777; margin-top: 20px;">
-		  If you have any questions, feel free to
-		  <a href="https://foxx-funded.com/contact-us" target="_blank" rel="noopener noreferrer" style="color: #DB8112; text-decoration: none; font-weight: bold;">
-			contact our support team
-		  </a>.
-		</p>
+		   <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
+            </p>
 		<div style="margin-top: 20px; text-align: center;">
 		  <a href="https://t.me/+2QVq5aChxiBlOWFk" style="margin-right: 10px;">
 			<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px;">
