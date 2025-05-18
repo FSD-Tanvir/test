@@ -31,10 +31,16 @@ const twoPercentDisabledEmailTemplate = (account, accountDetails) => {
 							<!-- Contact Link and Telegram Logo Section -->
 							<div style="text-align: center; margin-top: 30px;">
 								<p style="font-size: 14px; color: #777; margin-bottom: 10px;">
-									<a href="https://foxx-funded.com/contact-us" target="_blank" rel="noopener noreferrer" style="color: #d32f2f; text-decoration: none; font-weight: bold;">
-										Contact Us
-									</a>
-									for further assistance or join our Telegram community for updates:
+									   <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
+   
+            </p>
+									
 								</p>
 								<a href="https://t.me/+2QVq5aChxiBlOWFk" style="display: inline-block; margin: 0 auto;">
 									<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px; vertical-align: middle;">
@@ -96,13 +102,15 @@ const sendTwoPercentWarningEmailTemplate = (account, accountDetails) => {
 					<p>Best regards,</p>
 					<p style="font-weight: bold; color: #f57c00;">Foxx Funded Team</p>
 		
-					<!-- Contact Link -->
-					<p style="font-size: 14px; color: #777; margin-top: 20px;">
-						If you have any questions, feel free to
-						<a href="https://foxx-funded.com/contact-us" target="_blank" rel="noopener noreferrer" style="color: #f57c00; text-decoration: none; font-weight: bold;">
-							contact us or contact our support team
-						</a>.
-					</p>
+					   <p style="font-size: 14px; color: #777; margin-top: 20px;">
+                     <!-- Help Message -->
+    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+        If you need any help or have questions about your account, please contact our team at 
+        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+    </p>
+
+   
+            </p>
 		
 					<!-- Social Links -->
 					<div style="text-align: center; margin-top: 30px;">

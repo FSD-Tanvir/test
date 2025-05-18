@@ -244,10 +244,7 @@ const consistencyBreakDisabledEmailTemplate = (account, accountDetails) => {
         <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
     </p>
 
-    <!-- Support Section -->
-    <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
-        Need further assistance? <a href="https://foxx-funded.com/en/contact-us#contact-section" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
-    </p>
+   
             </p>
     
             <div class="social-links">
@@ -446,10 +443,6 @@ const sendConsistencyBreakWarningEmailTemplate = (account, accountDetails) => {
         <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
     </p>
 
-    <!-- Support Section -->
-    <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
-        Need further assistance? <a href="https://foxx-funded.com/en/contact-us#contact-section" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
-    </p>
             </p>
             <div class="social-links">
                 <a href="https://t.me/+2QVq5aChxiBlOWFk">
