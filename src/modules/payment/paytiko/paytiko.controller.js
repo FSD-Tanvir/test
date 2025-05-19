@@ -131,7 +131,7 @@ const controllerPaytikoWebhook = async (req, res) => {
 			console.log("MT5 Sign Up Data:", mt5SignUpData);
 
 			// create mt5 account
-			const createUser = await retryAsync(handleMt5AccountCreate, [mt5SignUpData], 3, 1000);
+			const createUser = await retryAsync(handleMt5AccountCreate, [mt5SignUpData], 5, 3000);
 			console.log("MT5 account creation response:", createUser);
 
 			if (createUser?.login) {
