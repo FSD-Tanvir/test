@@ -330,73 +330,75 @@ const getPayoutRequestHandler = async (req, res) => {
 
 
 
-const getOrderHistoryController = async (req, res) => {
-	const { account, startDate, endDate } = req.query;
+// const getOrderHistoryController = async (req, res) => {
+// 	const { account, startDate, endDate } = req.query;
 
-	try {
-		const orderHistory = await getOrderHistory(account, startDate, endDate);
+// 	try {
+// 		const orderHistory = await getOrderHistory(account, startDate, endDate);
 
-		if (!orderHistory || orderHistory.length === 0) {
-			return res.status(200).json({
-				success: true,
-				message: "No trade history found.",
-			});
-		}
+// 		if (!orderHistory || orderHistory.length === 0) {
+// 			return res.status(200).json({
+// 				success: true,
+// 				message: "No trade history found.",
+// 			});
+// 		}
 
-		const approvedAcc = await MWithDrawRequest.findOne({
-			accountNumber: account,
-			status: "approved",
-		});
+// 		const approvedAcc = await MWithDrawRequest.findOne({
+// 			accountNumber: account,
+// 			status: "approved",
+// 		});
 
-		const uniqueTradeDates = getUniqueTradingDays(orderHistory, true);
-		const tradingLimit = approvedAcc ? 7 : 14;
+// 		const uniqueTradeDates = getUniqueTradingDays(orderHistory, true);
+// 		console.log("Unique Trade Dates:", uniqueTradeDates);
+// 		const tradingLimit = approvedAcc ? 7 : 14;
 
-		// Only check for reset if current trading days reached the limit
-		if (uniqueTradeDates.length >= tradingLimit) {
-			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th or 14th trade date
-			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after threshold
+// 		// Only check for reset if current trading days reached the limit
+// 		if (uniqueTradeDates.length >= tradingLimit) {
+// 			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th or 14th trade date
+// 			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after threshold
 
-			const today = new Date();
+// 			const today = new Date();
 
-			// Only reset if current date is at least 1 day past the threshold date
-			if (today >= referenceDate) {
-				const filteredTrades = orderHistory.filter((trade) => {
-					const tradeTime = new Date(trade.openTime);
-					return tradeTime >= referenceDate;
-				});
+// 			// Only reset if current date is at least 1 day past the threshold date
+// 			if (today >= referenceDate) {
+// 				const filteredTrades = orderHistory.filter((trade) => {
+// 					const tradeTime = new Date(trade.openTime);
+// 					return tradeTime >= referenceDate;
+// 				});
 
-				const recalculatedDays = getUniqueTradingDays(filteredTrades);
+// 				const recalculatedDays = getUniqueTradingDays(filteredTrades);
+// 				console.log("Recalculated Days:", recalculatedDays);
 
-				if (recalculatedDays === 0) {
-					return res.status(200).json({
-						success: true,
-						message: "No open trades found for this account.",
-						reset: true,
-					});
-				}
+// 				if (recalculatedDays === 0) {
+// 					return res.status(200).json({
+// 						success: true,
+// 						message: "No open trades found for this account.",
+// 						reset: true,
+// 					});
+// 				}
 
-				return res.status(200).json({
-					success: true,
-					openTradeDays: recalculatedDays,
-					reset: true,
-				});
-			}
-		}
+// 				return res.status(200).json({
+// 					success: true,
+// 					openTradeDays: recalculatedDays,
+// 					reset: true,
+// 				});
+// 			}
+// 		}
 
-		// No reset, just return current count
-		return res.status(200).json({
-			success: true,
-			openTradeDays: uniqueTradeDates.length,
-			reset: false,
-		});
+// 		// No reset, just return current count
+// 		return res.status(200).json({
+// 			success: true,
+// 			openTradeDays: uniqueTradeDates.length,
+// 			reset: false,
+// 		});
 
-	} catch (error) {
-		return res.status(500).json({
-			success: false,
-			message: error.message,
-		});
-	}
-};
+// 	} catch (error) {
+// 		return res.status(500).json({
+// 			success: false,
+// 			message: error.message,
+// 		});
+// 	}
+// };
 
 
 
@@ -499,6 +501,83 @@ const getOrderHistoryController = async (req, res) => {
 // 	}
 // };
 
+const getOrderHistoryController = async (req, res) => {
+	const { account, startDate, endDate } = req.query;
+
+	try {
+		const orderHistory = await getOrderHistory(account, startDate, endDate);
+
+		if (!orderHistory || orderHistory.length === 0) {
+			return res.status(200).json({
+				success: true,
+				message: "No trade history found.",
+			});
+		}
+
+		const approvedAcc = await MWithDrawRequest.findOne({
+			accountNumber: account,
+			status: "approved",
+		});
+
+		let filteredOrderHistory = orderHistory;
+
+		// If approved, only consider trades after approval time
+		let approvalTime = null;
+		if (approvedAcc) {
+			approvalTime = new Date(approvedAcc.updatedAt);
+			filteredOrderHistory = orderHistory.filter(trade => new Date(trade.openTime) >= approvalTime);
+		}
+
+		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
+		console.log("Unique Trade Dates:", uniqueTradeDates);
+
+		const tradingLimit = approvedAcc ? 7 : 14;
+
+		if (uniqueTradeDates.length >= tradingLimit) {
+			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th trade day
+			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after 7th
+
+			const today = new Date();
+
+			if (today >= referenceDate) {
+				// Reset check: get trades done AFTER reference date
+				const newTradesAfterLimit = orderHistory.filter(trade => {
+					const tradeTime = new Date(trade.openTime);
+					return tradeTime >= referenceDate;
+				});
+
+				const recalculatedDays = getUniqueTradingDays(newTradesAfterLimit, true);
+				console.log("Recalculated Days:", recalculatedDays);
+
+				if (recalculatedDays.length === 0) {
+					return res.status(200).json({
+						success: true,
+						message: "No open trades found for this account.",
+						reset: true,
+					});
+				}
+
+				return res.status(200).json({
+					success: true,
+					openTradeDays: recalculatedDays.length,
+					reset: true,
+				});
+			}
+		}
+
+		return res.status(200).json({
+			success: true,
+			openTradeDays: uniqueTradeDates.length,
+			reset: false,
+		});
+
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		});
+	}
+};
 
 const getOrderHistoryControllerInstantFunding = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
