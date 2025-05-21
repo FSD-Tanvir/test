@@ -330,176 +330,8 @@ const getPayoutRequestHandler = async (req, res) => {
 
 
 
-// const getOrderHistoryController = async (req, res) => {
-// 	const { account, startDate, endDate } = req.query;
-
-// 	try {
-// 		const orderHistory = await getOrderHistory(account, startDate, endDate);
-
-// 		if (!orderHistory || orderHistory.length === 0) {
-// 			return res.status(200).json({
-// 				success: true,
-// 				message: "No trade history found.",
-// 			});
-// 		}
-
-// 		const approvedAcc = await MWithDrawRequest.findOne({
-// 			accountNumber: account,
-// 			status: "approved",
-// 		});
-
-// 		const uniqueTradeDates = getUniqueTradingDays(orderHistory, true);
-// 		console.log("Unique Trade Dates:", uniqueTradeDates);
-// 		const tradingLimit = approvedAcc ? 7 : 14;
-
-// 		// Only check for reset if current trading days reached the limit
-// 		if (uniqueTradeDates.length >= tradingLimit) {
-// 			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th or 14th trade date
-// 			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after threshold
-
-// 			const today = new Date();
-
-// 			// Only reset if current date is at least 1 day past the threshold date
-// 			if (today >= referenceDate) {
-// 				const filteredTrades = orderHistory.filter((trade) => {
-// 					const tradeTime = new Date(trade.openTime);
-// 					return tradeTime >= referenceDate;
-// 				});
-
-// 				const recalculatedDays = getUniqueTradingDays(filteredTrades);
-// 				console.log("Recalculated Days:", recalculatedDays);
-
-// 				if (recalculatedDays === 0) {
-// 					return res.status(200).json({
-// 						success: true,
-// 						message: "No open trades found for this account.",
-// 						reset: true,
-// 					});
-// 				}
-
-// 				return res.status(200).json({
-// 					success: true,
-// 					openTradeDays: recalculatedDays,
-// 					reset: true,
-// 				});
-// 			}
-// 		}
-
-// 		// No reset, just return current count
-// 		return res.status(200).json({
-// 			success: true,
-// 			openTradeDays: uniqueTradeDates.length,
-// 			reset: false,
-// 		});
-
-// 	} catch (error) {
-// 		return res.status(500).json({
-// 			success: false,
-// 			message: error.message,
-// 		});
-// 	}
-// };
 
 
-
-
-
-
-// const getOrderHistoryController = async (req, res) => {
-// 	const { account, startDate, endDate } = req.query;
-
-// 	try {
-// 		// First check if there's any approved withdrawal request for this account
-// 		const latestWithdrawal = await MWithDrawRequest.findOne({
-// 			accountNumber: account,
-// 			status: 'approved'
-// 		}).sort({ updatedAt: -1 }); // Get the most recent approved withdrawal
-
-// 		const orderHistory = await getOrderHistory(account, startDate, endDate);
-
-// 		if (!orderHistory || orderHistory.length === 0) {
-// 			return res.status(200).json({
-// 				success: true,
-// 				message: "No trade history found.",
-// 			});
-// 		}
-
-// 		// Get sorted unique trade dates from the entire history
-// 		const uniqueTradeDates = getUniqueTradingDays(orderHistory, true);
-
-// 		// If there's an approved withdrawal, reset counting from the approval date
-// 		if (latestWithdrawal) {
-// 			const approvalDate = new Date(latestWithdrawal.updatedAt);
-// 			approvalDate.setDate(approvalDate.getDate() + 1); // Start counting from next day
-
-// 			// Filter trades that occurred after the withdrawal approval date
-// 			const postApprovalTrades = orderHistory.filter((trade) => {
-// 				const tradeTime = new Date(trade.openTime);
-// 				return tradeTime >= approvalDate;
-// 			});
-
-// 			const tradingDaysSinceApproval = getUniqueTradingDays(postApprovalTrades);
-
-// 			// Calculate remaining days (7 days minus days traded since approval)
-// 			const remainingDays = Math.max(0, 7 - tradingDaysSinceApproval);
-
-// 			return res.status(200).json({
-// 				success: true,
-// 				openTradeDays: tradingDaysSinceApproval,
-// 				remainingDaysUntilEligibility: remainingDays,
-// 				reset: true,
-// 				resetDate: latestWithdrawal.updatedAt,
-// 				message: remainingDays === 0 ?
-// 					"Eligible for withdrawal (7 days passed since last approval)" :
-// 					`${remainingDays} more trading days needed before next withdrawal`
-// 			});
-// 		}
-
-// 		// If no approved withdrawal, apply the 14-day rule
-// 		if (uniqueTradeDates.length >= 14) {
-// 			const cutoffDate = new Date(uniqueTradeDates[13]); // 14th date
-// 			cutoffDate.setDate(cutoffDate.getDate() + 1); // Day after the 14th
-
-// 			// Filter trades after the cutoff date (reset point)
-// 			const filteredTrades = orderHistory.filter((trade) => {
-// 				const tradeTime = new Date(trade.openTime);
-// 				return tradeTime >= cutoffDate;
-// 			});
-
-// 			const tradingDaysSinceReset = getUniqueTradingDays(filteredTrades);
-
-// 			// Calculate remaining days (7 days minus days traded since reset)
-// 			const remainingDays = Math.max(0, 7 - tradingDaysSinceReset);
-
-// 			return res.status(200).json({
-// 				success: true,
-// 				openTradeDays: tradingDaysSinceReset,
-// 				remainingDaysUntilEligibility: remainingDays,
-// 				reset: true,
-// 				resetDate: cutoffDate,
-// 				message: remainingDays === 0 ?
-// 					"Eligible for withdrawal (7 days passed since 14-day mark)" :
-// 					`${remainingDays} more trading days needed before withdrawal eligibility`
-// 			});
-// 		}
-
-// 		// If less than 14 days and no withdrawals, return current count
-// 		const remainingDays = Math.max(0, 14 - uniqueTradeDates.length);
-// 		return res.status(200).json({
-// 			success: true,
-// 			reset: false,
-// 			openTradeDays: uniqueTradeDates.length,
-// 			remainingDaysUntilEligibility: remainingDays,
-// 			message: `${remainingDays} more trading days needed to reach 14-day threshold`
-// 		});
-
-// 	} catch (error) {
-// 		return res.status(500).json({
-// 			success: false,
-// 			message: error.message,
-// 		});
-// 	}
-// };
 
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
@@ -529,7 +361,6 @@ const getOrderHistoryController = async (req, res) => {
 		}
 
 		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
-		console.log("Unique Trade Dates:", uniqueTradeDates);
 
 		const tradingLimit = approvedAcc ? 7 : 14;
 
@@ -578,6 +409,15 @@ const getOrderHistoryController = async (req, res) => {
 		});
 	}
 };
+
+
+
+
+
+
+
+
+
 
 const getOrderHistoryControllerInstantFunding = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
