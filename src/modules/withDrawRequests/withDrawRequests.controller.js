@@ -346,27 +346,38 @@ const getOrderHistoryController = async (req, res) => {
 			});
 		}
 
-		const approvedAcc = await MWithDrawRequest.findOne({
+		// Find the most recent withdrawal request regardless of status
+		const latestWithdrawRequest = await MWithDrawRequest.findOne({
 			accountNumber: account,
-			status: "approved",
-		});
+		}).sort({ updatedAt: -1 }); // Get the most recent one
+
+		// If account is pending, return immediately with "No open trades" message
+		if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
+			return res.status(200).json({
+				success: true,
+				openTradeDays: "No open trades found for this account.",
+				reset: false,
+			});
+		}
 
 		let filteredOrderHistory = orderHistory;
-
-		// If approved, only consider trades after approval time
 		let approvalTime = null;
-		if (approvedAcc) {
-			approvalTime = new Date(approvedAcc.updatedAt);
+
+		// Only consider approved accounts for the special logic
+		if (latestWithdrawRequest && latestWithdrawRequest.status === "approved") {
+			approvalTime = new Date(latestWithdrawRequest.updatedAt);
 			filteredOrderHistory = orderHistory.filter(trade => new Date(trade.openTime) >= approvalTime);
 		}
 
 		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
+		console.log("Unique Trade Dates:", uniqueTradeDates);
 
-		const tradingLimit = approvedAcc ? 7 : 14;
+		// For rejected accounts or no withdrawal request, use normal 14-day limit
+		const tradingLimit = (latestWithdrawRequest && latestWithdrawRequest.status === "approved") ? 7 : 14;
 
 		if (uniqueTradeDates.length >= tradingLimit) {
-			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th trade day
-			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after 7th
+			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th/14th trade day
+			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after limit
 
 			const today = new Date();
 
@@ -383,7 +394,7 @@ const getOrderHistoryController = async (req, res) => {
 				if (recalculatedDays.length === 0) {
 					return res.status(200).json({
 						success: true,
-						message: "No open trades found for this account.",
+						openTradeDays: "No open trades found for this account.",
 						reset: true,
 					});
 				}
@@ -396,9 +407,17 @@ const getOrderHistoryController = async (req, res) => {
 			}
 		}
 
+		if (uniqueTradeDates.length === 0) {
+			return res.status(200).json({
+				success: true,
+				openTradeDays: "No open trades found for this account.",
+				reset: false,
+			});
+		}
+
 		return res.status(200).json({
 			success: true,
-			openTradeDays: uniqueTradeDates.length,
+			openTradeDays: 14,
 			reset: false,
 		});
 
