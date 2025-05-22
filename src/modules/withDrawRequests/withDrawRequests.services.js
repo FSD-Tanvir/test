@@ -94,15 +94,12 @@ const createWithDrawRequestService = async (data) => {
 // Fetch a single withdrawal request by accountNumber
 const getWithDrawRequestByAccountNumberService = async (accountNumber) => {
 	try {
-		const withdrawRequest = await MWithDrawRequest.findOne({
-			accountNumber,
-			status: 'pending' // Only fetch pending requests
-		}).sort({ createdAt: -1 }); // Latest one first
-		return withdrawRequest;
+		const latestRequest = await MWithDrawRequest.findOne({ accountNumber }).sort({ createdAt: -1 }); // Only latest
+		return latestRequest;
 	} catch (error) {
 		throw new Error(error.message);
 	}
-}
+};
 // Fetch all withdrawal requests
 const getAllWithDrawRequestsService = async () => {
 	try {
