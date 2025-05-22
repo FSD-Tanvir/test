@@ -351,11 +351,11 @@ const getOrderHistoryController = async (req, res) => {
 			accountNumber: account,
 		}).sort({ updatedAt: -1 }); // Get the most recent one
 
-		// If account is pending, return immediately with "No open trades" message
+		// If account is pending, return immediately with "Your request is waiting for admin approval" message
 		if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
 			return res.status(200).json({
 				success: true,
-				openTradeDays: "No open trades found for this account.",
+				openTradeDays: "Your request is waiting for admin approval",
 				reset: false,
 			});
 		}
@@ -370,7 +370,6 @@ const getOrderHistoryController = async (req, res) => {
 		}
 
 		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
-		console.log("Unique Trade Dates:", uniqueTradeDates);
 
 		// For rejected accounts or no withdrawal request, use normal 14-day limit
 		const tradingLimit = (latestWithdrawRequest && latestWithdrawRequest.status === "approved") ? 7 : 14;
@@ -417,7 +416,7 @@ const getOrderHistoryController = async (req, res) => {
 
 		return res.status(200).json({
 			success: true,
-			openTradeDays: 14,
+			openTradeDays: uniqueTradeDates.length,
 			reset: false,
 		});
 
