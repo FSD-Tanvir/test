@@ -351,7 +351,7 @@ const getOrderHistoryController = async (req, res) => {
 		// Find the most recent withdrawal request regardless of status
 		const latestWithdrawRequest = await MWithDrawRequest.findOne({
 			accountNumber: account,
-		}).sort({ updatedAt: -1 }); // Get the most recent one
+		}).sort({ updatedAt: -1 });
 
 		// If account is pending, return immediately with "Your request is waiting for admin approval" message
 		if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
