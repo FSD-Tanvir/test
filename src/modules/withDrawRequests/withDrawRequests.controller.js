@@ -364,7 +364,7 @@ const getOrderHistoryController = async (req, res) => {
 		let approvalTime = null;
 
 		// Only consider approved accounts for the special logic
-		if (latestWithdrawRequest && latestWithdrawRequest.status === "approved") {
+		if (latestWithdrawRequest && latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected") {
 			approvalTime = new Date(latestWithdrawRequest.updatedAt);
 			filteredOrderHistory = orderHistory.filter(trade => new Date(trade.openTime) >= approvalTime);
 		}
@@ -372,7 +372,7 @@ const getOrderHistoryController = async (req, res) => {
 		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
 
 		// For rejected accounts or no withdrawal request, use normal 14-day limit
-		const tradingLimit = (latestWithdrawRequest && latestWithdrawRequest.status === "approved") ? 7 : 14;
+		const tradingLimit = (latestWithdrawRequest && latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected") ? 7 : 14;
 
 		if (uniqueTradeDates.length >= tradingLimit) {
 			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th/14th trade day
