@@ -1,7 +1,6 @@
 const { allUserDetails, accountDetails } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const DisableAccount = require("../disableAccounst/disableAccounts.schema");
 const StoreDataModel = require("./breach.schema");
-const DailyTaskLog = require("../../helper/dailyTaskLog/dailyTaskLog.schema");
 
 const fetchWithTimeout = async (url, options = {}, timeout = 20000, retries = 3) => {
 	const controller = new AbortController();
@@ -74,12 +73,6 @@ const storeDataDaily = async () => {
 			dailyData: storeData,
 			createdAt: new Date(),
 		});
-
-		await DailyTaskLog.findOneAndUpdate(
-			{ taskName: "storeDataDaily" },
-			{ lastRunAt: new Date() },
-			{ upsert: true }
-		);
 
 		console.log("✅ Daily data stored successfully.");
 		return true;

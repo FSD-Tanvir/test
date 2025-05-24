@@ -41,7 +41,6 @@ const stopLossRiskRoutes = require("./src/modules/stopLossRisk/stopLossRisk.rout
 const lotSizeRiskRoutes = require("./src/modules/lotSizeRisk/lotSizeRisk.routes.js");
 const sevenDaysTradingChallengeRoutes = require("./src/modules/sevenDaysTradingChallenge/sevenDaysTradingChallenge.routes.js");
 const becomeAffiliateRequesterRoutes = require("./src/modules/becomeAffiliateRequester/becomeAffiliateRequester.routes.js");
-const { runStoreDataRecovery } = require("./src/helper/dailyTaskLog/dailyTaskRecovery.js");
 
 // Route middleware
 app.use("/api/foxx-funded/v1/challenges", challengesRoutes);
@@ -73,9 +72,6 @@ app.use("/api/foxx-funded/v1/sevenDaysTradingChallenge", sevenDaysTradingChallen
 app.use("/api/foxx-funded/v1/becomeAffiliate", becomeAffiliateRequesterRoutes);
 
 runAllFunctions();
-
-// Call recovery logic (store data) after server starts
-runStoreDataRecovery();
 
 // Use the error handler middleware 💚💚💚 Global Error Handler
 app.use(errorHandler);
