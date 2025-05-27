@@ -335,6 +335,104 @@ const getPayoutRequestHandler = async (req, res) => {
 
 
 
+// const getOrderHistoryController = async (req, res) => {
+// 	const { account, startDate, endDate } = req.query;
+
+// 	try {
+// 		const orderHistory = await getOrderHistory(account, startDate, endDate);
+
+// 		if (!orderHistory || orderHistory.length === 0) {
+// 			return res.status(200).json({
+// 				success: true,
+// 				message: "No trade history found.",
+// 			});
+// 		}
+
+// 		// Find the most recent withdrawal request regardless of status
+// 		const latestWithdrawRequest = await MWithDrawRequest.findOne({
+// 			accountNumber: account,
+// 		}).sort({ updatedAt: -1 });
+
+// 		// If account is pending, return immediately with "Your request is waiting for admin approval" message
+// 		if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
+// 			return res.status(200).json({
+// 				success: true,
+// 				openTradeDays: "Your request is waiting for admin approval",
+// 				reset: false,
+// 			});
+// 		}
+
+// 		let filteredOrderHistory = orderHistory;
+// 		let approvalTime = null;
+
+// 		// Only consider approved or rejected accounts for the special logic
+// 		if (latestWithdrawRequest && (latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")) {
+// 			approvalTime = new Date(latestWithdrawRequest.updatedAt);
+// 			filteredOrderHistory = orderHistory.filter(trade => new Date(trade.openTime) >= approvalTime);
+// 		}
+
+// 		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
+
+// 		// For approved/rejected accounts, use 7-day limit, otherwise 14-day limit
+// 		const tradingLimit = (latestWithdrawRequest && (latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")) ? 7 : 14;
+
+
+
+// 		if (uniqueTradeDates.length >= tradingLimit) {
+// 			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th/14th trade day
+// 			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after limit
+
+// 			const today = new Date();
+
+// 			if (today >= referenceDate) {
+// 				// Reset check: get trades done AFTER reference date
+// 				const newTradesAfterLimit = orderHistory.filter(trade => {
+// 					const tradeTime = new Date(trade.openTime);
+// 					return tradeTime >= referenceDate;
+// 				});
+
+// 				const recalculatedDays = getUniqueTradingDays(newTradesAfterLimit, true);
+// 				console.log("Recalculated Days:", recalculatedDays);
+
+// 				if (recalculatedDays.length === 0) {
+// 					return res.status(200).json({
+// 						success: true,
+// 						openTradeDays: "No open trades found for this account.",
+// 						reset: true,
+// 					});
+// 				}
+
+// 				return res.status(200).json({
+// 					success: true,
+// 					openTradeDays: recalculatedDays.length,
+// 					reset: true,
+// 				});
+// 			}
+// 		}
+
+// 		if (uniqueTradeDates.length === 0) {
+// 			return res.status(200).json({
+// 				success: true,
+// 				openTradeDays: "No open trades found for this account.",
+// 				reset: false,
+// 			});
+// 		}
+
+// 		return res.status(200).json({
+// 			success: true,
+// 			openTradeDays: uniqueTradeDates.length,
+// 			reset: false,
+// 		});
+
+// 	} catch (error) {
+// 		return res.status(500).json({
+// 			success: false,
+// 			message: error.message,
+// 		});
+// 	}
+// };
+
+
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
 
@@ -353,7 +451,7 @@ const getOrderHistoryController = async (req, res) => {
 			accountNumber: account,
 		}).sort({ updatedAt: -1 });
 
-		// If account is pending, return immediately with "Your request is waiting for admin approval" message
+		// If account is pending, return immediately
 		if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
 			return res.status(200).json({
 				success: true,
@@ -365,7 +463,7 @@ const getOrderHistoryController = async (req, res) => {
 		let filteredOrderHistory = orderHistory;
 		let approvalTime = null;
 
-		// Only consider approved or rejected accounts for the special logic
+		// Filter trades after the latest approved/rejected withdrawal
 		if (latestWithdrawRequest && (latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")) {
 			approvalTime = new Date(latestWithdrawRequest.updatedAt);
 			filteredOrderHistory = orderHistory.filter(trade => new Date(trade.openTime) >= approvalTime);
@@ -373,7 +471,6 @@ const getOrderHistoryController = async (req, res) => {
 
 		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
 
-		// For approved/rejected accounts, use 7-day limit, otherwise 14-day limit
 		const tradingLimit = (latestWithdrawRequest && (latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")) ? 7 : 14;
 
 		if (uniqueTradeDates.length >= tradingLimit) {
@@ -383,14 +480,13 @@ const getOrderHistoryController = async (req, res) => {
 			const today = new Date();
 
 			if (today >= referenceDate) {
-				// Reset check: get trades done AFTER reference date
+				// Get trades done AFTER referenceDate
 				const newTradesAfterLimit = orderHistory.filter(trade => {
 					const tradeTime = new Date(trade.openTime);
 					return tradeTime >= referenceDate;
 				});
 
 				const recalculatedDays = getUniqueTradingDays(newTradesAfterLimit, true);
-				console.log("Recalculated Days:", recalculatedDays);
 
 				if (recalculatedDays.length === 0) {
 					return res.status(200).json({
@@ -400,9 +496,39 @@ const getOrderHistoryController = async (req, res) => {
 					});
 				}
 
+				// Limit to first 7 trading days only
+				const limitedRecalculatedDays = recalculatedDays.slice(0, 7);
+
+				const lastAllowedDate = new Date(limitedRecalculatedDays[6]); // 7th trade day
+				lastAllowedDate.setDate(lastAllowedDate.getDate() + 1); // 1-day buffer
+
+				if (today < lastAllowedDate) {
+					// Still within buffer period, don't count more days
+					return res.status(200).json({
+						success: true,
+						openTradeDays: limitedRecalculatedDays.length,
+						reset: true,
+					});
+				}
+
+				// New cycle starts after buffer day
+				const freshTrades = orderHistory.filter(trade => {
+					const tradeTime = new Date(trade.openTime);
+					return tradeTime >= lastAllowedDate;
+				});
+				const freshTradeDays = getUniqueTradingDays(freshTrades, true).slice(0, 7);
+
+				if (freshTradeDays.length === 0) {
+					return res.status(200).json({
+						success: true,
+						openTradeDays: "No open trades found for this account.",
+						reset: true,
+					});
+				}
+
 				return res.status(200).json({
 					success: true,
-					openTradeDays: recalculatedDays.length,
+					openTradeDays: freshTradeDays.length,
 					reset: true,
 				});
 			}
@@ -421,7 +547,6 @@ const getOrderHistoryController = async (req, res) => {
 			openTradeDays: uniqueTradeDates.length,
 			reset: false,
 		});
-
 	} catch (error) {
 		return res.status(500).json({
 			success: false,
@@ -429,8 +554,6 @@ const getOrderHistoryController = async (req, res) => {
 		});
 	}
 };
-
-
 
 
 
