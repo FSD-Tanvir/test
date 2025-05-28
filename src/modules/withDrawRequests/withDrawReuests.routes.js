@@ -40,7 +40,9 @@ router.get('/:accountNumber', (req, res, next) => {
 		return res.status(400).json({ message: "Invalid account number" });
 	}
 	next();
-}, getWithDrawRequestByAccountNumber);;
+}, getWithDrawRequestByAccountNumber);
+
+
 router.get("/", getAllWithDrawRequests);
 router.get("/accountDetails/:account", getAccountDetailsController);
 router.patch("/:id", updateWithDrawRequestById);
