@@ -7,7 +7,7 @@ const allAccounts = async () => {
             {
                 $match: {
                     "mt5Accounts.challengeStageData.challengeType": {
-                        $in: ["funded", "oneStep", "twoStep"], // Match funded, oneStep, or twoStep accounts
+                        $in: ["funded", "oneStep", "twoStep"],
                     }
                 }
             },
@@ -19,29 +19,39 @@ const allAccounts = async () => {
                             input: "$mt5Accounts",
                             as: "account",
                             cond: {
-                                $in: ["$$account.challengeStageData.challengeType", ["funded", "oneStep", "twoStep"]], // Filter for funded, oneStep, or twoStep accounts
+                                $and: [
+                                    {
+                                        $in: [
+                                            "$$account.challengeStageData.challengeType",
+                                            ["funded", "oneStep", "twoStep"]
+                                        ]
+                                    },
+                                    {
+                                        $ne: ["$$account.noNewsTrading", true]
+                                    }
+                                ]
                             }
-                        },
+                        }
                     },
                 },
             },
-            { $unwind: "$mt5Accounts" }, // Unwind to get individual accounts
+            { $unwind: "$mt5Accounts" },
             {
                 $addFields: {
-                    accountString: { $toString: "$mt5Accounts.account" }, // Convert `Number` to `String`
+                    accountString: { $toString: "$mt5Accounts.account" },
                 },
             },
             {
                 $lookup: {
-                    from: "disableaccounts", // Collection name of the DisableAccount model
-                    localField: "accountString", // Converted account number as a string
-                    foreignField: "mt5Account", // Field in DisableAccount
-                    as: "disabledAccount", // Store matching documents in this array
+                    from: "disableaccounts",
+                    localField: "accountString",
+                    foreignField: "mt5Account",
+                    as: "disabledAccount",
                 },
             },
             {
                 $match: {
-                    disabledAccount: { $eq: [] }, // Keep only accounts not in DisableAccount
+                    disabledAccount: { $eq: [] },
                 },
             },
             {
@@ -59,6 +69,6 @@ const allAccounts = async () => {
         console.error("Error fetching accounts:", error);
         return [];
     }
-}
+};
 
 module.exports = { allAccounts };
