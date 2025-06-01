@@ -8,8 +8,6 @@ const makeTrialAccountInactiveAndDelete = async () => {
 		const fourteenDaysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
 		const thirtyDaysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30); // Date 30 days ago
 
-		console.log("Date 14 days ago (ignoring time):", fourteenDaysAgo);
-		console.log("Date 30 days ago (ignoring time):", thirtyDaysAgo);
 
 		// Fetch all trial accounts created 14 days ago
 		const usersWithTrialAccounts = await MUser.find({
@@ -18,7 +16,6 @@ const makeTrialAccountInactiveAndDelete = async () => {
 		});
 
 		if (!usersWithTrialAccounts || usersWithTrialAccounts.length === 0) {
-			console.log("No users with trial accounts found.");
 			return; // Stop execution if no trial accounts are found
 		}
 
