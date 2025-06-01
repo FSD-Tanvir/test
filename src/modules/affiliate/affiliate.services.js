@@ -130,7 +130,6 @@ const updateAffiliate = async (id, affiliateData) => {
 		const currentAffiliate = await MAffiliate.findById(id);
 
 		if (!currentAffiliate) {
-			console.log(`No affiliate found with ID: ${id}`);
 			return null;
 		}
 		const updatedAffiliate = await MAffiliate.findByIdAndUpdate(id, affiliateData, {
