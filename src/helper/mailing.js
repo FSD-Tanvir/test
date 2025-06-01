@@ -56,11 +56,8 @@ const sendEmailSingleRecipient = async (to, subject, text, html = "") => {
 
 	try {
 		const info = await transporter.sendMail(mailOptions);
-		// console.log("Email sent: " + info.response);
 		return info.response;
 	} catch (error) {
-		// console.error("Error sending email: ", error);
-		// biome-ignore lint/complexity/noUselessCatch: <explanation>
 		throw error;
 	}
 };
