@@ -27,7 +27,7 @@ const uploadContractController = async (req, res) => {
 			requestBody: {
 				name: req.file.originalname,
 				mimeType: req.file.mimetype,
-				parents: ["1YOf2VI7mcIX-bjtKIodAZ2KJrzG0-b1U"], // Optional: upload to a specific folder(will save the contracts in specific folder)
+				// parents: ["1YOf2VI7mcIX-bjtKIodAZ2KJrzG0-b1U"], // Optional: upload to a specific folder(will save the contracts in specific folder)
 			},
 			media: {
 				mimeType: req.file.mimetype,
