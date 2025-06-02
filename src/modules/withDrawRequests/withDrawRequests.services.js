@@ -11,10 +11,8 @@ const { updateLastDailyDataByMt5Account } = require("../breach/breach.services")
 // Create a new withdrawal request
 const createWithDrawRequestService = async (data) => {
 	try {
-		// Create a new withdrawal request
 		const withdrawRequest = new MWithDrawRequest(data);
 		const savedWithDrawRequest = await withdrawRequest.save();
-		// Extract relevant data from the request
 		const { accountNumber, email, name, amount } = data;
 		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #DB8112; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
 		<div style="text-align: center; margin-bottom: 15px;">
@@ -82,10 +80,8 @@ const createWithDrawRequestService = async (data) => {
 				htmlTemplate
 			);
 		}
-		// Return the saved withdrawal request
 		return savedWithDrawRequest;
 	} catch (error) {
-		// Log the error for debugging
 		console.error("Error creating withdrawal request:", error);
 		throw new Error(error.message);
 	}
@@ -100,29 +96,24 @@ const getWithDrawRequestByAccountNumberService = async (accountNumber) => {
 		throw new Error(error.message);
 	}
 };
+
+
+
 // Fetch all withdrawal requests
 const getAllWithDrawRequestsService = async () => {
 	try {
-		// Fetch all withdrawal requests
 		const withdrawRequests = await MWithDrawRequest.find();
-
-		// Process each withdrawal request to fetch the productName from the User collection
 		const enrichedWithdrawRequests = await Promise.all(
 			withdrawRequests.map(async (request) => {
-				// Find the user by accountNumber
 				const user = await MUser.findOne(
 					{ "mt5Accounts.account": request.accountNumber },
-					{ "mt5Accounts.$": 1 } // Only fetch the matched mt5Account
+					{ "mt5Accounts.$": 1 }
 				);
-
-				// Extract the challengeName from the user's mt5Account data
 				const productName =
 					user?.mt5Accounts?.[0]?.challengeStageData?.challengeName || "Unknown Product";
-
-				// Add the productName to the withdrawal request data
 				return {
-					...request._doc, // Spread the withdrawal request data
-					productName, // Add the product name
+					...request._doc,
+					productName,
 				};
 			})
 		);
@@ -144,28 +135,20 @@ const getAllWithDrawRequestsByEmailService = async (email) => {
 };
 
 const updateWithDrawRequestByIdService = async (id, updateData) => {
-	// console.log(updateData);
 	try {
-		// Find the withdrawal request by _id
 		const withdrawRequest = await MWithDrawRequest.findById(id);
 
 		if (!withdrawRequest) {
 			throw new Error("Withdrawal request not found.");
 		}
-
-		// Check if the status is being updated to "approved" from "pending"
 		if (updateData.status === "approved") {
 			const currentBalance = updateData.amount;
-
-			// Assuming balanceDepositAndWithdrawal is defined elsewhere
 			const accountData = await balanceDepositAndWithdrawal(
 				withdrawRequest.accountNumber,
 				-currentBalance
 			);
-
-			// Check if accountData is a number
 			if (typeof accountData === "number") {
-				const userDetail = await userDetails(withdrawRequest.accountNumber); // Fetch user details
+				const userDetail = await userDetails(withdrawRequest.accountNumber);
 				const balance = userDetail.balance;
 				await updateLastDailyDataByMt5Account(
 					withdrawRequest.accountNumber,
@@ -174,21 +157,13 @@ const updateWithDrawRequestByIdService = async (id, updateData) => {
 					balance
 				);
 
-				// Update the withdraw request with the new status
-				withdrawRequest.status = "approved"; // Setting status to approved
+				withdrawRequest.status = "approved";
 			} else {
 				throw new Error("Failed to update balance.");
 			}
 		}
-
-		// Update other fields regardless of the status update
 		Object.assign(withdrawRequest, updateData);
-
-		// Save the updated withdrawal request back to the database
 		const updatedWithDrawRequest = await withdrawRequest.save();
-
-		// const { name, email, amount, paymentMethod, comment, traderSplit } =
-		//   updatedWithDrawRequest;
 		if (updatedWithDrawRequest.status === "approved") {
 			const emailSubject = `Withdrawal Request Approved - Account ${withdrawRequest.accountNumber}`;
 			const emailBody = `
@@ -272,13 +247,12 @@ Please note, after your first withdrawal, you may request your next payout as so
 
 		return updatedWithDrawRequest;
 	} catch (error) {
-		// Handle errors
 		throw new Error(error.message);
 	}
 };
 
-// Fetch a single withdrawal request by ID
 
+// Fetch a single withdrawal request by ID
 const getWithDrawRequestByIdService = async (id) => {
 	try {
 		const withdrawRequest = await MWithDrawRequest.findById(id);
@@ -292,7 +266,6 @@ const getWithDrawRequestByIdService = async (id) => {
 // Fetch all withdrawal requests by email and status 'approved'
 const getAllApprovedWithDrawRequestsByEmailService = async (email) => {
 	try {
-		// Fetch only based on email and approved status
 		const withdrawRequests = await MWithDrawRequest.find({
 			email,
 			status: "approved",
@@ -302,10 +275,11 @@ const getAllApprovedWithDrawRequestsByEmailService = async (email) => {
 		throw new Error(error.message);
 	}
 };
+
+
 // Fetch all withdrawal requests by email and status 'pending'
 const getAllPendingWithDrawRequestsByEmailService = async (email) => {
 	try {
-		// Fetch only based on email and approved status
 		const withdrawRequests = await MWithDrawRequest.find({
 			email,
 			status: "pending",
@@ -319,15 +293,10 @@ const getAllPendingWithDrawRequestsByEmailService = async (email) => {
 // Fetch all withdrawal requests by email and status 'approved'
 const getAllPayoutsWithDrawRequestsByEmailService = async (email, page, limit) => {
 	try {
-		// Calculate pagination details
 		const skip = (page - 1) * limit;
-
-		// Fetch only based on email with pagination and approved status
 		const withdrawRequests = await MWithDrawRequest.find({ email })
 			.skip(skip)
 			.limit(parseInt(limit));
-
-		// Get total number of records for the email to calculate total pages
 		const total = await MWithDrawRequest.countDocuments({ email });
 
 		return {
@@ -340,6 +309,8 @@ const getAllPayoutsWithDrawRequestsByEmailService = async (email, page, limit) =
 	}
 };
 
+
+// Fetch order history for a specific account within a date range
 const getOrderHistory = async (account, startDate, endDate) => {
 	try {
 		const response = await orderHistories(account, startDate, endDate);
@@ -349,14 +320,15 @@ const getOrderHistory = async (account, startDate, endDate) => {
 	}
 };
 
+
+// Fetch all approved withdrawal requests and calculate total approved amount
 const getAllApprovedRequester = async () => {
 	try {
 		const approvedRequests = await MWithDrawRequest.find({
 			status: "approved",
 		});
-		// Calculate the total amount of approved withdrawal requests
 		const totalApprovedAmount = approvedRequests.reduce((total, request) => {
-			return total + (request.amount || 0); // Safeguard in case amount is undefined/null
+			return total + (request.amount || 0);
 		}, 0);
 
 		return {
@@ -368,11 +340,13 @@ const getAllApprovedRequester = async () => {
 		throw new Error("Error fetching approved withdrawal requests: " + error.message);
 	}
 };
+
+// Fetch all pending withdrawal requests and calculate total pending amount
 const getAllPendingRequester = async () => {
 	try {
 		const pendingRequests = await MWithDrawRequest.find({ status: "pending" });
 		const totalPendingAmount = pendingRequests.reduce((total, request) => {
-			return total + (request.amount || 0); // Safeguard in case amount is undefined/null
+			return total + (request.amount || 0);
 		}, 0);
 		return {
 			pendingRequests,
