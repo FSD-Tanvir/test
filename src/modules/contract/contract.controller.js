@@ -1,6 +1,6 @@
 const { google } = require("googleapis");
-const fs = require("node:fs");
-const config = require("../../config/config");
+const fs = require("fs");
+const path = require("path");
 const {
 	uploadContractServices,
 	updateContractStatus,
