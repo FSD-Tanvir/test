@@ -12,11 +12,11 @@ const WithDrawRequestSchema = new Schema(
         },
         accountNumber: { type: Number },
         amount: { type: Number },
-        percentage: { type: Number,default: 0 },
-        platformSplit: { type: Number,default: 0 },
-        traderSplit: { type: Number,default: 0 },
-        riskDeduction:{type: Number,default: 0},
-        afterRiskDeduction:{type: Number,default: 0},
+        percentage: { type: Number, default: 0 },
+        platformSplit: { type: Number, default: 0 },
+        traderSplit: { type: Number, default: 0 },
+        riskDeduction: { type: Number, default: 0 },
+        afterRiskDeduction: { type: Number, default: 0 },
         paymentMethod: { type: String },
         bankName: { type: String },
         bankAccountNumber: { type: Number },
@@ -35,7 +35,6 @@ const WithDrawRequestSchema = new Schema(
 
 
 
-// Create mongoose model for 'User' collection using UserSchema
 const MWithDrawRequest = mongoose.model("WithDrawRequest", WithDrawRequestSchema);
 
 module.exports = MWithDrawRequest;
