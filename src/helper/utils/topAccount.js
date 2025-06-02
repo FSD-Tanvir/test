@@ -15,7 +15,6 @@ const getUsersWithFundedAccounts5kAndChallenge = async () => {
 
         // Check if any users are found
         if (!users || users.length === 0) {
-            console.log("No users found with funded, active accounts and 5K Standard Challenge.");
             return [];
         }
 
@@ -56,7 +55,6 @@ const getUsersWithFundedAccounts10kAndChallenge = async () => {
 
         // Check if any users are found
         if (!users || users.length === 0) {
-            console.log("No users found with funded, active accounts and 10K Standard Challenge.");
             return [];
         }
 
@@ -96,7 +94,6 @@ const getUsersWithFundedAccounts25kAndChallenge = async () => {
 
         // Check if any users are found
         if (!users || users.length === 0) {
-            console.log("No users found with funded, active accounts and 5K Standard Challenge.");
             return [];
         }
 
@@ -136,7 +133,6 @@ const getUsersWithFundedAccounts50kAndChallenge = async () => {
 
         // Check if any users are found
         if (!users || users.length === 0) {
-            console.log("No users found with funded, active accounts and 50K Standard Challenge.");
             return [];
         }
 
@@ -176,7 +172,6 @@ const getUsersWithFundedAccounts100kAndChallenge = async () => {
 
         // Check if any users are found
         if (!users || users.length === 0) {
-            console.log("No users found with funded, active accounts and 5K Standard Challenge.");
             return [];
         }
 
@@ -216,7 +211,6 @@ const getUsersWithFundedAccounts200kAndChallenge = async () => {
 
         // Check if any users are found
         if (!users || users.length === 0) {
-            console.log("No users found with funded, active accounts and 200K Standard Challenge.");
             return [];
         }
 
@@ -245,8 +239,8 @@ const getUsersWithFundedAccounts200kAndChallenge = async () => {
 
 
 module.exports = {
-	getUsersWithFundedAccounts5kAndChallenge,
-	getUsersWithFundedAccounts10kAndChallenge,
+    getUsersWithFundedAccounts5kAndChallenge,
+    getUsersWithFundedAccounts10kAndChallenge,
     getUsersWithFundedAccounts25kAndChallenge,
     getUsersWithFundedAccounts50kAndChallenge,
     getUsersWithFundedAccounts100kAndChallenge,

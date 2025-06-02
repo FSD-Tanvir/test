@@ -11,9 +11,9 @@ const createChallenge = async (req, res) => {
 const getChallenge = async (req, res) => {
 	try {
 		const challenges = await challengesService.getAllChallenges();
-		res.json(challenges); 
+		res.json(challenges);
 	} catch (error) {
-		res.status(500).json(error); 
+		res.status(500).json(error);
 	}
 };
 
@@ -21,9 +21,9 @@ const getChallenge = async (req, res) => {
 const getActiveChallenge = async (req, res) => {
 	try {
 		const challenges = await challengesService.getAllActiveChallenges();
-		res.json(challenges); 
+		res.json(challenges);
 	} catch (error) {
-		res.status(500).json(error); 
+		res.status(500).json(error);
 	}
 };
 
@@ -34,12 +34,12 @@ const getChallengeByName = async (req, res) => {
 		const challenge = await challengesService.getChallengeByName(challengeName);
 
 		if (!challenge) {
-			return res.status(404).json({ error: "Challenge not found" }); 
+			return res.status(404).json({ error: "Challenge not found" });
 		}
 
-		res.json(challenge); 
+		res.json(challenge);
 	} catch (error) {
-		res.status(500).json(error); 
+		res.status(500).json(error);
 	}
 };
 
@@ -49,14 +49,13 @@ const updateSingleChallengeHandler = async (req, res) => {
 	try {
 		const { id } = req.params;
 
-		const updateFields = req.body; 
+		const updateFields = req.body;
 		const updatedChallenge = await challengesService.updateSingleChallenge(
 			id,
 			updateFields,
 		);
 		res.json(updatedChallenge);
 	} catch (error) {
-		console.log(error);
 		res.status(500).json({ error: error.message });
 	}
 };

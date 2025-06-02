@@ -525,7 +525,6 @@ const updateOrder = async (id, data) => {
 		// Return the updated order if no email was sent
 		return { updatedOrder };
 	} catch (error) {
-		console.log("🚀 ~ updateOrder ~ error:", error);
 		// Return the error in the response
 		return { error: `Error updating order: ${error.message}` };
 	}
@@ -727,7 +726,6 @@ const sendingFollowUpUnPaidEmail = async () => {
 		const orders = await MOrder.find({ paymentStatus: "Unpaid" });
 
 		if (orders.length === 0) {
-			console.log("No unpaid orders found.");
 			return;
 		}
 

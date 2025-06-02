@@ -1,7 +1,6 @@
 const MUser = require("../../modules/users/users.schema");
 
 const allAccounts = async () => {
-    console.log("Fetching all accounts...");
     try {
         const fundedAccounts = await MUser.aggregate([
             {
@@ -63,7 +62,6 @@ const allAccounts = async () => {
                 },
             },
         ]);
-        console.log("Fetched accounts:", fundedAccounts);
         return fundedAccounts;
     } catch (error) {
         console.error("Error fetching accounts:", error);

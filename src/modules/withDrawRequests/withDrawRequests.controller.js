@@ -1,6 +1,4 @@
-// withdrawRequestController.js
 
-// const { getUniqueTradingDays } = require("../../helper/utils/dateUtils");
 const { getUniqueTradingDays } = require("../../helper/utils/payoutDateItilis");
 const { accountDetails } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const MWithDrawRequest = require("./withDrawRequests.schema");
@@ -13,7 +11,6 @@ const {
 	getAllApprovedWithDrawRequestsByEmailService,
 	getAllPayoutsWithDrawRequestsByEmailService,
 	getAllPendingWithDrawRequestsByEmailService,
-	// getOrderHistory,
 	getAllApprovedRequester,
 	getAllPendingRequester,
 	getOrderHistory,
@@ -21,22 +18,14 @@ const {
 
 // Handle POST request to create a new withdrawal request
 const createWithDrawRequest = async (req, res) => {
-	console.log(req.body);
 	try {
 		const {
 			email,
 			accountNumber,
 			amount,
 			paymentMethod,
-			bankName,
-			bankAccountNumber,
-			iban,
-			bicn,
-			ustd,
-			comment,
 		} = req.body;
 
-		// Validate required fields
 		if (!email || !amount || !paymentMethod || !accountNumber) {
 			return res.status(400).json({
 				message:
@@ -44,10 +33,7 @@ const createWithDrawRequest = async (req, res) => {
 			});
 		}
 
-		// Call service to create the request
 		const newWithDrawRequest = await createWithDrawRequestService(req.body);
-
-		// Check if the request was created successfully
 		if (newWithDrawRequest && newWithDrawRequest._id) {
 			const id = newWithDrawRequest._id;
 			const updatedData = newWithDrawRequest;
@@ -55,8 +41,6 @@ const createWithDrawRequest = async (req, res) => {
 				id,
 				updatedData,
 			);
-			// console.log(updatedWithdrawRequest);
-
 			return res.status(201).json({
 				data: updatedWithdrawRequest,
 			});
@@ -73,17 +57,14 @@ const createWithDrawRequest = async (req, res) => {
 	}
 };
 
+
 // Handle GET request to fetch a single withdrawal request by accountNumber
 const getWithDrawRequestByAccountNumber = async (req, res) => {
 	try {
 		const { accountNumber } = req.params;
-
-		// Check if accountNumber is provided
 		if (!accountNumber) {
 			return res.status(400).json({ message: "Account number is required." });
 		}
-
-		// Call service to get the request
 		const withdrawRequest =
 			await getWithDrawRequestByAccountNumberService(accountNumber);
 
@@ -106,13 +87,10 @@ const getWithDrawRequestByAccountNumber = async (req, res) => {
 // Handle GET request to fetch all withdrawal requests
 const getAllWithDrawRequests = async (req, res) => {
 	try {
-		// Call the service to get all enriched withdrawal requests
 		const withdrawRequests = await getAllWithDrawRequestsService();
-
 		if (!withdrawRequests.length) {
 			return res.status(404).json({ message: "No withdrawal requests found." });
 		}
-
 		res.status(200).json({
 			message: "All withdrawal requests fetched successfully",
 			data: withdrawRequests,
@@ -133,13 +111,9 @@ const updateWithDrawRequestById = async (req, res) => {
 	try {
 		const { id } = req.params;
 		const updateData = req.body;
-
-		// Validate if the _id is provided
 		if (!id) {
 			return res.status(400).json({ message: "ID is required." });
 		}
-
-		// Call service to update the request
 		const updatedWithDrawRequest = await updateWithDrawRequestByIdService(
 			id,
 			updateData,
@@ -161,17 +135,14 @@ const updateWithDrawRequestById = async (req, res) => {
 	}
 };
 
+
 // Handle GET request to fetch a single withdrawal request by ID
 const getWithDrawRequestById = async (req, res) => {
 	try {
 		const { id } = req.params;
-
-		// Check if ID is provided
 		if (!id) {
 			return res.status(400).json({ message: "ID is required." });
 		}
-
-		// Call service to get the request
 		const withdrawRequest = await getWithDrawRequestByIdService(id);
 
 		if (!withdrawRequest) {
@@ -190,20 +161,22 @@ const getWithDrawRequestById = async (req, res) => {
 	}
 };
 
+
+// Handle GET request to fetch all approved withdrawal requests by account number
 const getApprovedAccountByNumber = async (req, res) => {
-	const { accountNumber } = req.params; // Get accountNumber from route parameters
+	const { accountNumber } = req.params;
 
 	try {
 		const approvedAccounts = await MWithDrawRequest.find({
 			status: "approved",
-			accountNumber: parseInt(accountNumber), // Match both status and account number
+			accountNumber: parseInt(accountNumber),
 		});
 
 		if (approvedAccounts.length === 0) {
 			return res.status(200).json([]);
 		}
 
-		res.status(200).json(approvedAccounts); // Return all approved entries for the account
+		res.status(200).json(approvedAccounts);
 	} catch (error) {
 		res.status(500).json({ message: "Error retrieving accounts", error });
 	}
@@ -214,13 +187,9 @@ const getApprovedAccountByNumber = async (req, res) => {
 const getAllApprovedWithDrawRequestsByEmail = async (req, res) => {
 	try {
 		const { email } = req.params;
-
-		// Check if the email is provided
 		if (!email) {
 			return res.status(400).json({ message: "Email is required." });
 		}
-
-		// Fetch approved requests by email
 		const approvedRequests =
 			await getAllApprovedWithDrawRequestsByEmailService(email);
 
@@ -241,16 +210,14 @@ const getAllApprovedWithDrawRequestsByEmail = async (req, res) => {
 		});
 	}
 };
+
+// Handle GET request to fetch all pending withdrawal requests by email
 const getAllPendingWithDrawRequestsByEmail = async (req, res) => {
 	try {
 		const { email } = req.params;
-
-		// Check if the email is provided
 		if (!email) {
 			return res.status(400).json({ message: "Email is required." });
 		}
-
-		// Fetch approved requests by email
 		const approvedRequests =
 			await getAllPendingWithDrawRequestsByEmailService(email);
 
@@ -272,17 +239,14 @@ const getAllPendingWithDrawRequestsByEmail = async (req, res) => {
 	}
 };
 
+// Handle GET request to fetch all payouts with withdrawal requests by email
 const getAllPayoutsWithDrawRequestsByEmail = async (req, res) => {
 	try {
 		const { email } = req.params;
-		const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10 if not provided
-
-		// Check if the email is provided
+		const { page = 1, limit = 10 } = req.query;
 		if (!email) {
 			return res.status(400).json({ message: "Email is required." });
 		}
-
-		// Fetch approved requests by email with pagination
 		const { approvedRequests, total, totalPages } =
 			await getAllPayoutsWithDrawRequestsByEmailService(email, page, limit);
 
@@ -308,21 +272,23 @@ const getAllPayoutsWithDrawRequestsByEmail = async (req, res) => {
 	}
 };
 
+
+// Handle GET request to fetch the latest payout request by account number
 const getPayoutRequestHandler = async (req, res) => {
-	const { accountNumber } = req.params; // Get accountNumber from route parameters
+	const { accountNumber } = req.params;
 
 	try {
 		const latestApprovedAccount = await MWithDrawRequest.findOne({
-			accountNumber: parseInt(accountNumber), // Match both status and account number
+			accountNumber: parseInt(accountNumber),
 		})
-			.sort({ createdAt: -1 }) // Sort by createdAt in descending order
+			.sort({ createdAt: -1 })
 			.exec();
 
 		if (!latestApprovedAccount) {
-			return res.status(200).json([]); // Return an empty array if no document is found
+			return res.status(200).json([]);
 		}
 
-		res.status(200).json(latestApprovedAccount); // Return the latest document
+		res.status(200).json(latestApprovedAccount);
 	} catch (error) {
 		res.status(500).json({ message: "Error retrieving accounts", error });
 	}
@@ -330,112 +296,9 @@ const getPayoutRequestHandler = async (req, res) => {
 
 
 
-
-
-
-
-
-// const getOrderHistoryController = async (req, res) => {
-// 	const { account, startDate, endDate } = req.query;
-
-// 	try {
-// 		const orderHistory = await getOrderHistory(account, startDate, endDate);
-
-// 		if (!orderHistory || orderHistory.length === 0) {
-// 			return res.status(200).json({
-// 				success: true,
-// 				message: "No trade history found.",
-// 			});
-// 		}
-
-// 		// Find the most recent withdrawal request regardless of status
-// 		const latestWithdrawRequest = await MWithDrawRequest.findOne({
-// 			accountNumber: account,
-// 		}).sort({ updatedAt: -1 });
-
-// 		// If account is pending, return immediately with "Your request is waiting for admin approval" message
-// 		if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
-// 			return res.status(200).json({
-// 				success: true,
-// 				openTradeDays: "Your request is waiting for admin approval",
-// 				reset: false,
-// 			});
-// 		}
-
-// 		let filteredOrderHistory = orderHistory;
-// 		let approvalTime = null;
-
-// 		// Only consider approved or rejected accounts for the special logic
-// 		if (latestWithdrawRequest && (latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")) {
-// 			approvalTime = new Date(latestWithdrawRequest.updatedAt);
-// 			filteredOrderHistory = orderHistory.filter(trade => new Date(trade.openTime) >= approvalTime);
-// 		}
-
-// 		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
-
-// 		// For approved/rejected accounts, use 7-day limit, otherwise 14-day limit
-// 		const tradingLimit = (latestWithdrawRequest && (latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")) ? 7 : 14;
-
-
-
-// 		if (uniqueTradeDates.length >= tradingLimit) {
-// 			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th/14th trade day
-// 			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after limit
-
-// 			const today = new Date();
-
-// 			if (today >= referenceDate) {
-// 				// Reset check: get trades done AFTER reference date
-// 				const newTradesAfterLimit = orderHistory.filter(trade => {
-// 					const tradeTime = new Date(trade.openTime);
-// 					return tradeTime >= referenceDate;
-// 				});
-
-// 				const recalculatedDays = getUniqueTradingDays(newTradesAfterLimit, true);
-// 				console.log("Recalculated Days:", recalculatedDays);
-
-// 				if (recalculatedDays.length === 0) {
-// 					return res.status(200).json({
-// 						success: true,
-// 						openTradeDays: "No open trades found for this account.",
-// 						reset: true,
-// 					});
-// 				}
-
-// 				return res.status(200).json({
-// 					success: true,
-// 					openTradeDays: recalculatedDays.length,
-// 					reset: true,
-// 				});
-// 			}
-// 		}
-
-// 		if (uniqueTradeDates.length === 0) {
-// 			return res.status(200).json({
-// 				success: true,
-// 				openTradeDays: "No open trades found for this account.",
-// 				reset: false,
-// 			});
-// 		}
-
-// 		return res.status(200).json({
-// 			success: true,
-// 			openTradeDays: uniqueTradeDates.length,
-// 			reset: false,
-// 		});
-
-// 	} catch (error) {
-// 		return res.status(500).json({
-// 			success: false,
-// 			message: error.message,
-// 		});
-// 	}
-// };
-
-
+// // Handle GET request to fetch order history for a specific account
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
-
 	try {
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
 
@@ -445,13 +308,9 @@ const getOrderHistoryController = async (req, res) => {
 				message: "No trade history found.",
 			});
 		}
-
-		// Find the most recent withdrawal request regardless of status
 		const latestWithdrawRequest = await MWithDrawRequest.findOne({
 			accountNumber: account,
 		}).sort({ updatedAt: -1 });
-
-		// If account is pending, return immediately
 		if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
 			return res.status(200).json({
 				success: true,
@@ -463,7 +322,6 @@ const getOrderHistoryController = async (req, res) => {
 		let filteredOrderHistory = orderHistory;
 		let approvalTime = null;
 
-		// Filter trades after the latest approved/rejected withdrawal
 		if (latestWithdrawRequest && (latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")) {
 			approvalTime = new Date(latestWithdrawRequest.updatedAt);
 			filteredOrderHistory = orderHistory.filter(trade => new Date(trade.openTime) >= approvalTime);
@@ -474,13 +332,12 @@ const getOrderHistoryController = async (req, res) => {
 		const tradingLimit = (latestWithdrawRequest && (latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")) ? 7 : 14;
 
 		if (uniqueTradeDates.length >= tradingLimit) {
-			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]); // 7th/14th trade day
-			referenceDate.setDate(referenceDate.getDate() + 1); // 1 day after limit
+			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]);
+			referenceDate.setDate(referenceDate.getDate() + 1);
 
 			const today = new Date();
 
 			if (today >= referenceDate) {
-				// Get trades done AFTER referenceDate
 				const newTradesAfterLimit = orderHistory.filter(trade => {
 					const tradeTime = new Date(trade.openTime);
 					return tradeTime >= referenceDate;
@@ -496,14 +353,12 @@ const getOrderHistoryController = async (req, res) => {
 					});
 				}
 
-				// Limit to first 7 trading days only
 				const limitedRecalculatedDays = recalculatedDays.slice(0, 7);
 
-				const lastAllowedDate = new Date(limitedRecalculatedDays[6]); // 7th trade day
-				lastAllowedDate.setDate(lastAllowedDate.getDate() + 1); // 1-day buffer
+				const lastAllowedDate = new Date(limitedRecalculatedDays[6]);
+				lastAllowedDate.setDate(lastAllowedDate.getDate() + 1);
 
 				if (today < lastAllowedDate) {
-					// Still within buffer period, don't count more days
 					return res.status(200).json({
 						success: true,
 						openTradeDays: limitedRecalculatedDays.length,
@@ -511,7 +366,6 @@ const getOrderHistoryController = async (req, res) => {
 					});
 				}
 
-				// New cycle starts after buffer day
 				const freshTrades = orderHistory.filter(trade => {
 					const tradeTime = new Date(trade.openTime);
 					return tradeTime >= lastAllowedDate;
@@ -557,21 +411,16 @@ const getOrderHistoryController = async (req, res) => {
 
 
 
-
+// // Handle GET request to fetch order history for instant funding
 const getOrderHistoryControllerInstantFunding = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
-	// console.log(account, startDate, endDate);
 	try {
-		// Call the service function
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
-
-		// Send success response with order history data
 		res.status(200).json({
 			success: true,
 			data: orderHistory
 		});
 	} catch (error) {
-		// Send error response
 		res.status(500).json({
 			success: false,
 			message: error.message
@@ -581,7 +430,7 @@ const getOrderHistoryControllerInstantFunding = async (req, res) => {
 
 
 
-
+// // Handle GET request to fetch all approved withdrawal requests
 const getApprovedRequestsController = async (req, res) => {
 	try {
 		const result = await getAllApprovedRequester();
@@ -598,6 +447,8 @@ const getApprovedRequestsController = async (req, res) => {
 		});
 	}
 }
+
+// // Handle GET request to fetch all pending withdrawal requests
 const getPendingRequestsController = async (req, res) => {
 	try {
 		const result = await getAllPendingRequester();
@@ -615,6 +466,7 @@ const getPendingRequestsController = async (req, res) => {
 	}
 }
 
+// Handle GET request to fetch account details by account number
 const getAccountDetailsController = async (req, res) => {
 	const { account } = req.params;
 	if (!account) {
