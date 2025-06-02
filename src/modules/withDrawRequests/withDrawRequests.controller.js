@@ -435,7 +435,6 @@ const getPayoutRequestHandler = async (req, res) => {
 
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
-
 	try {
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
 
