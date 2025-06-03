@@ -11,6 +11,7 @@ const {
 	getOrderById,
 	fetchOrdersByReferralCode,
 	fetchOrdersByReferralAndStatus,
+	getSingleOrderByOrderIdHandler,
 } = require("./orders.controller"); // Replace 'your-controller-file' with the actual file name
 
 // Route to handle POST requests for creating an order
@@ -34,8 +35,11 @@ router.get("/affiliate/referral/:referralCode", fetchOrdersByReferralCode);
 // Route to handle GET requests for a specific order by ID
 router.get("/:id", singleOrder);
 
-// Route to handle GET requests for a specific order by orderId
+// Route to handle GET requests for a specific order by orderId for invoice
 router.get("/invoice/:orderId", getOrderById);
+
+// GET: Single order by orderId
+router.get("/single-order/:orderId", getSingleOrderByOrderIdHandler);
 
 // Route to handle PUT requests for updating a specific order by ID
 router.put("/:id", updateOrder);
