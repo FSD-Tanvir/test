@@ -41,10 +41,10 @@ const fetchWithTimeout = async (url, options = {}, timeout = 20000, retries = 3)
 
 // Function to store daily data fetched from an external API
 
-const storeDataDaily = async (retryCount = 0) => {
+const storeDataDaily = async () => {
 	try {
 		const userDetails = await allUserDetails();
-		console.log("Fetched user details:", userDetails);
+		console.log("👥 Fetched user details:", userDetails);
 
 		const storeData = [];
 		for (const userDetail of userDetails) {
@@ -74,16 +74,11 @@ const storeDataDaily = async (retryCount = 0) => {
 			createdAt: new Date(),
 		});
 
-		console.log("Data stored successfully.");
+		console.log("✅ Daily data stored successfully.");
+		return true;
 	} catch (error) {
-		console.error(`Error storing data (attempt ${retryCount + 1}/3):`, error);
-
-		if (retryCount < 3) {
-			console.log(`Retrying in 30 minutes (attempt ${retryCount + 2}/3)...`);
-			setTimeout(() => storeDataDaily(retryCount + 1), 30 * 60 * 1000); // 30 minutes
-		} else {
-			console.error("Maximum retry attempts reached. Giving up.");
-		}
+		console.error("❌ Error during data store:", error.message);
+		return false;
 	}
 };
 

@@ -108,6 +108,25 @@ const getOrderById = async (req, res) => {
 	}
 };
 
+const getSingleOrderByOrderIdHandler = async (req, res) => {
+	try {
+		const { orderId } = req.params;
+
+		const order = await ordersService.getSingleOrderByOrderId(orderId);
+
+		if (!order) {
+			return res.status(404).json({ message: "Order not found" });
+		}
+
+		res.status(200).send(order);
+
+		// res.status(200).json(order);
+	} catch (error) {
+		console.error("Error fetching order:", error);
+		res.status(500).json({ message: "Internal server error" });
+	}
+};
+
 // Controller to get orders by referral code with additional filters
 const fetchOrdersByReferralCode = async (req, res) => {
 	const { referralCode } = req.params;
@@ -157,4 +176,5 @@ module.exports = {
 	getOrderById,
 	fetchOrdersByReferralCode,
 	fetchOrdersByReferralAndStatus,
+	getSingleOrderByOrderIdHandler,
 };

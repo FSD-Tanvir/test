@@ -845,6 +845,16 @@ const sendingFollowUpUnPaidEmail = async () => {
 	}
 };
 
+const getSingleOrderByOrderId = async (orderId) => {
+	try {
+		const order = await MOrder.findOne({ orderId: `#${orderId}` });
+		return order;
+	} catch (error) {
+		console.error("Error in orderService:", error);
+		throw new Error("Failed to retrieve order from database");
+	}
+};
+
 module.exports = {
 	createOrder,
 	allOrders,
@@ -856,4 +866,5 @@ module.exports = {
 	getOrdersByReferralCode,
 	getOrdersByReferralAndStatus,
 	sendingFollowUpUnPaidEmail,
+	getSingleOrderByOrderId,
 };
