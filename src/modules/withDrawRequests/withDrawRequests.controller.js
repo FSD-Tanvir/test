@@ -333,7 +333,7 @@ const getOrderHistoryController = async (req, res) => {
 
 		if (uniqueTradeDates.length >= tradingLimit) {
 			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]);
-			referenceDate.setDate(referenceDate.getDate() + 1);
+			referenceDate.setDate(referenceDate.getDate() + 2);
 
 			const today = new Date();
 
@@ -357,7 +357,7 @@ const getOrderHistoryController = async (req, res) => {
 				const limitedRecalculatedDays = recalculatedDays.slice(0, 7);
 
 				const lastAllowedDate = new Date(limitedRecalculatedDays[6]);
-				lastAllowedDate.setDate(lastAllowedDate.getDate() + 1);
+				lastAllowedDate.setDate(lastAllowedDate.getDate() + 2);
 
 				if (today < lastAllowedDate) {
 					return res.status(200).json({
