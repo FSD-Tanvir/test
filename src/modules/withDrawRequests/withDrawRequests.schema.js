@@ -33,8 +33,6 @@ const WithDrawRequestSchema = new Schema(
     { timestamps: true }
 )
 
-
-
 const MWithDrawRequest = mongoose.model("WithDrawRequest", WithDrawRequestSchema);
 
 module.exports = MWithDrawRequest;
