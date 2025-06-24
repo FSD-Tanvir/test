@@ -298,8 +298,150 @@ const getPayoutRequestHandler = async (req, res) => {
 
 
 
+// const getOrderHistoryController = async (req, res) => {
+// 	const { account, startDate, endDate } = req.query;
+// 	try {
+// 		const orderHistory = await getOrderHistory(account, startDate, endDate);
+
+// 		if (!orderHistory || orderHistory.length === 0) {
+// 			return res.status(200).json({
+// 				success: true,
+// 				message: "No trade history found.",
+// 			});
+// 		}
+
+// 		const latestWithdrawRequest = await MWithDrawRequest.findOne({
+// 			accountNumber: account,
+// 		}).sort({ updatedAt: -1 });
+
+// 		if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
+// 			return res.status(200).json({
+// 				success: true,
+// 				openTradeDays: "Your request is waiting for admin approval",
+// 				reset: false,
+// 			});
+// 		}
+
+// 		let filteredOrderHistory = orderHistory;
+// 		let approvalTime = null;
+
+// 		if (
+// 			latestWithdrawRequest &&
+// 			(latestWithdrawRequest.status === "approved" ||
+// 				latestWithdrawRequest.status === "rejected")
+// 		) {
+// 			approvalTime = new Date(latestWithdrawRequest.updatedAt);
+
+// 			filteredOrderHistory = orderHistory.filter(
+// 				(trade) => new Date(trade.openTime) >= approvalTime
+// 			);
+// 		}
+
+// 		const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
+
+// 		const tradingLimit =
+// 			latestWithdrawRequest &&
+// 				(latestWithdrawRequest.status === "approved" ||
+// 					latestWithdrawRequest.status === "rejected")
+// 				? 7
+// 				: 14;
+
+// 		if (uniqueTradeDates.length >= tradingLimit) {
+// 			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]);
+// 			referenceDate.setHours(0, 0, 0, 0);
+
+// 			const skipUntil = new Date(referenceDate);
+// 			skipUntil.setDate(skipUntil.getDate() + 2);
+
+// 			const today = new Date();
+
+// 			if (today >= skipUntil) {
+// 				const newTradesAfterLimit = orderHistory.filter((trade) => {
+// 					const tradeTime = new Date(trade.openTime);
+// 					return tradeTime >= skipUntil;
+// 				});
+
+// 				const recalculatedDays = getUniqueTradingDays(newTradesAfterLimit, true);
+// 				console.log("Recalculated Days:", recalculatedDays);
+
+// 				if (recalculatedDays.length === 0) {
+// 					return res.status(200).json({
+// 						success: true,
+// 						openTradeDays: "No open trades found for this account.",
+// 						reset: true,
+// 					});
+// 				}
+
+// 				const limitedRecalculatedDays = recalculatedDays.slice(0, 7);
+
+// 				if (limitedRecalculatedDays.length < 7) {
+// 					return res.status(200).json({
+// 						success: true,
+// 						openTradeDays: limitedRecalculatedDays.length,
+// 						reset: true,
+// 					});
+// 				}
+
+// 				const lastAllowedDate = new Date(limitedRecalculatedDays[6]);
+// 				lastAllowedDate.setHours(0, 0, 0, 0);
+// 				lastAllowedDate.setDate(lastAllowedDate.getDate() + 2);
+
+// 				if (today < lastAllowedDate) {
+// 					return res.status(200).json({
+// 						success: true,
+// 						openTradeDays: limitedRecalculatedDays.length,
+// 						reset: true,
+// 					});
+// 				}
+
+// 				const freshTrades = orderHistory.filter((trade) => {
+// 					const tradeTime = new Date(trade.openTime);
+// 					return tradeTime >= lastAllowedDate;
+// 				});
+
+// 				const freshTradeDays = getUniqueTradingDays(freshTrades, true).slice(0, 7);
+
+// 				if (freshTradeDays.length === 0) {
+// 					return res.status(200).json({
+// 						success: true,
+// 						openTradeDays: "No open trades found for this account.",
+// 						reset: true,
+// 					});
+// 				}
+
+// 				return res.status(200).json({
+// 					success: true,
+// 					openTradeDays: freshTradeDays.length,
+// 					reset: true,
+// 				});
+// 			}
+// 		}
+
+// 		if (uniqueTradeDates.length === 0) {
+// 			return res.status(200).json({
+// 				success: true,
+// 				openTradeDays: "No open trades found for this account.",
+// 				reset: false,
+// 			});
+// 		}
+
+// 		return res.status(200).json({
+// 			success: true,
+// 			openTradeDays: uniqueTradeDates.length,
+// 			reset: false,
+// 		});
+// 	} catch (error) {
+// 		return res.status(500).json({
+// 			success: false,
+// 			message: error.message,
+// 		});
+// 	}
+// };
+
+
 const getOrderHistoryController = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
+
 	try {
 		const orderHistory = await getOrderHistory(account, startDate, endDate);
 
@@ -327,8 +469,7 @@ const getOrderHistoryController = async (req, res) => {
 
 		if (
 			latestWithdrawRequest &&
-			(latestWithdrawRequest.status === "approved" ||
-				latestWithdrawRequest.status === "rejected")
+			(latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")
 		) {
 			approvalTime = new Date(latestWithdrawRequest.updatedAt);
 
@@ -341,17 +482,13 @@ const getOrderHistoryController = async (req, res) => {
 
 		const tradingLimit =
 			latestWithdrawRequest &&
-				(latestWithdrawRequest.status === "approved" ||
-					latestWithdrawRequest.status === "rejected")
+				(latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")
 				? 7
 				: 14;
 
 		if (uniqueTradeDates.length >= tradingLimit) {
 			const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]);
-			referenceDate.setHours(0, 0, 0, 0);
-
-			const skipUntil = new Date(referenceDate);
-			skipUntil.setDate(skipUntil.getDate() + 2);
+			const skipUntil = new Date(referenceDate.getTime() + 24 * 60 * 60 * 1000);
 
 			const today = new Date();
 
@@ -381,12 +518,10 @@ const getOrderHistoryController = async (req, res) => {
 						reset: true,
 					});
 				}
-
 				const lastAllowedDate = new Date(limitedRecalculatedDays[6]);
-				lastAllowedDate.setHours(0, 0, 0, 0);
-				lastAllowedDate.setDate(lastAllowedDate.getDate() + 2);
+				const lastCoolDownEnd = new Date(lastAllowedDate.getTime() + 24 * 60 * 60 * 1000);
 
-				if (today < lastAllowedDate) {
+				if (today < lastCoolDownEnd) {
 					return res.status(200).json({
 						success: true,
 						openTradeDays: limitedRecalculatedDays.length,
@@ -396,7 +531,7 @@ const getOrderHistoryController = async (req, res) => {
 
 				const freshTrades = orderHistory.filter((trade) => {
 					const tradeTime = new Date(trade.openTime);
-					return tradeTime >= lastAllowedDate;
+					return tradeTime >= lastCoolDownEnd;
 				});
 
 				const freshTradeDays = getUniqueTradingDays(freshTrades, true).slice(0, 7);
@@ -437,9 +572,6 @@ const getOrderHistoryController = async (req, res) => {
 		});
 	}
 };
-
-
-
 
 
 
