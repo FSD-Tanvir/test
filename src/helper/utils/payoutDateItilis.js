@@ -13,8 +13,10 @@ const getDateBeforeDays = (days) => {
 };
 
 
-const getUniqueTradingDays = (trades, returnDates = false) => {
-    const uniqueDates = new Set();
+
+
+const getUniqueTradingDays = (trades, returnDates = false, includeTime = true) => {
+    const uniqueDates = new Map();
 
     trades.forEach((trade) => {
         const openTime = new Date(trade.openTime);
@@ -23,12 +25,23 @@ const getUniqueTradingDays = (trades, returnDates = false) => {
         const month = String(openTime.getMonth() + 1).padStart(2, "0");
         const day = String(openTime.getDate()).padStart(2, "0");
 
-        const dateString = `${year}-${month}-${day}`;
-        uniqueDates.add(dateString);
+        const dateKey = `${year}-${month}-${day}`;
+        if (includeTime) {
+            if (!uniqueDates.has(dateKey)) {
+                const hours = String(openTime.getHours()).padStart(2, "0");
+                const minutes = String(openTime.getMinutes()).padStart(2, "0");
+                const seconds = String(openTime.getSeconds()).padStart(2, "0");
+
+                const dateTimeString = `${dateKey} ${hours}:${minutes}:${seconds}`;
+                uniqueDates.set(dateKey, dateTimeString);
+            }
+        } else {
+            uniqueDates.set(dateKey, dateKey);
+        }
     });
 
     if (returnDates) {
-        return [...uniqueDates].sort((a, b) => new Date(a) - new Date(b));
+        return [...uniqueDates.values()].sort((a, b) => new Date(a) - new Date(b));
     }
 
     return uniqueDates.size;
@@ -36,7 +49,10 @@ const getUniqueTradingDays = (trades, returnDates = false) => {
 
 
 
-// Export the functions as a module
+
+
 module.exports = {
     getUniqueTradingDays,
 };
+
+
