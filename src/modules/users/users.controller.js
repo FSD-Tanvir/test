@@ -64,7 +64,7 @@ const getUserById = async (req, res) => {
 		const { id } = req.params;
 
 		// Call the service function to find the user by ID and get their MT5 account details
-		const user = await userService.findUserWithMt5Details(id);
+		const user = await userService.findUserWithAllAccountDetails(id);
 
 		// If user is found, respond with a status of 200 and the user object in JSON format
 		res.status(200).json(user);

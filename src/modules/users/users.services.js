@@ -22,6 +22,8 @@ const { mt5Constant, matchTraderConstant } = require("../../constants/commonCons
 const {
 	createTradingAccountAndDeposit,
 	updateTradingAccount,
+	getSingleTradingAccount,
+	getClosedPositions,
 } = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi.js");
 
 // Function to handle MT5 account creation
@@ -156,8 +158,8 @@ const updateMatchTraderAccountStatus = async (account, userDetails) => {
 	}
 };
 
-// Function to find a user and get their MT5 account details
-const findUserWithMt5Details = async (id) => {
+// Function to find a user and get their MT5  & Match Trader account details
+const findUserWithAllAccountDetails = async (id) => {
 	try {
 		const startDate = "1990-12-07 12:33:12";
 		const endDate = "2100-12-07 12:33:12";
@@ -167,57 +169,81 @@ const findUserWithMt5Details = async (id) => {
 			throw new Error("User not found.");
 		}
 
-		if (!user.mt5Accounts || user.mt5Accounts.length === 0) {
-			return [{ user }];
+		const results = [];
+
+		// ─── Process MT5 Accounts ──────────────────────────────────────────────
+		if (user.mt5Accounts && user.mt5Accounts.length > 0) {
+			const mt5Promises = user.mt5Accounts.map(async (account) => {
+				const accountNumber = account.account;
+
+				try {
+					const [userDetailsResult, accountDetailsResult, orderHistoriesResult] = await Promise.all(
+						[
+							userDetails(accountNumber).catch(() => null),
+							accountDetails(accountNumber).catch(() => null),
+							orderHistories(accountNumber, startDate, endDate).catch(() => null),
+						]
+					);
+
+					const tradingDays =
+						orderHistoriesResult && orderHistoriesResult.length > 0
+							? getUniqueTradingDays(orderHistoriesResult)
+							: "N/A";
+
+					return {
+						account: accountNumber,
+						accountType: "Platform-5",
+						mt5UserDetails: userDetailsResult,
+						mt5AccountDetails: accountDetailsResult,
+						mt5OrderHistories: orderHistoriesResult,
+						tradingDays,
+					};
+				} catch (err) {
+					return null;
+				}
+			});
+
+			const mt5Info = await Promise.all(mt5Promises);
+			results.push(...mt5Info.filter((info) => info !== null));
 		}
 
-		// Extract the account numbers from the user's MT5 accounts
-		const accountNumbers = user.mt5Accounts.map((account) => account.account);
+		// ─── Process MatchTrader Accounts ──────────────────────────────────────
+		if (user.matchTraderAccounts && user.matchTraderAccounts.length > 0) {
+			const matchPromises = user.matchTraderAccounts.map(async (account) => {
+				const accountNumber = account.account;
 
-		// Create an array of promises for all API requests
-		const promises = accountNumbers.map(async (account) => {
-			try {
-				const [userDetailsResult, accountDetailsResult, orderHistoriesResult] = await Promise.all([
-					userDetails(account).catch((err) => {
-						return null;
-					}),
-					accountDetails(account).catch((err) => {
-						return null;
-					}),
-					orderHistories(account, startDate, endDate).catch((err) => {
-						return null;
-					}),
-				]);
+				try {
+					const [accountDetails, orderHistories] = await Promise.all([
+						getSingleTradingAccount(accountNumber).catch(() => null),
+						getClosedPositions(accountNumber).catch(() => null),
+					]);
 
-				// Process the fetched details
-				const tradingDays =
-					orderHistoriesResult && orderHistoriesResult.length > 0
-						? getUniqueTradingDays(orderHistoriesResult)
-						: " N/A ";
+					if (!accountDetails || !orderHistories) return null;
 
-				return {
-					account,
-					mt5UserDetails: userDetailsResult,
-					mt5AccountDetails: accountDetailsResult,
-					mt5OrderHistories: orderHistoriesResult,
-					tradingDays,
-				};
-			} catch (error) {
-				return null;
-			}
-		});
+					const tradingDays = getUniqueTradingDays(orderHistories);
 
-		// Fetch details concurrently for all MT5 accounts
-		const detailsArray = await Promise.all(promises);
+					return {
+						account: accountNumber,
+						accountType: "Match-trader",
+						matchTraderAccountDetails: accountDetails,
+						matchTraderOrderHistories: orderHistories,
+						tradingDays,
+					};
+				} catch (err) {
+					return null;
+				}
+			});
 
-		// Filter out any null results (accounts that failed completely)
-		const userInfo = detailsArray.filter((details) => details !== null);
+			const matchInfo = await Promise.all(matchPromises);
+			results.push(...matchInfo.filter((info) => info !== null));
+		}
 
 		return {
 			user,
-			userInfo,
+			userInfo: results,
 		};
 	} catch (error) {
+		console.error("Error in findUserWithAllAccountDetails:", error);
 		throw error;
 	}
 };
@@ -1169,7 +1195,7 @@ module.exports = {
 	handleMt5AccountCreate,
 	handleMatchTraderAccountCreate,
 	updateMatchTraderAccountStatus,
-	findUserWithMt5Details,
+	findUserWithAllAccountDetails,
 	sendOtp,
 	verifyOtp,
 	resetPassword,

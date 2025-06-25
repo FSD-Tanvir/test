@@ -58,7 +58,6 @@ router.get("/phased-users/:account", getPhasedUsers);
 
 // get single user
 router.get("/:id", getUserById);
-// router.get("/:id", authMiddleware, getUserById);
 
 // get only user data, not mt5 data
 router.get("/single-user/:id", getOnlyUserHandler);
