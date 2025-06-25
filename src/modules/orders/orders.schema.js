@@ -2,104 +2,110 @@ const mongoose = require("mongoose");
 const { challengeSchema } = require("../challenge/challenges.schema");
 const { Schema } = mongoose;
 const { MCoupon } = require("../coupon/coupon.schema");
+const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants");
 
 const buyerDetailsSchema = new Schema(
-    {
-        first: { type: String },
-        last: { type: String },
-        country: { type: String },
-        addr: { type: String },
-        city: { type: String },
-        zipCode: { type: String },
-        phone: { type: String },
-        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        email: {
-            type: String,
-            required: [true, "Email is required"],
-            match: [/^\S+@\S+\.\S+$/, "Email is invalid"],
-        },
-        password: { type: String, required: true },
-    },
-    {
-        _id: false,
-    }
+	{
+		first: { type: String },
+		last: { type: String },
+		country: { type: String },
+		addr: { type: String },
+		city: { type: String },
+		zipCode: { type: String },
+		phone: { type: String },
+		userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+		email: {
+			type: String,
+			required: [true, "Email is required"],
+			match: [/^\S+@\S+\.\S+$/, "Email is invalid"],
+		},
+		password: { type: String, required: true },
+	},
+	{
+		_id: false,
+	}
 );
 
 const orderSchema = new Schema(
-    {
-        orderId: { type: String, unique: true },
-        orderStatus: {
-            type: String,
-            enum: ["Processing", "Pending", "Accepted", "Delivered", "Cancelled"],
-            default: "Pending",
-        },
-        paymentStatus: {
-            type: String,
-            enum: ["Unpaid", "Processing", "Paid", "Refunded", "Failed"],
-            default: "Unpaid",
-        },
-        group: { type: String },
-        paymentMethod: { type: String },
-        orderItems: { type: [challengeSchema], required: true },
-        group: { type: String },
-        buyerDetails: {
-            type: buyerDetailsSchema,
-            required: true,
-        },
+	{
+		orderId: { type: String, unique: true },
+		orderStatus: {
+			type: String,
+			enum: ["Processing", "Pending", "Accepted", "Delivered", "Cancelled"],
+			default: "Pending",
+		},
+		paymentStatus: {
+			type: String,
+			enum: ["Unpaid", "Processing", "Paid", "Refunded", "Failed"],
+			default: "Unpaid",
+		},
+		group: { type: String },
+		paymentMethod: { type: String },
+		orderItems: { type: [challengeSchema], required: true },
+		group: { type: String },
+		buyerDetails: {
+			type: buyerDetailsSchema,
+			required: true,
+		},
 
-        referralCode: { type: String, default: "" },
-        subtotal: { type: Number, default: null }, // Challenge Price
-        discountPrice: { type: Number, default: null },
-        totalPrice: { type: Number, default: null }, // Total Price (Challenge Price + AddOns + Coupon)
+		referralCode: { type: String, default: "" },
+		subtotal: { type: Number, default: null }, // Challenge Price
+		discountPrice: { type: Number, default: null },
+		totalPrice: { type: Number, default: null }, // Total Price (Challenge Price + AddOns + Coupon)
 
-        couponClaimed: {
-            type: Schema.Types.ObjectId,
-            ref: "Coupon",
-            default: null,
-        },
+		couponClaimed: {
+			type: Schema.Types.ObjectId,
+			ref: "Coupon",
+			default: null,
+		},
 
-        addOns: { type: [String], default: [] },
-        addOnsAmount: { type: Number, default: null },
-        addOnsName: { type: String, default: null },
-        isGiveAway: { type: Boolean, default: false },
-    },
-    {
-        timestamps: true,
-    }
+		addOns: { type: [String], default: [] },
+		addOnsAmount: { type: Number, default: null },
+		addOnsName: { type: String, default: null },
+		isGiveAway: { type: Boolean, default: false },
+		platform: {
+			type: String,
+			enum: [mt5Constant, matchTraderConstant],
+			required: true,
+		},
+	},
+	{
+		timestamps: true,
+	}
 );
 
 // Pre-save middleware to generate a unique 4-digit numeric code for orderId
 orderSchema.pre("save", function (next) {
-    if (!this.orderId) {
-        // Generate a random 6-digit number
-        const uniqueId = Math.floor(100000 + Math.random() * 900000); // Generates a number between 100000 and 999999
-        this.orderId = `#${uniqueId}`;
-    }
-    next();
+	if (!this.orderId) {
+		// Generate a random 6-digit number
+		const uniqueId = Math.floor(100000 + Math.random() * 900000); // Generates a number between 100000 and 999999
+		this.orderId = `#${uniqueId}`;
+	}
+	next();
 });
 
 // Post-save middleware to update the corresponding coupon's claimedOrders array
 orderSchema.post("save", async function (doc, next) {
-    try {
-        if (doc.couponClaimed) {
-            await MCoupon.findByIdAndUpdate(
-                doc.couponClaimed,
-                {
-                    $push: { claimedOrders: doc._id },
-                },
-                { new: true, useFindAndModify: false }
-            );
-        }
-        next();
-    } catch (error) {
-        next(error);
-    }
+	try {
+		if (doc.couponClaimed) {
+			await MCoupon.findByIdAndUpdate(
+				doc.couponClaimed,
+				{
+					$push: { claimedOrders: doc._id },
+				},
+				{ new: true, useFindAndModify: false }
+			);
+		}
+		next();
+	} catch (error) {
+		next(error);
+	}
 });
 
 // Define the Mongoose model for the "Order" collection using the orderSchema
 const MOrder = mongoose.model("Order2", orderSchema);
 
 module.exports = {
-    MOrder,
-    orderSchema,
+	MOrder,
+	orderSchema,
 };

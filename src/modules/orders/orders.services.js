@@ -5,6 +5,12 @@ const { invoiceMailingHTMLTemplate } = require("../../helper/utils/invoiceMailin
 const { MCoupon } = require("../coupon/coupon.schema");
 const { calculateDiscount, calculateTotal } = require("../../helper/utils/orderCalculations");
 const MAffiliate = require("../affiliate/affiliate.schema");
+const {
+	orderCreationEmailTemplate,
+	sendingMt5CredentialsEmailTemplate,
+	sendingMatchTraderCredentialsEmailTemplate,
+} = require("../../helper/emailTemplates/orderEmailTemplates");
+const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants");
 
 /**
  * Asynchronously creates a new order in the database.
@@ -20,13 +26,6 @@ const createOrder = async (orderData) => {
 			throw new Error("Order items cannot be empty");
 		}
 
-		// const challengePrice = orderData.orderItems[0].challengePrice;
-		// const couponPercentage = orderData.couponPercentage || 0;
-
-		// const discount = calculateDiscount(challengePrice, couponPercentage);
-
-		// const totalPrice = calculateTotal(challengePrice, discount);
-
 		const newOrder = await MOrder.create({
 			...orderData,
 			orderItems: orderData.orderItems || [],
@@ -34,93 +33,8 @@ const createOrder = async (orderData) => {
 
 		const { orderId, buyerDetails } = newOrder;
 
-		//  [✅][✅][✅] Todo:: send an email to the user with the order details with (email, orderId,password) and  also invoice details
+		const htmlTemplate = orderCreationEmailTemplate(orderId, buyerDetails);
 
-		// Send an email to the user with the order details 🧲🧲🧲🧲🧲🧲🧲🧲🧲
-
-		const htmlTemplate = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 12px; background-color: #ffffff; border: 2px solid #DB8112; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center;">
-    <!-- Header Section -->
-    <div style="text-align: center; margin-bottom: 25px;">
-        <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png " alt="Company Logo" style="max-width: 100px; height: auto;">
-    </div>
-
-    <h2 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 26px; font-weight: bold;">
-        Your customer portal has been created
-    </h2>
-    <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6;">
-        Your order has been successfully created. Here are the details:
-    </p>
-
-    <!-- Order ID Section -->
-    <div style="background-color: #fff8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DB8112;">
-        <p style="font-size: 20px; color: #333; text-align: center; margin-bottom: 10px; font-weight: bold;">
-            Order ID: <span style="color: #DB8112; font-weight: 800;">${orderId}</span>
-        </p>
-    </div>
-
-    <!-- Instruction Text -->
-    <p style="font-size: 16px; color: #555; text-align: center; margin-bottom: 20px; line-height: 1.6; font-style: italic;">
-        To track your order, please log in with the following credentials in our dashboard:
-    </p>
-
-    <!-- Credentials Section -->
-    <div style="background-color: #fff8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DB8112;">
-        <p style="font-size: 18px; color: #333; margin-bottom: 10px; text-align: center;">
-            <strong>Email:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.email}</span>
-        </p>
-        <p style="font-size: 18px; color: #333; margin-bottom: 10px; text-align: center;">
-            <strong>Password:</strong> <span style="color: #DB8112; font-weight: bold;">${buyerDetails?.password}</span>
-        </p>
-    </div>
-
-    <!-- Call-to-Action Button -->
-    <div style="text-align: center; margin-bottom: 20px;">
-        <a href="https://foxx-funded.com/login " style="display: inline-block; padding: 12px 25px; background: linear-gradient(135deg, #DB8112, #ffa64d); color: #fff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold; transition: all 0.3s ease;">
-            Login to Track Your Order
-        </a>
-    </div>
-
-    <!-- Help Message -->
-    <p style="font-size: 16px; color: #333; margin-top: 20px; line-height: 1.6;">
-        If you need any help or have questions about your account, please contact our team at 
-        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
-    </p>
-
-    <!-- Support Section -->
-    <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
-        Need further assistance? <a href="https://foxx-funded.com/en/contact-us#contact-section" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
-    </p>
-
-    <!-- Social Media Section -->
-    <div style="margin-top: 20px; text-align: center;">
-        <a href="https://t.me/+2QVq5aChxiBlOWFk " style="margin-right: 10px;">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn :ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 36px; height: 36px;">
-        </a>
-    </div>
-
-    <!-- Footer Section -->
-    <p style="font-size: 14px; color: #777; margin-top: 20px;">
-        Thank you for shopping with us!
-    </p>
-</div>
-
-<style>
-    @media only screen and (max-width: 600px) {
-        div[style] {
-            padding: 20px !important;
-        }
-        h2[style] {
-            font-size: 24px !important;
-        }
-        p[style], a[style] {
-            font-size: 14px !important;
-        }
-        a[style] {
-            padding: 10px 20px !important;
-            font-size: 14px !important;
-        }
-    }
-</style>`;
 		if (newOrder) {
 			await sendEmailSingleRecipient(
 				buyerDetails?.email,
@@ -137,17 +51,6 @@ const createOrder = async (orderData) => {
 	}
 };
 
-/**
- * Retrieves all orders based on optional orderStatus and paymentStatus filters.
- * If provided, filters orders by the specified orderStatus and/or paymentStatus.
- * Valid orderStatus options: "Processing", "Pending", "Accepted", "Delivered", "Cancelled".
- * Valid paymentStatus options: "Unpaid", "Processing", "Paid", "Refunded", "Failed".
- * Orders are sorted by 'createdAt' in descending order.
- * @param {string} orderStatus - Optional filter for order status.
- * @param {string} paymentStatus - Optional filter for payment status.
- * @returns {Promise<Array>} A promise that resolves to an array of orders matching the filters.
- * @throws {Error} If there is an error retrieving orders.
- */
 const allOrders = async (
 	orderStatus = null,
 	paymentStatus = null,
@@ -155,34 +58,37 @@ const allOrders = async (
 	page = 1,
 	limit = 10,
 	search = "",
-	date = null,
+	startDate = null,
+	endDate = null,
 	accountSize = null,
-	couponName = null
+	couponName = null,
+	platform = null
 ) => {
 	try {
 		const validOrderStatuses = ["Processing", "Pending", "Accepted", "Delivered", "Cancelled"];
 		const validPaymentStatuses = ["Unpaid", "Processing", "Paid", "Refunded", "Failed"];
+		const validPlatforms = [mt5Constant, matchTraderConstant];
 
 		let filter = {
 			$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
 		};
 
-		// Add order status filter if valid
+		// Order status filter
 		if (orderStatus && validOrderStatuses.includes(orderStatus)) {
 			filter.orderStatus = orderStatus;
 		}
 
-		// Add payment status filter if valid
+		// Payment status filter
 		if (paymentStatus && validPaymentStatuses.includes(paymentStatus)) {
 			filter.paymentStatus = paymentStatus;
 		}
 
-		// Add payment method filter if provided
+		// Payment method filter
 		if (paymentMethod) {
 			filter.paymentMethod = paymentMethod;
 		}
 
-		// Add search filter if provided
+		// Search filter
 		if (search) {
 			filter.$or = [
 				{ orderId: { $regex: search, $options: "i" } },
@@ -190,24 +96,35 @@ const allOrders = async (
 			];
 		}
 
-		// Apply date filter if provided
-		if (date) {
-			const targetDate = new Date(date);
-			const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
-			const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+		// Date range filter
+		if (startDate || endDate) {
+			const dateRangeFilter = {};
 
-			filter.createdAt = {
-				$gte: startOfDay,
-				$lte: endOfDay,
-			};
+			if (startDate) {
+				const startOfDay = new Date(startDate);
+				startOfDay.setHours(0, 0, 0, 0);
+				dateRangeFilter.$gte = startOfDay;
+			}
+
+			if (endDate) {
+				const endOfDay = new Date(endDate);
+				endOfDay.setHours(23, 59, 59, 999);
+				dateRangeFilter.$lte = endOfDay;
+			}
+
+			if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+				throw new Error("Invalid date range: startDate must be less than or equal to endDate");
+			}
+
+			filter.createdAt = dateRangeFilter;
 		}
 
-		// Add account size filter if provided and convert to number
+		// Account size filter
 		if (accountSize) {
 			filter["orderItems.accountSize"] = Number(accountSize);
 		}
 
-		// If couponName is provided, find matching coupon IDs
+		// Coupon filter
 		if (couponName) {
 			const matchingCoupon = await MCoupon.findOne({ couponName: couponName }, { _id: 1 }).sort({
 				created_at: -1,
@@ -225,21 +142,25 @@ const allOrders = async (
 			}
 		}
 
-		// Convert page and limit to numbers and apply pagination
+		// Platform filter
+		if (platform && validPlatforms.includes(platform)) {
+			filter.platform = platform;
+		}
+
+		// Convert page and limit
 		const pageNumber = Number.parseInt(page, 10);
 		const limitNumber = Number.parseInt(limit, 10);
 
-		// Query the orders with filters, sort by createdAt, and paginate results
+		// Fetch orders
 		const orders = await MOrder.find(filter)
 			.populate({
 				path: "couponClaimed",
-				select: "couponName", // Add other fields you need
+				select: "couponName",
 			})
 			.sort({ createdAt: -1 })
 			.skip((pageNumber - 1) * limitNumber)
 			.limit(limitNumber);
 
-		// Get the total count of orders matching the filter
 		const totalOrders = await MOrder.countDocuments(filter);
 
 		return {
@@ -254,14 +175,6 @@ const allOrders = async (
 	}
 };
 
-/**
- * Updates an order in the database with the provided data.
- * @param {string} id - The ID of the order to update.
- * @param {object} data - The data to update in the order.
- * @returns {Promise<object>} - The updated order object.
- * @throws {Error} - If the order with the specified ID is not found or if there is an error updating the order.
- */
-
 const updateOrder = async (id, data) => {
 	try {
 		// Update the order with the provided data
@@ -272,31 +185,23 @@ const updateOrder = async (id, data) => {
 		);
 
 		if (!updatedOrder) {
-			// Return an appropriate response if the order is not found
 			return { error: `Order with id ${id} not found` };
 		}
 
-		// Extract necessary fields from the updated order
-		const { orderId, paymentStatus, orderStatus } = updatedOrder;
+		const { orderId, paymentStatus, platform } = updatedOrder;
 
+		// Send invoice if payment is Paid
 		if (paymentStatus === "Paid") {
-			// ⚠️⚠️⚠️invoice details send to user through email
-			if (
-				(updatedOrder?.totalPrice !== null ||
-					updatedOrder?.totalPrice !== 0 ||
-					updatedOrder?.totalPrice !== undefined) &&
-				(updatedOrder?.subtotal !== null ||
-					updatedOrder?.subtotal !== undefined ||
-					updatedOrder?.subtotal !== 0)
-			) {
-				const invoiceHTML = await invoiceMailingHTMLTemplate(updatedOrder);
-				await sendEmailSingleRecipient(
-					updatedOrder?.buyerDetails?.email,
-					"Your Order Confirmation invoice",
-					"Your order has been successfully created with the following details:",
-					invoiceHTML
-				);
-			} else if (updatedOrder?.discountPrice === updatedOrder?.orderItems[0].challengePrice) {
+			const shouldSendInvoice =
+				(updatedOrder.totalPrice !== null &&
+					updatedOrder.totalPrice !== undefined &&
+					updatedOrder.totalPrice !== 0) ||
+				(updatedOrder.subtotal !== null &&
+					updatedOrder.subtotal !== undefined &&
+					updatedOrder.subtotal !== 0) ||
+				updatedOrder.discountPrice === updatedOrder?.orderItems[0]?.challengePrice;
+
+			if (shouldSendInvoice) {
 				const invoiceHTML = await invoiceMailingHTMLTemplate(updatedOrder);
 				await sendEmailSingleRecipient(
 					updatedOrder?.buyerDetails?.email,
@@ -312,220 +217,50 @@ const updateOrder = async (id, data) => {
 			email: updatedOrder?.buyerDetails?.email,
 		});
 
-		if (!user || user.mt5Accounts.length === 0) {
-			// If no user or no Mt5Accounts, return the updated order
+		if (!user) {
 			return { updatedOrder };
 		}
 
-		// Find the matching MT5 account
-		const matchingAccount =
-			user && (await user.mt5Accounts.find((account) => account.productId === orderId));
+		let matchingAccount = null;
+		let htmlContent = "";
+		let subject = "";
+		let plainText = "";
 
-		// Prepare the HTML content for the email
-		const htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .email-container {
-            width: 100%;
-            max-width: 600px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            border: 2px solid #DB8112;
-            overflow: hidden;
-            text-align: center;
-            padding: 30px;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .logo-container {
-            margin-bottom: 25px;
-        }
-        .logo-container img {
-            max-width: 100px;
-            height: auto;
-        }
-        .header {
-            color: #DB8112;
-            margin-bottom: 25px;
-        }
-        .header h2 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            display: inline-block;
-        }
-        .header h2::after {
-            content: '';
-            display: block;
-            width: 50px;
-            height: 3px;
-            background-color: #DB8112;
-            margin: 10px auto 0;
-            border-radius: 2px;
-        }
-        .content {
-            color: #333333;
-            font-size: 16px;
-            line-height: 1.6;
-            text-align: left;
-        }
-        .content p {
-            margin: 15px 0;
-        }
-        .credentials {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: left;
-            border-left: 4px solid #DB8112;
-        }
-        .credentials p {
-            margin: 10px 0;
-            font-size: 16px;
-            color: #555;
-        }
-        .credentials strong {
-            color: #DB8112;
-            font-weight: bold;
-        }
-        .download-links {
-            margin-top: 25px;
-            text-align: center;
-        }
-        .download-links p {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
-        }
-        .download-links a {
-            display: inline-block;
-            color: #ffffff;
-            background: linear-gradient(135deg, #DB8112, #ffa64d);
-            text-decoration: none;
-            font-weight: bold;
-            padding: 12px 25px;
-            border-radius: 6px;
-            margin: 10px 5px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .download-links a:hover {
-            background: linear-gradient(135deg, #ffa64d, #DB8112);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        .footer {
-            padding-top: 20px;
-            font-size: 14px;
-            color: #777;
-            margin-top: 25px;
-            border-top: 1px solid #eeeeee;
-            text-align: center;
-        }
-        .footer p {
-            margin: 5px 0;
-        }
-        @media only screen and (max-width: 600px) {
-            .email-container {
-                padding: 20px;
-            }
-            .header h2 {
-                font-size: 24px;
-            }
-            .download-links a {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="logo-container">
-            <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
-        </div>
-        <div class="header">
-            <h2>Your MT5 Account Credentials</h2>
-        </div>
-        <div class="content">
-            <p>Dear User,</p>
-            <p>Your MT5 account has been successfully created. Here are your credentials:</p>
-            <div class="credentials">
-                <p><strong>Account:</strong> ${matchingAccount?.account}</p>
-                <p><strong>Password:</strong> ${matchingAccount?.masterPassword}</p>
-                <p><strong>Platform:</strong> MT5</p>
-                <p><strong>Broker:</strong> PreferredCapital</p>
-            </div>
-            <p>Please keep this information secure and do not share it with anyone.</p>
-            <div class="download-links">
-                <p>Download the MT5 for:</p>
-                <a href="https://play.google.com/store/apps/details?id=net.metaquotes.metatrader5" target="_blank" rel="noopener noreferrer">Android</a>
-                <a href="https://apps.apple.com/us/app/metatrader-5/id413251709" target="_blank" rel="noopener noreferrer">iOS</a>
-                <a href="https://download.mql5.com/cdn/web/metaquotes.software.corp/mt5/metatrader5.apk?utm_source=www.metatrader5.com&utm_campaign=install.metaquotes" target="_blank" rel="noopener noreferrer">Desktop</a>
-            </div>
+		if (platform === mt5Constant && user.mt5Accounts.length > 0) {
+			matchingAccount = user.mt5Accounts.find((account) => account.productId === orderId);
 
-            <!-- Help Message -->
-    <p style="font-size: 16px; color: #333; margin-top: 20px; line-height: 1.6;">
-        If you need any help or have questions about your account, please contact our team at 
-        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
-    </p>
+			if (matchingAccount) {
+				htmlContent = sendingMt5CredentialsEmailTemplate(matchingAccount);
+				subject = "Your MT5 Account Credentials From Foxx Funded";
+				plainText = `Your MT5 account: ${matchingAccount.account} and password: ${matchingAccount.masterPassword}`;
+			}
+		} else if (platform === matchTraderConstant && user.matchTraderAccounts.length > 0) {
+			matchingAccount = user.matchTraderAccounts.find((account) => account.productId === orderId);
 
-    <!-- Support Section -->
-    <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
-        Need further assistance? <a href="https://foxx-funded.com/en/contact-us#contact-section" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
-    </p>
+			if (matchingAccount) {
+				htmlContent = sendingMatchTraderCredentialsEmailTemplate(matchingAccount);
+				subject = "Your Match Trader Account Credentials From Foxx Funded";
+				plainText = `Your Match Trader account: ${matchingAccount.account} and password: ${matchingAccount.masterPassword}`;
+			}
+		}
 
-            
-        </div>
-        <div class="footer">
-            <p>Thank you for choosing our services.</p>
-        </div>
-    </div>
-</body>
-</html>`;
-
-		// Send email and update order status if conditions are met
 		if (matchingAccount) {
-			const info = await sendEmailSingleRecipient(
-				user.email,
-				"Your MT5 Account Credentials From Foxx Funded",
-				`Your MT5 account: ${matchingAccount.account} and password: ${matchingAccount.masterPassword}`,
-				htmlContent
-			);
+			const info = await sendEmailSingleRecipient(user.email, subject, plainText, htmlContent);
+
 			if (info) {
-				// Update order status to 'Delivered'
 				await MOrder.findOneAndUpdate(
 					{ orderId: orderId },
 					{ $set: { orderStatus: "Delivered" } },
 					{ new: true }
 				);
 			}
-			// Return the matched MT5 account
+
 			return { matchingAccount, updatedOrder };
 		}
-		// Return the updated order if no email was sent
+
 		return { updatedOrder };
 	} catch (error) {
-		// Return the error in the response
+		console.log("🚀 ~ updateOrder ~ error:", error);
 		return { error: `Error updating order: ${error.message}` };
 	}
 };
