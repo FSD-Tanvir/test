@@ -12,7 +12,8 @@ const {
 	getAllPendingWithDrawRequestsByEmailService,
 	getAllApprovedRequester,
 	getAllPendingRequester,
-	getOrderHistoryService
+	getOrderHistoryService,
+	getOrderHistoryServiceByMatchTrader
 } = require("./withDrawRequests.services");
 
 // Handle POST request to create a new withdrawal request
@@ -451,6 +452,24 @@ const getOrderHistoryController = async (req, res) => {
 };
 
 
+const getOrderHistoryControllerMatchTrader = async (req, res) => {
+	const { login } = req.query;
+
+	try {
+		const result = await getOrderHistoryServiceByMatchTrader(login);
+		return res.status(200).json({
+			success: true,
+			...result,
+		});
+	} catch (error) {
+		return res.status(500).json({
+			success: false,
+			message: error.message,
+		});
+	}
+}
+
+
 
 const getOrderHistoryControllerInstantFunding = async (req, res) => {
 	const { account, startDate, endDate } = req.query;
@@ -533,5 +552,6 @@ module.exports = {
 	getApprovedRequestsController,
 	getPendingRequestsController,
 	getAccountDetailsController,
-	getOrderHistoryControllerInstantFunding
+	getOrderHistoryControllerInstantFunding,
+	getOrderHistoryControllerMatchTrader
 };
