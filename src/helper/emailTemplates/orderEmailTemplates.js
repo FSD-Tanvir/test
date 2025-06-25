@@ -410,11 +410,11 @@ const sendingMatchTraderCredentialsEmailTemplate = (matchingAccount) => {
             <img src="https://i.ibb.co.com/34qjbqp/Fox-Funded-Logo.png" alt="Company Logo">
         </div>
         <div class="header">
-            <h2>Your MT5 Account Credentials</h2>
+            <h2>Your Match Trader Account Credentials</h2>
         </div>
         <div class="content">
             <p>Dear User,</p>
-            <p>Your MT5 account has been successfully created. Here are your credentials:</p>
+            <p>Your Match Trader account has been successfully created. Here are your credentials:</p>
             <div class="credentials">
                 <p><strong>Account:</strong> ${matchingAccount?.account}</p>
                 <p><strong>Password:</strong> ${matchingAccount?.masterPassword}</p>
