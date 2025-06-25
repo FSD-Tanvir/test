@@ -40,6 +40,23 @@ const updateMt5AccountStatusHandler = async (req, res) => {
 	}
 };
 
+const updateMatchTraderAccountStatusHandler = async (req, res) => {
+	try {
+		const { account } = req.params;
+
+		const updateMatchTraderAccount = await userService.updateMatchTraderAccountStatus(
+			account,
+			req.body
+		);
+		if (!updateMatchTraderAccount) {
+			return res.status(400).json({ error: "Error updating Match Trader account" });
+		}
+		res.status(200).json(updateMatchTraderAccount);
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+};
+
 const getUserById = async (req, res) => {
 	try {
 		// Extract the user ID from the request parameters
@@ -444,6 +461,7 @@ const getOnlyUserHandlerByEmail = async (req, res) => {
 module.exports = {
 	createMt5Account,
 	createMatchTraderAccount,
+	updateMatchTraderAccountStatusHandler,
 	getUserById,
 	forgotPassword,
 	verifyOtp,

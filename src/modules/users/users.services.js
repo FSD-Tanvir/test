@@ -21,6 +21,7 @@ const { handleNextChallengeStage } = require("../challengePass/challengePass.ser
 const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants.js");
 const {
 	createTradingAccountAndDeposit,
+	updateTradingAccount,
 } = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi.js");
 
 // Function to handle MT5 account creation
@@ -123,6 +124,33 @@ const updateMt5AccountStatus = async (id, userDetails) => {
 		}
 
 		return result; // response ==> "OK"
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+// Function to update match trader account status
+const updateMatchTraderAccountStatus = async (account, userDetails) => {
+	try {
+		const { status } = userDetails;
+
+		const accStatus = status || "active";
+		const access = userDetails.access;
+
+		await updateTradingAccount(Number(account), {
+			access,
+		});
+
+		// Update the account status for the specific match trader account
+		const updatedUser = await MUser.findOneAndUpdate(
+			{ "matchTraderAccounts.account": Number(account) },
+			{ "matchTraderAccounts.$.accountStatus": accStatus },
+			{ new: true }
+		);
+
+		if (!updatedUser) return null;
+
+		return updatedUser;
 	} catch (error) {
 		console.log(error);
 	}
@@ -1099,6 +1127,7 @@ const getOnlyUserHandlerBYEmailService = async (email) => {
 module.exports = {
 	handleMt5AccountCreate,
 	handleMatchTraderAccountCreate,
+	updateMatchTraderAccountStatus,
 	findUserWithMt5Details,
 	sendOtp,
 	verifyOtp,

@@ -24,14 +24,18 @@ const {
 	downloadAllUsersCsvHandler,
 	downloadAllAccountsCsvHandler,
 	createMatchTraderAccount,
+	updateMatchTraderAccountStatusHandler,
 } = require("./users.controller.js");
 
 // Create MT5 and MatchTrader accounts
 router.post("/create-user", createMt5Account);
 router.post("/create-user-match-trader", createMatchTraderAccount);
 
-// Route to create a new user in database
+// Route to update mt5 account status
 router.put("/update-mt5-status/:account", updateMt5AccountStatusHandler);
+
+// Route to update match trader account status
+router.put("/update-match-trader-status/:account", updateMatchTraderAccountStatusHandler);
 
 // to send credentials through email
 router.post("/credentials", credentials);
