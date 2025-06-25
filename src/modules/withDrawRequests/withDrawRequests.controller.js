@@ -12,7 +12,8 @@ const {
 	getAllPendingWithDrawRequestsByEmailService,
 	getAllApprovedRequester,
 	getAllPendingRequester,
-	getOrderHistoryService
+	getOrderHistoryService,
+	getOrderHistory
 } = require("./withDrawRequests.services");
 
 // Handle POST request to create a new withdrawal request
