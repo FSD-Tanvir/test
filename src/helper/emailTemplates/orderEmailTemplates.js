@@ -273,25 +273,26 @@ const sendingMatchTraderCredentialsEmailTemplate = (matchingAccount) => {
 <head>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            color: #333;
         }
         .email-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 640px;
             background-color: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
             border: 2px solid #DB8112;
             overflow: hidden;
             text-align: center;
-            padding: 30px;
+            padding: 40px;
             animation: fadeIn 0.5s ease-in-out;
         }
         @keyframes fadeIn {
@@ -302,17 +303,17 @@ const sendingMatchTraderCredentialsEmailTemplate = (matchingAccount) => {
             margin-bottom: 25px;
         }
         .logo-container img {
-            max-width: 100px;
+            max-width: 120px;
             height: auto;
         }
         .header {
             color: #DB8112;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
         .header h2 {
             margin: 0;
             font-size: 28px;
-            font-weight: bold;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             position: relative;
@@ -321,85 +322,108 @@ const sendingMatchTraderCredentialsEmailTemplate = (matchingAccount) => {
         .header h2::after {
             content: '';
             display: block;
-            width: 50px;
+            width: 60px;
             height: 3px;
-            background-color: #DB8112;
-            margin: 10px auto 0;
-            border-radius: 2px;
+            background: linear-gradient(90deg, #DB8112, #ffc107);
+            margin: 12px auto 0;
+            border-radius: 3px;
         }
         .content {
-            color: #333333;
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.7;
             text-align: left;
+            color: #444;
         }
         .content p {
-            margin: 15px 0;
+            margin: 18px 0;
         }
         .credentials {
-            background-color: #f9f9f9;
-            padding: 20px;
+            background-color: #fff9f2;
+            padding: 22px;
             border-radius: 8px;
-            margin: 20px 0;
+            margin: 25px 0;
             text-align: left;
             border-left: 4px solid #DB8112;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .credentials p {
-            margin: 10px 0;
+            margin: 12px 0;
             font-size: 16px;
             color: #555;
         }
         .credentials strong {
             color: #DB8112;
-            font-weight: bold;
+            font-weight: 600;
         }
-        .download-links {
-            margin-top: 25px;
+        .platform-link {
+            background-color: #f0f7ff;
+            border: 1px solid #d0e3ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
             text-align: center;
+            animation: pulse 2s infinite;
         }
-        .download-links p {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(219, 129, 18, 0.2); }
+            70% { box-shadow: 0 0 0 10px rgba(219, 129, 18, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(219, 129, 18, 0); }
         }
-        .download-links a {
+        .platform-link a {
             display: inline-block;
-            color: #ffffff;
             background: linear-gradient(135deg, #DB8112, #ffa64d);
+            color: white;
             text-decoration: none;
-            font-weight: bold;
-            padding: 12px 25px;
+            font-weight: 600;
+            padding: 14px 28px;
             border-radius: 6px;
-            margin: 10px 5px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(219, 129, 18, 0.2);
+            font-size: 16px;
         }
-        .download-links a:hover {
+        .platform-link a:hover {
             background: linear-gradient(135deg, #ffa64d, #DB8112);
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 16px rgba(219, 129, 18, 0.3);
+        }
+        .platform-link p {
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .help-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .help-link {
+            color: #DB8112;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .help-link:hover {
+            color: #b86c0e;
+            text-decoration: underline;
         }
         .footer {
-            padding-top: 20px;
+            padding-top: 25px;
             font-size: 14px;
             color: #777;
-            margin-top: 25px;
+            margin-top: 30px;
             border-top: 1px solid #eeeeee;
             text-align: center;
         }
         .footer p {
-            margin: 5px 0;
+            margin: 8px 0;
         }
         @media only screen and (max-width: 600px) {
             .email-container {
-                padding: 20px;
+                padding: 25px;
+                margin: 20px;
             }
             .header h2 {
                 font-size: 24px;
-            }
-            .download-links a {
-                padding: 10px 20px;
-                font-size: 14px;
             }
         }
     </style>
@@ -415,27 +439,30 @@ const sendingMatchTraderCredentialsEmailTemplate = (matchingAccount) => {
         <div class="content">
             <p>Dear User,</p>
             <p>Your Match Trader account has been successfully created. Here are your credentials:</p>
+            
             <div class="credentials">
                 <p><strong>Account:</strong> ${matchingAccount?.account}</p>
                 <p><strong>Password:</strong> ${matchingAccount?.masterPassword}</p>
                 <p><strong>Platform:</strong> Match Trader</p>
-        <p><strong>Broker:</strong> Match Trader </p>
+                <p><strong>Broker:</strong> Match Trader</p>
             </div>
+            
+            <!-- Highlighted Platform Link Section -->
+            <div class="platform-link">
+                <p>Access your trading platform here:</p>
+                <a href="https://platform.foxx-funded.com/login" target="_blank">GO TO TRADING PLATFORM</a>
+            </div>
+            
             <p>Please keep this information secure and do not share it with anyone.</p>
             
-
-            <!-- Help Message -->
-    <p style="font-size: 16px; color: #333; margin-top: 20px; line-height: 1.6;">
-        If you need any help or have questions about your account, please contact our team at 
-        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
-    </p>
-
-    <!-- Support Section -->
-    <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
-        Need further assistance? <a href="https://foxx-funded.com/en/contact-us#contact-section" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
-    </p>
-
-            
+            <div class="help-section">
+                <p>If you need any help or have questions about your account, please contact our team at 
+                    <a href="mailto:contact@foxx-funded.com" class="help-link">contact@foxx-funded.com</a>.
+                </p>
+                <p>Need further assistance? 
+                    <a href="https://foxx-funded.com/en/contact-us#contact-section" class="help-link">Contact our support team</a>.
+                </p>
+            </div>
         </div>
         <div class="footer">
             <p>Thank you for choosing our services.</p>
