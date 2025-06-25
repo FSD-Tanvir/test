@@ -1,26 +1,24 @@
 const { sendEmailSingleRecipient } = require("../../helper/mailing");
 const { OrderCloseAll, accountUpdate } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
-const { saveRealTimeLog } = require("../disableAccounst/disableAccounts.services");
+const { saveRealTimeLog } = require("../disableAccounts/disableAccounts.services");
 const { MNewsTradingRisk } = require("./newsTradingRisk.schema");
 
 const getAllNewsTradingRisks = async () => {
 	const risks = await MNewsTradingRisk.find().sort({ createdAt: -1 });
 
-	return risks.map(risk => {
+	return risks.map((risk) => {
 		// Only include non-null accounts
 		const filteredDetails = risk.newsTradingRiskAccountDetails.filter(
-			detail => detail.account !== null
+			(detail) => detail.account !== null
 		);
 
 		// Convert to plain JS object and replace the array
 		return {
 			...risk.toObject(),
-			newsTradingRiskAccountDetails: filteredDetails
+			newsTradingRiskAccountDetails: filteredDetails,
 		};
 	});
 };
-
-
 
 const getAccountDetailsByAccountNumber = async (accountNumber) => {
 	const data = await MNewsTradingRisk.aggregate([
@@ -30,17 +28,17 @@ const getAccountDetailsByAccountNumber = async (accountNumber) => {
 			$group: {
 				_id: "$newsTradingRiskAccountDetails.account",
 				entries: { $push: "$newsTradingRiskAccountDetails" },
-				count: { $sum: 1 }
-			}
+				count: { $sum: 1 },
+			},
 		},
 		{
 			$project: {
 				_id: 0,
 				account: "$_id",
 				entries: 1,
-				flag: "$count"
-			}
-		}
+				flag: "$count",
+			},
+		},
 	]);
 
 	return data.length > 0 ? data[0] : null;
@@ -190,17 +188,16 @@ const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
 			htmlContent
 		);
 		if (typeof info === "string" && info.includes("OK")) {
-
 			const updateResult = await MNewsTradingRisk.updateOne(
 				{
-					'newsTradingRiskAccountDetails.account': Number(account),
-					'newsTradingRiskAccountDetails.ticket': Number(accountDetails.ticket)
+					"newsTradingRiskAccountDetails.account": Number(account),
+					"newsTradingRiskAccountDetails.ticket": Number(accountDetails.ticket),
 				},
 				{
 					$set: {
-						'newsTradingRiskAccountDetails.$.emailSent': true,
-						'newsTradingRiskAccountDetails.$.emailCount': 1
-					}
+						"newsTradingRiskAccountDetails.$.emailSent": true,
+						"newsTradingRiskAccountDetails.$.emailCount": 1,
+					},
 				}
 			);
 		}
@@ -214,8 +211,6 @@ const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
 		throw new Error(`Error sending email: ${error.message}`);
 	}
 };
-
-
 
 const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
 	console.log("accountDetails", accountDetails);
@@ -260,7 +255,12 @@ const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
 		(async () => {
 			try {
 				const tickets = accountDetails.tickets
-					.map(ticket => `<li>Ticket: ${ticket.ticket}, Open Time: ${new Date(ticket.openTime).toLocaleString()}</li>`)
+					.map(
+						(ticket) =>
+							`<li>Ticket: ${ticket.ticket}, Open Time: ${new Date(
+								ticket.openTime
+							).toLocaleString()}</li>`
+					)
 					.join("");
 				const htmlContent = `<!DOCTYPE html>
 <html lang="en">
@@ -407,8 +407,9 @@ const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
 		}
 		return {
 			success: true,
-			message: `The account "${account}" has been successfully disabled due to exceeding the News Trading Risk. ${emailSent ? "An email notification has been sent." : "However, email notification failed."
-				}`,
+			message: `The account "${account}" has been successfully disabled due to exceeding the News Trading Risk. ${
+				emailSent ? "An email notification has been sent." : "However, email notification failed."
+			}`,
 			emailSent,
 		};
 	} catch (error) {

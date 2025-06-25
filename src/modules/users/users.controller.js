@@ -1,5 +1,5 @@
 const { getAllAccountSummery } = require("../../thirdPartyMt5Api/thirdPartyMt5Api.js");
-const { fetchDisabledAccounts } = require("../disableAccounst/disableAccounst.controller.js");
+const { fetchDisabledAccounts } = require("../disableAccounts/disableAccounts.controller.js");
 const userService = require("./users.services.js");
 
 /**

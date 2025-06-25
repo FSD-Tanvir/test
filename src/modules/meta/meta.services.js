@@ -1,4 +1,4 @@
-const DisableAccount = require("../disableAccounst/disableAccounts.schema");
+const DisableAccount = require("../disableAccounts/disableAccounts.schema");
 const { MOrder } = require("../orders/orders.schema");
 const MUser = require("../users/users.schema");
 const MWithDrawRequest = require("../withDrawRequests/withDrawRequests.schema");
