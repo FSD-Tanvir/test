@@ -23,9 +23,12 @@ const {
 	getOnlyUserHandlerByEmail,
 	downloadAllUsersCsvHandler,
 	downloadAllAccountsCsvHandler,
+	createMatchTraderAccount,
 } = require("./users.controller.js");
-// Route to create a new user in database and in mt5 manager
+
+// Create MT5 and MatchTrader accounts
 router.post("/create-user", createMt5Account);
+router.post("/create-user-match-trader", createMatchTraderAccount);
 
 // Route to create a new user in database
 router.put("/update-mt5-status/:account", updateMt5AccountStatusHandler);

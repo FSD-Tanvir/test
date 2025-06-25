@@ -3,31 +3,6 @@ const config = require("../config/config");
 const axios = require("axios");
 
 const BASE_URL = config.matchTraderBaseURL;
-const SWAGGER_BASE_URL = config.matchTraderSwaggerBaseURL;
-
-// connect manager in Match - trader
-const connectManager = async () => {
-	const url = `${config.matchTraderSwaggerBaseURL}/v1/register/register`;
-	const payload = {
-		password: config.managerPasswordSwagger,
-		managerID: config.managerIDSwagger,
-	};
-
-	try {
-		const response = await axios.post(url, payload, {
-			headers: {
-				accept: "application/json",
-				"Content-Type": "application/json",
-			},
-		});
-
-		const data = response.data;
-		return data.token; // Will return the token
-	} catch (error) {
-		console.error("Error connecting manager:", error);
-		return null;
-	}
-};
 
 // creation of normal account
 const createNormalAccount = async (userDetails) => {
@@ -410,7 +385,6 @@ const updateTradingAccount = async (login, updateData) => {
 };
 
 module.exports = {
-	connectManager,
 	getNormalAccountUsingEmail,
 	manualDepositInTradingAccount,
 	createNormalAccount,

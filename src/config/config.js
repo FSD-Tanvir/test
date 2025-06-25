@@ -14,6 +14,13 @@ const config = {
 	newsUrl: process.env.NEWS_URL,
 	// initial manager body ...... end
 
+	// initial match trader manager body.... start
+	matchTraderBaseURL: process.env.MATCH_TRADER_BASE_URL,
+	paymentGatewayId: process.env.PAYMENT_GATEWAY_ID,
+	matchTraderAuthToken: process.env.MATCH_TRADER_AUTH_TOKEN,
+	matchTraderSystemUUID: process.env.MATCH_TRADER_SYSTEM_UUID,
+	// initial match trader manager body ...... end
+
 	cry_base_url: process.env.CRYPTO_CLOUD_BASE_URL,
 	cry_cloud_api_key: process.env.CRYPTO_CLOUD_API_KEY,
 	shop_id: process.env.SHOP_ID,
@@ -22,12 +29,6 @@ const config = {
 		"content-type": "application/json",
 		"brand-api-key": process.env.MT5_API_KEY,
 	},
-	zenPayBaseUrl: process.env.ZENPAY_BASE_URL,
-	zenPayTypeRet: process.env.ZENPAY_type_ret,
-	zenPayTypeCor: process.env.ZENPAY_type_cor,
-	zenPayBCode: process.env.ZENPAY_bcode,
-	zenPayHKay: process.env.ZENPAY_hkey,
-	zenpay_bankredirect_url: process.env.ZENPAY_BankRedirect_URL,
 
 	cryHeaders: {
 		Authorization: `Token ${process.env.CRYPTO_CLOUD_API_KEY}`,
@@ -53,19 +54,6 @@ const config = {
 	CLIENT_SECRET: process.env.CLIENT_SECRET,
 	REDIRECT_URI: process.env.REDIRECT_URI,
 	REFRESH_TOKEN: process.env.REFRESH_TOKEN,
-
-	// hayvnpay configurations
-	hayvnpay_base_url: process.env.apiUrl,
-	hayvnpay_api_key: process.env.apiKey,
-	hayvnpay_api_secret: process.env.apiSecret,
-
-	//MyxSpend payment gateway configurations
-	myxspend_email: process.env.MYXSPEND_EMAIL,
-	myxspend_password: process.env.MYXSPEND_PASSWORD,
-	myxspend_base_url: process.env.MYXSPEND_BASE_URL,
-
-	// stripe configurations
-	stripe_secret_key: process.env.STRIPE_SECRET_KEY,
 };
 
 module.exports = config;

@@ -3,7 +3,6 @@ const MOtp = require("../../helper/otpSchema.js");
 const { sendMailForOTP, sendEmailSingleRecipient } = require("../../helper/mailing.js");
 const { generateToken } = require("../../helper/utils/tokenUtils.js");
 
-const config = require("../../config/config.js"); // Assuming config is in this path
 const MUser = require("./users.schema.js"); // Assuming the MUser model is in this path
 // const { MOrder } = require("../orders/orders.schema.js");
 const StoreDataModel = require("../breach/breach.schema.js");
@@ -16,23 +15,15 @@ const {
 	changePasswordInMt5,
 	accountUpdate,
 } = require("../../thirdPartyMt5Api/thirdPartyMt5Api.js");
-const {
-	getDateBeforeDays,
-	formatDateTime,
-	getUniqueTradingDays,
-	getToday,
-} = require("../../helper/utils/dateUtils.js");
+const { getUniqueTradingDays } = require("../../helper/utils/dateUtils.js");
 const { console } = require("node:inspector");
-const generatePassword = require("../../helper/utils/generatePasswordForMt5.js");
 const { handleNextChallengeStage } = require("../challengePass/challengePass.services.js");
+const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants.js");
+const {
+	createTradingAccountAndDeposit,
+} = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi.js");
 
-/**
- * Handle the creation of a new user including MT5 account and database entry
- * @param {Object} userDetails - User details from the request body
- * @param {Object} config - Configuration object
- * @returns {Object} - The newly created or updated user
- */
-
+// Function to handle MT5 account creation
 const handleMt5AccountCreate = async (userDetails) => {
 	// Attempt to create an MT5 account with the provided details
 	try {
@@ -45,7 +36,8 @@ const handleMt5AccountCreate = async (userDetails) => {
 				// Push a new entry into the `dailyData` array
 				$push: {
 					dailyData: {
-						mt5Account: createMt5Account?.login,
+						account: createMt5Account?.login,
+						platform: mt5Constant,
 						asset: amount,
 						dailyStartingBalance: amount,
 						dailyStartingEquity: amount,
@@ -57,14 +49,55 @@ const handleMt5AccountCreate = async (userDetails) => {
 			{
 				sort: { _id: -1 }, // Sort by `_id` in descending order to get the last document
 				new: true, // Return the updated document
-				// upsert: true, // Create a new document if none exists
-				// setDefaultsOnInsert: true, // Set default values if inserting a new document
+				upsert: true, // Create a new document if none exists
+				setDefaultsOnInsert: true, // Set default values if inserting a new document
 			}
 		);
-
+		console.log(result);
 		return createMt5Account;
 	} catch (error) {
 		console.log(error);
+	}
+};
+
+const handleMatchTraderAccountCreate = async (userDetails) => {
+	// Attempt to create an match trader account with the provided details
+	try {
+		const createMatchTraderAccount = await createTradingAccountAndDeposit(userDetails);
+
+		const amount = Number(userDetails?.depositAmount);
+
+		if (!createMatchTraderAccount?.accountDetails?.normalAccount?.uuid) {
+			throw new Error("Failed to create Match trader account");
+		}
+
+		// Find the last created document and update it by pushing a new entry into the dailyData array
+		await StoreDataModel.findOneAndUpdate(
+			{}, // Empty filter to select all documents
+			{
+				$push: {
+					dailyData: {
+						account: Number(createMatchTraderAccount?.accountDetails?.tradingAccount?.login),
+						platform: matchTraderConstant,
+						asset: amount,
+						dailyStartingBalance: amount,
+						dailyStartingEquity: amount,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				},
+			},
+			{
+				sort: { _id: -1 }, // Sort by _id in descending order to get the last document
+				new: true, // Return the updated document
+				upsert: true, // Create a new document if none exists
+			}
+		);
+
+		return createMatchTraderAccount;
+	} catch (error) {
+		console.log(error);
+		throw new Error(error.message || "Error creating Match Trader account");
 	}
 };
 
@@ -1065,6 +1098,7 @@ const getOnlyUserHandlerBYEmailService = async (email) => {
 
 module.exports = {
 	handleMt5AccountCreate,
+	handleMatchTraderAccountCreate,
 	findUserWithMt5Details,
 	sendOtp,
 	verifyOtp,

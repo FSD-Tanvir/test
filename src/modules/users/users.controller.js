@@ -2,19 +2,27 @@ const { getAllAccountSummery } = require("../../thirdPartyMt5Api/thirdPartyMt5Ap
 const { fetchDisabledAccounts } = require("../disableAccounts/disableAccounts.controller.js");
 const userService = require("./users.services.js");
 
-/**
- * Controller to create a new user
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- *  create user with tradelocker userId and send service .js
- */
-
 const createMt5Account = async (req, res) => {
 	try {
 		const mt5Account = await userService.handleMt5AccountCreate(req.body);
 		res.status(200).json(mt5Account);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
+	}
+};
+
+const createMatchTraderAccount = async (req, res) => {
+	try {
+		const matchTraderAccount = await userService.handleMatchTraderAccountCreate(req.body);
+
+		if (!matchTraderAccount?.success) {
+			return res.status(400).json({ success: false, message: "Account creation failed." });
+		}
+
+		res.status(200).json(matchTraderAccount);
+	} catch (error) {
+		console.error("Controller Error:", error);
+		res.status(500).json({ success: false, error: error.message });
 	}
 };
 
@@ -435,6 +443,7 @@ const getOnlyUserHandlerByEmail = async (req, res) => {
 
 module.exports = {
 	createMt5Account,
+	createMatchTraderAccount,
 	getUserById,
 	forgotPassword,
 	verifyOtp,
