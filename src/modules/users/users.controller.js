@@ -135,19 +135,27 @@ const getAllUsers = async (req, res) => {
 	}
 };
 
-// Controller to get all users with optional challengeStage filtering
-const getAllMt5Accounts = async (req, res) => {
+// Controller to get all trading accounts with optional challengeStage filtering
+const getAllAccounts = async (req, res) => {
 	try {
-		const { page = 1, limit = 10, searchQuery = "", challengeStage = "" } = req.query;
+		const {
+			page = 1,
+			limit = 10,
+			searchQuery = "",
+			challengeStage = "",
+			isPending = "",
+			accountStatus = "",
+			accountType = "", // optional
+		} = req.query;
 
-		const pageNumber = Number.parseInt(page, 10);
-		const limitNumber = Number.parseInt(limit, 10);
-
-		const result = await userService.getAllMt5Accounts(
-			pageNumber,
-			limitNumber,
+		const result = await userService.getAllAccounts(
+			Number(page),
+			Number(limit),
 			searchQuery,
-			challengeStage
+			challengeStage,
+			isPending,
+			accountStatus,
+			accountType || undefined
 		);
 
 		res.status(200).json(result);
@@ -460,7 +468,7 @@ module.exports = {
 	normalRegister,
 	updatePurchasedProductsHandler,
 	updateUser,
-	getAllMt5Accounts,
+	getAllAccounts,
 	getPhasedUsers,
 	credentials,
 	changePasswordController,

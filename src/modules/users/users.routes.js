@@ -25,6 +25,7 @@ const {
 	downloadAllAccountsCsvHandler,
 	createMatchTraderAccount,
 	updateMatchTraderAccountStatusHandler,
+	getAllAccounts,
 } = require("./users.controller.js");
 
 // Create MT5 and MatchTrader accounts
@@ -40,8 +41,8 @@ router.put("/update-match-trader-status/:account", updateMatchTraderAccountStatu
 // to send credentials through email
 router.post("/credentials", credentials);
 
-// get all mt5 accounts
-router.get("/mt5-accounts", getAllMt5Accounts);
+// get all  accounts (mt5 and match trader)
+router.get("/all-accounts", getAllAccounts);
 
 // Route to get users with 'funded' challenge stage
 router.get("/funded", getFundedUsers);

@@ -343,81 +343,126 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "") => {
 };
 
 // get all user's mt5 accounts
-const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
+const getAllAccounts = async (
+	page,
+	limit,
+	searchQuery,
+	challengeStage,
+	isPending,
+	accountStatus,
+	accountType // Optional: 'mt5Accounts' | 'matchTraderAccounts' | undefined
+) => {
 	try {
 		const skip = (page - 1) * limit;
 
-		// Create the match query
-		let matchQuery = {};
+		const validAccountTypes = ["mt5Accounts", "matchTraderAccounts"];
 
-		// Filter based on searchQuery
-		if (searchQuery) {
-			// biome-ignore lint/style/useNumberNamespace: <explanation>
-			const parsedSearchQuery = parseInt(searchQuery);
+		// Default to show both account types
+		const isAll = !accountType;
 
-			// Check if searchQuery is a valid number
-			if (!isNaN(parsedSearchQuery)) {
-				matchQuery["mt5Accounts.account"] = parsedSearchQuery;
-			} else {
-				// Use regex for email search if searchQuery is not a number
-				matchQuery["email"] = { $regex: searchQuery, $options: "i" };
+		if (!isAll && !validAccountTypes.includes(accountType)) {
+			throw new Error("Invalid account type provided.");
+		}
+
+		const pipelines = [];
+
+		// Helper function to build a pipeline for one account type
+		const buildPipeline = (type) => {
+			let matchQuery = {};
+
+			// Search by email or account number
+			if (searchQuery) {
+				const parsed = parseInt(searchQuery);
+				if (!isNaN(parsed)) {
+					matchQuery[`${type}.account`] = parsed;
+				} else {
+					matchQuery["email"] = { $regex: searchQuery, $options: "i" };
+				}
 			}
-		}
 
-		// Filter based on challengeStage if provided
-		if (challengeStage) {
-			matchQuery["mt5Accounts.challengeStage"] = challengeStage;
-		}
+			if (challengeStage) {
+				matchQuery[`${type}.challengeStage`] = challengeStage;
+			}
+			if (isPending !== "") {
+				matchQuery[`${type}.isPending`] = isPending === "true";
+			}
+			if (accountStatus) {
+				matchQuery[`${type}.accountStatus`] = accountStatus;
+			}
 
-		// Define the aggregation pipeline for counting
-		const countPipeline = [
-			{ $unwind: "$mt5Accounts" },
-			{ $match: matchQuery },
-			{ $count: "total" },
-		];
-
-		const countResult = await MUser.aggregate(countPipeline);
-		const total = countResult.length > 0 ? countResult[0].total : 0;
-
-		// Define the aggregation pipeline for fetching paginated results
-		const pipeline = [
-			{ $unwind: "$mt5Accounts" },
-			{ $match: matchQuery },
-			{
-				$sort: {
-					_id: -1,
+			const pipeline = [
+				{ $unwind: `$${type}` },
+				{ $match: matchQuery },
+				{ $sort: { _id: -1 } },
+				{
+					$project: {
+						email: 1,
+						firstName: "$first",
+						lastName: "$last",
+						platform: { $literal: type },
+						account: `$${type}.account`,
+						accountStatus: `$${type}.accountStatus`,
+						challengeStatus: `$${type}.challengeStatus`,
+						createdAt: `$${type}.createdAt`,
+						challengeStage: `$${type}.challengeStage`,
+						challengeStageData: `$${type}.challengeStageData`,
+						isPending: `$${type}.isPending`,
+						challengePassDate: `$${type}.challengePassDate`,
+					},
 				},
-			},
-			{
-				$project: {
-					email: 1,
-					firstName: "$first",
-					lastName: "$last",
-					"mt5Accounts.account": 1,
-					"mt5Accounts.productId": 1,
-					"mt5Accounts.accountStatus": 1,
-					"mt5Accounts.challengeStatus": 1,
-					"mt5Accounts.createdAt": 1,
-					"mt5Accounts.challengeStage": 1,
-					"mt5Accounts.challengeStageData": 1, // Include challengeStageData
-				},
-			},
-			{ $skip: skip }, // Skip documents for pagination
-			{ $limit: parseInt(limit) }, // Limit the number of documents
-		];
+			];
 
-		const usersWithMt5Accounts = await MUser.aggregate(pipeline);
+			return { pipeline, matchQuery };
+		};
+
+		let total = 0;
+		let results = [];
+
+		if (isAll) {
+			// For both mt5Accounts and matchTraderAccounts
+			for (const type of validAccountTypes) {
+				const { pipeline, matchQuery } = buildPipeline(type);
+
+				const countPipeline = [
+					{ $unwind: `$${type}` },
+					{ $match: matchQuery },
+					{ $count: "total" },
+				];
+
+				const [countRes, dataRes] = await Promise.all([
+					MUser.aggregate(countPipeline),
+					MUser.aggregate([...pipeline, { $skip: skip }, { $limit: parseInt(limit) }]),
+				]);
+
+				total += countRes.length ? countRes[0].total : 0;
+				results.push(...dataRes);
+			}
+		} else {
+			const { pipeline, matchQuery } = buildPipeline(accountType);
+
+			const countPipeline = [
+				{ $unwind: `$${accountType}` },
+				{ $match: matchQuery },
+				{ $count: "total" },
+			];
+
+			const [countRes, dataRes] = await Promise.all([
+				MUser.aggregate(countPipeline),
+				MUser.aggregate([...pipeline, { $skip: skip }, { $limit: parseInt(limit) }]),
+			]);
+
+			total = countRes.length ? countRes[0].total : 0;
+			results = dataRes;
+		}
 
 		return {
-			total, // Total count before skip and limit
+			total,
 			page: parseInt(page),
-
 			limit: parseInt(limit),
-			usersWithMt5Accounts,
+			usersWithAccounts: results,
 		};
 	} catch (error) {
-		// biome-ignore lint/style/useTemplate: <explanation>
-		throw new Error("Error fetching MT5 accounts: " + error.message);
+		throw new Error("Error fetching accounts: " + error.message);
 	}
 };
 
@@ -1135,7 +1180,7 @@ module.exports = {
 	normalRegister,
 	updatePurchasedProducts,
 	updateUser,
-	getAllMt5Accounts,
+	getAllAccounts,
 	getPhasedUsers,
 	findUserWithEmail,
 	createUser,
