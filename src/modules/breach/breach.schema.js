@@ -1,8 +1,14 @@
 const mongoose = require("mongoose");
+const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants");
 
 const DailyDataSchema = new mongoose.Schema(
 	{
-		mt5Account: { type: Number, required: true },
+		account: { type: Number, required: true },
+		platform: {
+			type: String,
+			enum: [mt5Constant, matchTraderConstant],
+			required: true,
+		},
 		asset: { type: Number, required: true },
 		initialBalance: { type: Number },
 		dailyStartingBalance: { type: Number, required: true },
@@ -25,4 +31,5 @@ const StoreDataSchema = new mongoose.Schema(
 	{ timestamps: true }
 );
 
-module.exports = mongoose.model("StoreData", StoreDataSchema);
+//! TODO :: Replace StoreData with StoreData2
+module.exports = mongoose.model("StoreData2", StoreDataSchema);

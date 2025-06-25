@@ -19,10 +19,10 @@ const storeDailyDataController = () => {
 };
 
 const getUserStoredDataController = async (req, res) => {
-	const { mt5Account } = req.params;
+	const { account } = req.params;
 
 	try {
-		const userData = await getUserStoredData(mt5Account);
+		const userData = await getUserStoredData(account);
 		return res.status(200).json(userData);
 	} catch (error) {
 		return res.status(500).json({ message: error.message });
@@ -30,10 +30,10 @@ const getUserStoredDataController = async (req, res) => {
 };
 
 const getUserStoredDataControllersAll = async (req, res) => {
-	const { mt5Account } = req.params;
+	const { account } = req.params;
 
 	try {
-		const userData = await getUserStoredDataAll(mt5Account);
+		const userData = await getUserStoredDataAll(account);
 		return res.status(200).json(userData);
 	} catch (error) {
 		return res.status(500).json({ message: error.message });
@@ -42,11 +42,11 @@ const getUserStoredDataControllersAll = async (req, res) => {
 
 // Controller to handle deletion of specific account data on a specific date
 const deleteAccountDataController = async (req, res) => {
-	const { mt5Account } = req.params;
+	const { account } = req.params;
 	const { date } = req.query; // Pass date as query parameter
 
 	try {
-		const result = await deleteAccountDataByDate(mt5Account, date);
+		const result = await deleteAccountDataByDate(account, date);
 		if (result.modifiedCount > 0) {
 			return res.status(200).json({ message: "Data deleted successfully." });
 		} else {

@@ -1,7 +1,9 @@
 const { default: mongoose } = require("mongoose");
+const { mt5Constant } = require("../../constants/commonConstants");
 
 const disableAccountSchema = new mongoose.Schema({
-	mt5Account: { type: String, required: true, unique: true },
+	account: { type: String, required: true, unique: true },
+	platform: { type: String, default: mt5Constant },
 	equity: { type: Number, required: true },
 	lossPercentage: { type: Number, required: true },
 	asset: { type: Number },
@@ -11,6 +13,7 @@ const disableAccountSchema = new mongoose.Schema({
 	date: { type: Date, default: Date.now },
 });
 
-const DisableAccount = mongoose.model("DisableAccount", disableAccountSchema);
+//! TODO :: Replace DisableAccount with DisableAccount2
+const DisableAccount = mongoose.model("DisableAccount2", disableAccountSchema);
 
 module.exports = DisableAccount;
