@@ -7,6 +7,7 @@ const {
 	orderHistories,
 } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const { updateLastDailyDataByMt5Account } = require("../breach/breach.services");
+const { getUniqueTradingDays } = require("../../helper/utils/payoutDateItilis");
 
 // Create a new withdrawal request
 const createWithDrawRequestService = async (data) => {
@@ -311,14 +312,135 @@ const getAllPayoutsWithDrawRequestsByEmailService = async (email, page, limit) =
 
 
 // Fetch order history for a specific account within a date range
-const getOrderHistory = async (account, startDate, endDate) => {
-	try {
-		const response = await orderHistories(account, startDate, endDate);
-		return response;
-	} catch (error) {
-		throw new Error(error.message);
+// const getOrderHistory = async (account, startDate, endDate) => {
+// 	try {
+// 		const response = await orderHistories(account, startDate, endDate);
+// 		return response;
+// 	} catch (error) {
+// 		throw new Error(error.message);
+// 	}
+// };
+
+
+
+const getOrderHistoryService = async (account, startDate, endDate) => {
+	const orderHistory = await orderHistories(account, startDate, endDate);
+
+	if (!orderHistory || orderHistory.length === 0) {
+		return {
+			message: "No trade history found.",
+		};
 	}
+
+	const latestWithdrawRequest = await MWithDrawRequest.findOne({
+		accountNumber: account,
+	}).sort({ updatedAt: -1 });
+
+	if (latestWithdrawRequest && latestWithdrawRequest.status === "pending") {
+		return {
+			openTradeDays: "Your request is waiting for admin approval",
+			reset: false,
+		};
+	}
+
+	let filteredOrderHistory = orderHistory;
+	let approvalTime = null;
+
+	if (
+		latestWithdrawRequest &&
+		(latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")
+	) {
+		approvalTime = new Date(latestWithdrawRequest.updatedAt);
+		filteredOrderHistory = orderHistory.filter(
+			(trade) => new Date(trade.openTime) >= approvalTime
+		);
+	}
+
+	const uniqueTradeDates = getUniqueTradingDays(filteredOrderHistory, true);
+
+	const tradingLimit =
+		latestWithdrawRequest &&
+			(latestWithdrawRequest.status === "approved" || latestWithdrawRequest.status === "rejected")
+			? 7
+			: 14;
+
+	if (uniqueTradeDates.length >= tradingLimit) {
+		const referenceDate = new Date(uniqueTradeDates[tradingLimit - 1]);
+		const skipUntil = new Date(referenceDate.getTime() + 24 * 60 * 60 * 1000);
+
+		const today = new Date();
+
+		if (today >= skipUntil) {
+			const newTradesAfterLimit = orderHistory.filter((trade) => {
+				const tradeTime = new Date(trade.openTime);
+				return tradeTime >= skipUntil;
+			});
+
+			const recalculatedDays = getUniqueTradingDays(newTradesAfterLimit, true);
+			console.log("Recalculated Days:", recalculatedDays);
+
+			if (recalculatedDays.length === 0) {
+				return {
+					openTradeDays: "No open trades found for this account.",
+					reset: true,
+				};
+			}
+
+			const limitedRecalculatedDays = recalculatedDays.slice(0, 7);
+
+			if (limitedRecalculatedDays.length < 7) {
+				return {
+					openTradeDays: limitedRecalculatedDays.length,
+					reset: true,
+				};
+			}
+
+			const lastAllowedDate = new Date(limitedRecalculatedDays[6]);
+			const lastCoolDownEnd = new Date(lastAllowedDate.getTime() + 24 * 60 * 60 * 1000);
+
+			if (today < lastCoolDownEnd) {
+				return {
+					openTradeDays: limitedRecalculatedDays.length,
+					reset: true,
+				};
+			}
+
+			const freshTrades = orderHistory.filter((trade) => {
+				const tradeTime = new Date(trade.openTime);
+				return tradeTime >= lastCoolDownEnd;
+			});
+
+			const freshTradeDays = getUniqueTradingDays(freshTrades, true).slice(0, 7);
+
+			if (freshTradeDays.length === 0) {
+				return {
+					openTradeDays: "No open trades found for this account.",
+					reset: true,
+				};
+			}
+
+			return {
+				openTradeDays: freshTradeDays.length,
+				reset: true,
+			};
+		}
+	}
+
+	if (uniqueTradeDates.length === 0) {
+		return {
+			openTradeDays: "No open trades found for this account.",
+			reset: false,
+		};
+	}
+
+	return {
+		openTradeDays: uniqueTradeDates.length,
+		reset: false,
+	};
 };
+
+
+
 
 
 // Fetch all approved withdrawal requests and calculate total approved amount
@@ -368,7 +490,7 @@ module.exports = {
 	getAllApprovedWithDrawRequestsByEmailService,
 	getAllPayoutsWithDrawRequestsByEmailService,
 	getAllPendingWithDrawRequestsByEmailService,
-	getOrderHistory,
 	getAllApprovedRequester,
 	getAllPendingRequester,
+	getOrderHistoryService,
 };
