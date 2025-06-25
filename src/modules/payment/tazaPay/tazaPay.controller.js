@@ -4,6 +4,7 @@ const {
 	getTazaPayCheckout,
 	checkMt5AccountService,
 	sendToZapier,
+	checkMatchTraderAccountService,
 } = require("./tazaPay.services");
 
 const createCheckout = async (req, res) => {
@@ -80,6 +81,27 @@ const checkMt5Account = async (req, res) => {
 	}
 };
 
-module.exports = { createCheckout, getCheckout, checkMt5Account, sendToZapierHandler };
+const checkMatchTraderAccount = async (req, res) => {
+	const { orderId } = req.params;
+
+	try {
+		const result = await checkMatchTraderAccountService(orderId);
+		if (!result) {
+			return res.status(404).json({ message: "Checkout not found" });
+		}
+		return res.status(200).json({ message: "Account data fetched successfully", data: result });
+	} catch (error) {
+		console.error("Error fetching data:", error);
+		return res.status(500).json({ message: "Error fetching data", error: error.message });
+	}
+};
+
+module.exports = {
+	createCheckout,
+	getCheckout,
+	checkMt5Account,
+	sendToZapierHandler,
+	checkMatchTraderAccount,
+};
 
 // Deceyven90!
