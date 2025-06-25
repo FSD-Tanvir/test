@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const jwt = require("jsonwebtoken");
 const { challengeSchema } = require("../challenge/challenges.schema.js");
 const customIdGenerator = require("../../helper/plugins/customIdGenerator.js");
+const { matchTraderConstant, mt5Constant } = require("../../constants/commonConstants.js");
 
 // generate random password
 // Generate a random password with the first character as an alphabet
@@ -51,6 +52,7 @@ const mt5Account = new Schema(
 		},
 		challengeStageData: { type: Object, required: true },
 		passedClaimed: { type: Boolean, default: false },
+		accountType: { type: String, default: mt5Constant },
 	},
 	{ timestamps: true }
 );
