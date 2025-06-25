@@ -311,15 +311,6 @@ const getAllPayoutsWithDrawRequestsByEmailService = async (email, page, limit) =
 };
 
 
-// Fetch order history for a specific account within a date range
-// const getOrderHistory = async (account, startDate, endDate) => {
-// 	try {
-// 		const response = await orderHistories(account, startDate, endDate);
-// 		return response;
-// 	} catch (error) {
-// 		throw new Error(error.message);
-// 	}
-// };
 
 
 
