@@ -312,6 +312,16 @@ const getAllPayoutsWithDrawRequestsByEmailService = async (email, page, limit) =
 };
 
 
+const getOrderHistory = async (account, startDate, endDate) => {
+	try {
+		const response = await orderHistories(account, startDate, endDate);
+		return response;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
+
+
 
 
 
@@ -497,4 +507,5 @@ module.exports = {
 	getAllPendingRequester,
 	getOrderHistoryService,
 	getOrderHistoryServiceByMatchTrader,
+	getOrderHistory,
 };
