@@ -1,21 +1,12 @@
-const groupNames = {
-	phase1: "phase1",
-	phase2: "phase2",
-	funded: "funded",
-	passed: "passed",
-	breached: "breached",
-};
-
 const accountDisableDetails = {
 	access: "TRADING_DISABLED",
 };
 
 //! ⚠️⚠️ TODO: TO BE REPLACED WHEN CREDENTIALS ARE AVAILABLE
 
-const phase1OfferUUID = "53434e1c-1919-4ee5-b04c-ab09db22b902";
-const phase2OfferUUID = "455a77ec-8709-4152-a46d-5680c008e86c";
-// const fundedOfferUUID = "53434e1c-1919-4ee5-b04c-ab09db22b902";
-const fundedOfferUUID = "141a0f7f-ad96-43e2-a0b4-235e6738247a";// Real UUID for funded offer
+const phase1OfferUUID = "4b50f1a8-9a61-468b-a10d-735ccfa735e9";
+const phase2OfferUUID = "4348c362-a9c7-46bf-8bb3-634db7ed4c6a";
+const fundedOfferUUID = "a16df3eb-7954-496b-b598-e56f2495940b";
 const offerUUIDConstants = {
 	phase1: phase1OfferUUID,
 	phase2: phase2OfferUUID,

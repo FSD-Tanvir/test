@@ -1,3 +1,4 @@
+const { getClientIp } = require("../../helper/utils/getClientIp.js");
 const { getAllAccountSummery } = require("../../thirdPartyMt5Api/thirdPartyMt5Api.js");
 const { fetchDisabledAccounts } = require("../disableAccounts/disableAccounts.controller.js");
 const userService = require("./users.services.js");
@@ -166,22 +167,6 @@ const getPhasedUsers = async (req, res) => {
 };
 
 /**
- * Controller to log in a user
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const loginUser = async (req, res) => {
-	try {
-		const { email, password } = req.body;
-		const { user, token } = await userService.authenticateUser(email, password);
-
-		res.status(200).json({ user, token }); // Respond with the authenticated user and token
-	} catch (error) {
-		res.status(400).json({ error }); // Respond with an error
-	}
-};
-
-/**
  * Controller to update a user's role
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -313,7 +298,8 @@ const resetPassword = async (req, res) => {
 
 const normalRegister = async (req, res) => {
 	try {
-		const result = await userService.normalRegister(req.body);
+		const ip = getClientIp(req);
+		const result = await userService.normalRegister({ ...req.body, ip });
 
 		res.status(201).json(result); // Respond with the created user
 	} catch (error) {
@@ -323,7 +309,8 @@ const normalRegister = async (req, res) => {
 
 const normalLogin = async (req, res) => {
 	try {
-		const result = await userService.normalLogin(req.body);
+		const ip = getClientIp(req);
+		const result = await userService.normalLogin({ ...req.body, ip });
 		res.status(200).json(result); // Respond with the authenticated user and token
 	} catch (error) {
 		res.status(400).json({ error }); // Respond with an error
@@ -468,7 +455,6 @@ module.exports = {
 	resetPassword,
 	getOnlyUserHandler,
 	getAllUsers,
-	loginUser,
 	updateUserRole,
 	normalLogin,
 	normalRegister,

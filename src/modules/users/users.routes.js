@@ -68,8 +68,6 @@ router.get("/pass-user/:id", manualChallengePassHandler);
 // router.get("/", authMiddleware, getAllUsers);
 router.get("/", getAllUsers);
 
-router.post("/login", loginUser);
-
 router.put("/:id", updateUser);
 
 router.put("/change-password/:account", changePasswordController);

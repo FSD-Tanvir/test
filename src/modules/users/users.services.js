@@ -450,24 +450,6 @@ const getPhasedUsers = async (account) => {
 	}
 };
 
-// Function to authenticate user based on email and password
-const authenticateUser = async (email, password) => {
-	try {
-		const user = await MUser.findOne({ email }).select("+password");
-		if (!user) {
-			throw new Error("Invalid email or password.");
-		}
-		const isMatch = await bcrypt.compare(password, user.password);
-		if (!isMatch) {
-			throw new Error("Invalid email or password.");
-		}
-		const token = user.generateToken();
-		return { user, token };
-	} catch (error) {
-		throw new Error(error.message);
-	}
-};
-
 // Function to update user role by email
 const updateUserRole = async (email, newRole) => {
 	try {
@@ -499,54 +481,65 @@ const updateUserRole = async (email, newRole) => {
 const updateUser = async (id, userData) => {
 	try {
 		const updateFields = {};
+		const pushFields = {};
 
-		// Initialize $push if necessary
-		if (userData.orders || userData.mt5Accounts) {
-			updateFields.$push = {};
-		}
-
-		// Retrieve the user data first to check for existing accounts
+		// Fetch the existing user to check for duplicates
 		const user = await MUser.findById(id);
-
 		if (!user) {
 			throw new Error("User not found");
 		}
 
-		// If userData contains orders, push the new orders to the orders array
+		// ─── Push New Orders ───────────────────────────────
 		if (userData.orders) {
-			updateFields.$push.orders = { $each: userData.orders };
+			pushFields.orders = { $each: userData.orders };
 		}
 
-		// If userData contains mt5Accounts, push the new accounts to the mt5Accounts array
+		// ─── Push New MT5 Accounts ─────────────────────────
 		if (userData.mt5Accounts) {
-			// Filter out any mt5Accounts that already exist in the user's mt5Accounts array
-			const newAccounts = userData.mt5Accounts.filter(
-				(newAccount) =>
-					!user.mt5Accounts.some(
-						(existingAccount) => existingAccount.account === newAccount.account
-					)
+			const newMt5Accounts = userData.mt5Accounts.filter(
+				(newAcc) => !user.mt5Accounts.some((existingAcc) => existingAcc.account === newAcc.account)
 			);
 
-			if (newAccounts.length > 0) {
-				updateFields.$push.mt5Accounts = { $each: newAccounts };
+			if (newMt5Accounts.length > 0) {
+				pushFields.mt5Accounts = { $each: newMt5Accounts };
 			}
 		}
 
-		// Add other fields from userData to be updated directly
+		// ─── Push New MatchTrader Accounts ────────────────
+		if (userData.matchTraderAccounts) {
+			const newMatchAccounts = userData.matchTraderAccounts.filter(
+				(newAcc) =>
+					!user.matchTraderAccounts.some((existingAcc) => existingAcc.account === newAcc.account)
+			);
+
+			if (newMatchAccounts.length > 0) {
+				pushFields.matchTraderAccounts = { $each: newMatchAccounts };
+			}
+		}
+
+		// Attach $push if there are pushable fields
+		if (Object.keys(pushFields).length > 0) {
+			updateFields.$push = pushFields;
+		}
+
+		// ─── Direct Field Updates (exclude arrays and email) ──
 		for (const key in userData) {
-			if (key !== "orders" && key !== "mt5Accounts" && key !== "email") {
+			if (
+				key !== "orders" &&
+				key !== "mt5Accounts" &&
+				key !== "matchTraderAccounts" &&
+				key !== "email"
+			) {
 				updateFields[key] = userData[key];
 			}
 		}
 
-		// Perform the update
-		const updatedUser = await MUser.findByIdAndUpdate(id, updateFields, {
-			new: true,
-		});
-
+		// ─── Final Update ──────────────────────────────────
+		const updatedUser = await MUser.findByIdAndUpdate(id, updateFields, { new: true });
 		if (!updatedUser) {
-			throw new Error("User not found");
+			throw new Error("Failed to update user");
 		}
+
 		return updatedUser;
 	} catch (error) {
 		throw error;
@@ -735,20 +728,20 @@ const findUserWithEmail = async (email) => {
 
 const normalRegister = async (data) => {
 	try {
-		const { email } = data;
+		const { email, ip } = data;
 
 		if (email) {
-			// Attempt to find an existing user in the database by email
-			const existedAccount = await MUser.findOne({ email });
-			if (existedAccount) {
-				// If user exists, update their record by adding new MT5 accounts and purchased order list
-				return existedAccount;
+			let user = await MUser.findOne({ email });
+			if (user) {
+				user = user.toObject();
+				await MUser.updateOne({ email }, { $set: { ip } });
+				return user;
 			}
-			const user = new MUser(data);
 
-			const res = await user.save();
+			const newUser = new MUser(data);
+			const savedUser = await newUser.save();
 
-			return user;
+			return savedUser;
 		}
 	} catch (error) {
 		throw new Error(error.message);
@@ -765,6 +758,9 @@ const normalLogin = async (data) => {
 		if (user.password !== data.password) {
 			throw new Error("Invalid  password.");
 		}
+
+		// Update login IP
+		await MUser.updateOne({ email: data.email }, { $set: { ip: data.ip } });
 
 		// Remove the password field before returning the user object
 		const { password, ...userWithoutPassword } = user.toObject();
@@ -1134,7 +1130,6 @@ module.exports = {
 	resetPassword,
 	getOnlyUser,
 	getAllUsers,
-	authenticateUser,
 	updateUserRole,
 	normalLogin,
 	normalRegister,
