@@ -1,8 +1,5 @@
 const { storeDailyDataController } = require("../modules/breach/breach.controller");
-const {
-	consistencyBreak,
-	sendAutomatedConsistencyBreakEmail,
-} = require("../modules/consistencyBreak/consistencyBreak.services");
+
 const {
 	lotSizeRisk,
 	sendAutomatedLotSizeEmail,
