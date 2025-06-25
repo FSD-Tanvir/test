@@ -1,66 +1,36 @@
+const { getAllActiveMatchTraderAccounts } = require("../../helper/getAllActiveAccounts");
+const {
+	getSingleTradingAccount,
+} = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi");
 const { allUserDetails, accountDetails } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
-const DisableAccount = require("../disableAccounst/disableAccounts.schema");
+const DisableAccount = require("../disableAccounts/disableAccounts.schema");
 const StoreDataModel = require("./breach.schema");
-
-const fetchWithTimeout = async (url, options = {}, timeout = 20000, retries = 3) => {
-	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort(), timeout);
-
-	try {
-		const response = await fetch(url, {
-			...options,
-			signal: controller.signal,
-		});
-		clearTimeout(id);
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! Status: ${response.status}`);
-		}
-
-		return await response.json();
-	} catch (error) {
-		clearTimeout(id);
-
-		if (error.name === "AbortError") {
-			console.error("Fetch request timed out");
-		} else {
-			console.error("Fetch error:", error);
-		}
-
-		if (retries > 0) {
-			console.log(`Retrying... Attempts remaining: ${retries - 1}`);
-			return fetchWithTimeout(url, options, timeout, retries - 1);
-		} else {
-			console.error(
-				"All retry attempts failed. Please check the server status or network connection."
-			);
-			throw error;
-		}
-	}
-};
 
 // Function to store daily data fetched from an external API
 
-const storeDataDaily = async () => {
+const storeDataDaily = async (retryCount = 0) => {
 	try {
-		const userDetails = await allUserDetails();
-		console.log("👥 Fetched user details:", userDetails);
+		const mt5Users = await allUserDetails();
+		const matchTraderUsers = await getAllActiveMatchTraderAccounts();
+
+		console.log(`👥 MT5 Users: ${mt5Users.length}, Match Trader Users: ${matchTraderUsers.length}`);
 
 		const storeData = [];
-		for (const userDetail of userDetails) {
+
+		// ✅ MT5 Accounts
+		for (const userDetail of mt5Users) {
 			const userRights = userDetail.rights;
 			const account = userDetail.login;
 
 			if (typeof userRights === "string" && !userRights.includes("USER_RIGHT_TRADE_DISABLED")) {
 				const accountDetail = await accountDetails(account);
+
 				if (accountDetail) {
-					const asset =
-						accountDetail.balance >= accountDetail.equity
-							? accountDetail.balance
-							: accountDetail.equity;
+					const asset = Math.max(accountDetail.balance, accountDetail.equity);
 
 					storeData.push({
-						mt5Account: accountDetail.login,
+						account: accountDetail.login,
+						platform: mt5Constant,
 						asset: asset,
 						dailyStartingBalance: accountDetail.balance,
 						dailyStartingEquity: accountDetail.equity,
@@ -69,21 +39,48 @@ const storeDataDaily = async () => {
 			}
 		}
 
+		// ✅ Match Trader Accounts
+		for (const userDetail of matchTraderUsers) {
+			const account = userDetail.account;
+			const accountDetail = await getSingleTradingAccount(account);
+
+			if (accountDetail) {
+				const balance = accountDetail.financeInfo?.balance;
+				const equity = accountDetail.financeInfo?.equity;
+
+				const asset = Math.max(balance, equity);
+
+				storeData.push({
+					account: account,
+					platform: matchTraderConstant,
+					asset: asset,
+					dailyStartingBalance: balance,
+					dailyStartingEquity: equity,
+				});
+			}
+		}
+
+		// ✅ Store the combined data
 		await StoreDataModel.create({
 			dailyData: storeData,
 			createdAt: new Date(),
 		});
 
 		console.log("✅ Daily data stored successfully.");
-		return true;
 	} catch (error) {
-		console.error("❌ Error during data store:", error.message);
-		return false;
+		console.error(`❌ Error storing data (attempt ${retryCount + 1}/3):`, error);
+
+		if (retryCount < 3) {
+			console.log(`🔁 Retrying in 30 minutes (attempt ${retryCount + 2}/3)...`);
+			setTimeout(() => storeDataDaily(retryCount + 1), 30 * 60 * 1000); // Retry after 30 min
+		} else {
+			console.error("⛔ Maximum retry attempts reached. Giving up.");
+		}
 	}
 };
 
 // Service to get the latest data for a specific mt5Account
-const getUserStoredData = async (mt5Account) => {
+const getUserStoredData = async (account) => {
 	try {
 		// Fetch the latest stored document
 		const latestStoreData = await StoreDataModel.findOne().sort({
@@ -94,11 +91,11 @@ const getUserStoredData = async (mt5Account) => {
 			throw new Error("No data found");
 		}
 
-		// Filter dailyData to get the relevant mt5Account data
-		const userData = latestStoreData.dailyData.find((data) => data.mt5Account == mt5Account);
+		// Filter dailyData to get the relevant account data
+		const userData = latestStoreData.dailyData.find((data) => data.account == account);
 
 		if (!userData) {
-			throw new Error(`No data found for mt5Account: ${mt5Account}`);
+			throw new Error(`No data found for account: ${account}`);
 		}
 
 		return userData;
@@ -107,20 +104,20 @@ const getUserStoredData = async (mt5Account) => {
 	}
 };
 
-const getUserStoredDataAll = async (mt5Account) => {
+const getUserStoredDataAll = async (account) => {
 	try {
-		// Fetch all documents for the specified mt5Account
+		// Fetch all documents for the specified account
 		const allStoreData = await StoreDataModel.find({
-			"dailyData.mt5Account": mt5Account,
+			"dailyData.account": account,
 		});
 
 		if (allStoreData.length === 0) {
-			throw new Error(`No data found for mt5Account: ${mt5Account}`);
+			throw new Error(`No data found for account: ${account}`);
 		}
 
 		// Extract and return all relevant dailyData entries
 		const userData = allStoreData.flatMap((store) =>
-			store.dailyData.filter((data) => data.mt5Account == mt5Account)
+			store.dailyData.filter((data) => data.account == account)
 		);
 
 		return userData;
@@ -130,7 +127,7 @@ const getUserStoredDataAll = async (mt5Account) => {
 };
 
 // Function to delete data for a specific account on a specific date
-const deleteAccountDataByDate = async (mt5Account, specificDate) => {
+const deleteAccountDataByDate = async (account, specificDate) => {
 	try {
 		// Parse the specific date to ensure we only match that date
 		const date = new Date(specificDate);
@@ -140,11 +137,11 @@ const deleteAccountDataByDate = async (mt5Account, specificDate) => {
 		// Find and update the document by pulling the specific data
 		const result = await StoreDataModel.updateOne(
 			{
-				"dailyData.mt5Account": mt5Account,
+				"dailyData.account": account,
 				createdAt: { $gte: startOfDay, $lte: endOfDay },
 			},
 			{
-				$pull: { dailyData: { mt5Account: mt5Account } },
+				$pull: { dailyData: { account: account } },
 			}
 		);
 
@@ -203,7 +200,6 @@ const deleteAccountById = async (id) => {
 		throw new Error(error.message); // Pass error up to the controller
 	}
 };
-
 module.exports = {
 	storeDataDaily,
 	getUserStoredData,

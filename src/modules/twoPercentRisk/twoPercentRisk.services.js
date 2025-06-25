@@ -4,7 +4,7 @@ const {
 } = require("../../helper/emailTemplates/twoPercentRiskEmailTemplates");
 const { sendEmailSingleRecipient } = require("../../helper/mailing");
 const { accountUpdate, OrderCloseAll } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
-const { saveRealTimeLog } = require("../disableAccounst/disableAccounts.services");
+const { saveRealTimeLog } = require("../disableAccounts/disableAccounts.services");
 const MTwoPercentRiskModel = require("./twoPercentRisk.schema");
 
 const getAccountRiskData = async (openDate, account, page = 1, limit = 10) => {

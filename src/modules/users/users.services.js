@@ -3,7 +3,6 @@ const MOtp = require("../../helper/otpSchema.js");
 const { sendMailForOTP, sendEmailSingleRecipient } = require("../../helper/mailing.js");
 const { generateToken } = require("../../helper/utils/tokenUtils.js");
 
-const config = require("../../config/config.js"); // Assuming config is in this path
 const MUser = require("./users.schema.js"); // Assuming the MUser model is in this path
 // const { MOrder } = require("../orders/orders.schema.js");
 const StoreDataModel = require("../breach/breach.schema.js");
@@ -16,23 +15,18 @@ const {
 	changePasswordInMt5,
 	accountUpdate,
 } = require("../../thirdPartyMt5Api/thirdPartyMt5Api.js");
-const {
-	getDateBeforeDays,
-	formatDateTime,
-	getUniqueTradingDays,
-	getToday,
-} = require("../../helper/utils/dateUtils.js");
+const { getUniqueTradingDays } = require("../../helper/utils/dateUtils.js");
 const { console } = require("node:inspector");
-const generatePassword = require("../../helper/utils/generatePasswordForMt5.js");
 const { handleNextChallengeStage } = require("../challengePass/challengePass.services.js");
+const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants.js");
+const {
+	createTradingAccountAndDeposit,
+	updateTradingAccount,
+	getSingleTradingAccount,
+	getClosedPositions,
+} = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi.js");
 
-/**
- * Handle the creation of a new user including MT5 account and database entry
- * @param {Object} userDetails - User details from the request body
- * @param {Object} config - Configuration object
- * @returns {Object} - The newly created or updated user
- */
-
+// Function to handle MT5 account creation
 const handleMt5AccountCreate = async (userDetails) => {
 	// Attempt to create an MT5 account with the provided details
 	try {
@@ -45,7 +39,8 @@ const handleMt5AccountCreate = async (userDetails) => {
 				// Push a new entry into the `dailyData` array
 				$push: {
 					dailyData: {
-						mt5Account: createMt5Account?.login,
+						account: createMt5Account?.login,
+						platform: mt5Constant,
 						asset: amount,
 						dailyStartingBalance: amount,
 						dailyStartingEquity: amount,
@@ -57,14 +52,55 @@ const handleMt5AccountCreate = async (userDetails) => {
 			{
 				sort: { _id: -1 }, // Sort by `_id` in descending order to get the last document
 				new: true, // Return the updated document
-				// upsert: true, // Create a new document if none exists
-				// setDefaultsOnInsert: true, // Set default values if inserting a new document
+				upsert: true, // Create a new document if none exists
+				setDefaultsOnInsert: true, // Set default values if inserting a new document
 			}
 		);
-
+		console.log(result);
 		return createMt5Account;
 	} catch (error) {
 		console.log(error);
+	}
+};
+
+const handleMatchTraderAccountCreate = async (userDetails) => {
+	// Attempt to create an match trader account with the provided details
+	try {
+		const createMatchTraderAccount = await createTradingAccountAndDeposit(userDetails);
+
+		const amount = Number(userDetails?.depositAmount);
+
+		if (!createMatchTraderAccount?.accountDetails?.normalAccount?.uuid) {
+			throw new Error("Failed to create Match trader account");
+		}
+
+		// Find the last created document and update it by pushing a new entry into the dailyData array
+		await StoreDataModel.findOneAndUpdate(
+			{}, // Empty filter to select all documents
+			{
+				$push: {
+					dailyData: {
+						account: Number(createMatchTraderAccount?.accountDetails?.tradingAccount?.login),
+						platform: matchTraderConstant,
+						asset: amount,
+						dailyStartingBalance: amount,
+						dailyStartingEquity: amount,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				},
+			},
+			{
+				sort: { _id: -1 }, // Sort by _id in descending order to get the last document
+				new: true, // Return the updated document
+				upsert: true, // Create a new document if none exists
+			}
+		);
+
+		return createMatchTraderAccount;
+	} catch (error) {
+		console.log(error);
+		throw new Error(error.message || "Error creating Match Trader account");
 	}
 };
 
@@ -95,8 +131,35 @@ const updateMt5AccountStatus = async (id, userDetails) => {
 	}
 };
 
-// Function to find a user and get their MT5 account details
-const findUserWithMt5Details = async (id) => {
+// Function to update match trader account status
+const updateMatchTraderAccountStatus = async (account, userDetails) => {
+	try {
+		const { status } = userDetails;
+
+		const accStatus = status || "active";
+		const access = userDetails.access;
+
+		await updateTradingAccount(Number(account), {
+			access,
+		});
+
+		// Update the account status for the specific match trader account
+		const updatedUser = await MUser.findOneAndUpdate(
+			{ "matchTraderAccounts.account": Number(account) },
+			{ "matchTraderAccounts.$.accountStatus": accStatus },
+			{ new: true }
+		);
+
+		if (!updatedUser) return null;
+
+		return updatedUser;
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+// Function to find a user and get their MT5  & Match Trader account details
+const findUserWithAllAccountDetails = async (id) => {
 	try {
 		const startDate = "1990-12-07 12:33:12";
 		const endDate = "2100-12-07 12:33:12";
@@ -106,57 +169,81 @@ const findUserWithMt5Details = async (id) => {
 			throw new Error("User not found.");
 		}
 
-		if (!user.mt5Accounts || user.mt5Accounts.length === 0) {
-			return [{ user }];
+		const results = [];
+
+		// ─── Process MT5 Accounts ──────────────────────────────────────────────
+		if (user.mt5Accounts && user.mt5Accounts.length > 0) {
+			const mt5Promises = user.mt5Accounts.map(async (account) => {
+				const accountNumber = account.account;
+
+				try {
+					const [userDetailsResult, accountDetailsResult, orderHistoriesResult] = await Promise.all(
+						[
+							userDetails(accountNumber).catch(() => null),
+							accountDetails(accountNumber).catch(() => null),
+							orderHistories(accountNumber, startDate, endDate).catch(() => null),
+						]
+					);
+
+					const tradingDays =
+						orderHistoriesResult && orderHistoriesResult.length > 0
+							? getUniqueTradingDays(orderHistoriesResult)
+							: "N/A";
+
+					return {
+						account: accountNumber,
+						accountType: "Platform-5",
+						mt5UserDetails: userDetailsResult,
+						mt5AccountDetails: accountDetailsResult,
+						mt5OrderHistories: orderHistoriesResult,
+						tradingDays,
+					};
+				} catch (err) {
+					return null;
+				}
+			});
+
+			const mt5Info = await Promise.all(mt5Promises);
+			results.push(...mt5Info.filter((info) => info !== null));
 		}
 
-		// Extract the account numbers from the user's MT5 accounts
-		const accountNumbers = user.mt5Accounts.map((account) => account.account);
+		// ─── Process MatchTrader Accounts ──────────────────────────────────────
+		if (user.matchTraderAccounts && user.matchTraderAccounts.length > 0) {
+			const matchPromises = user.matchTraderAccounts.map(async (account) => {
+				const accountNumber = account.account;
 
-		// Create an array of promises for all API requests
-		const promises = accountNumbers.map(async (account) => {
-			try {
-				const [userDetailsResult, accountDetailsResult, orderHistoriesResult] = await Promise.all([
-					userDetails(account).catch((err) => {
-						return null;
-					}),
-					accountDetails(account).catch((err) => {
-						return null;
-					}),
-					orderHistories(account, startDate, endDate).catch((err) => {
-						return null;
-					}),
-				]);
+				try {
+					const [accountDetails, orderHistories] = await Promise.all([
+						getSingleTradingAccount(accountNumber).catch(() => null),
+						getClosedPositions(accountNumber).catch(() => null),
+					]);
 
-				// Process the fetched details
-				const tradingDays =
-					orderHistoriesResult && orderHistoriesResult.length > 0
-						? getUniqueTradingDays(orderHistoriesResult)
-						: " N/A ";
+					if (!accountDetails || !orderHistories) return null;
 
-				return {
-					account,
-					mt5UserDetails: userDetailsResult,
-					mt5AccountDetails: accountDetailsResult,
-					mt5OrderHistories: orderHistoriesResult,
-					tradingDays,
-				};
-			} catch (error) {
-				return null;
-			}
-		});
+					const tradingDays = getUniqueTradingDays(orderHistories);
 
-		// Fetch details concurrently for all MT5 accounts
-		const detailsArray = await Promise.all(promises);
+					return {
+						account: accountNumber,
+						accountType: "Match-trader",
+						matchTraderAccountDetails: accountDetails,
+						matchTraderOrderHistories: orderHistories,
+						tradingDays,
+					};
+				} catch (err) {
+					return null;
+				}
+			});
 
-		// Filter out any null results (accounts that failed completely)
-		const userInfo = detailsArray.filter((details) => details !== null);
+			const matchInfo = await Promise.all(matchPromises);
+			results.push(...matchInfo.filter((info) => info !== null));
+		}
 
 		return {
 			user,
-			userInfo,
+			userInfo: results,
 		};
 	} catch (error) {
+		console.error("Error in findUserWithAllAccountDetails:", error);
 		throw error;
 	}
 };
@@ -282,81 +369,126 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "") => {
 };
 
 // get all user's mt5 accounts
-const getAllMt5Accounts = async (page, limit, searchQuery, challengeStage) => {
+const getAllAccounts = async (
+	page,
+	limit,
+	searchQuery,
+	challengeStage,
+	isPending,
+	accountStatus,
+	accountType // Optional: 'mt5Accounts' | 'matchTraderAccounts' | undefined
+) => {
 	try {
 		const skip = (page - 1) * limit;
 
-		// Create the match query
-		let matchQuery = {};
+		const validAccountTypes = ["mt5Accounts", "matchTraderAccounts"];
 
-		// Filter based on searchQuery
-		if (searchQuery) {
-			// biome-ignore lint/style/useNumberNamespace: <explanation>
-			const parsedSearchQuery = parseInt(searchQuery);
+		// Default to show both account types
+		const isAll = !accountType;
 
-			// Check if searchQuery is a valid number
-			if (!isNaN(parsedSearchQuery)) {
-				matchQuery["mt5Accounts.account"] = parsedSearchQuery;
-			} else {
-				// Use regex for email search if searchQuery is not a number
-				matchQuery["email"] = { $regex: searchQuery, $options: "i" };
+		if (!isAll && !validAccountTypes.includes(accountType)) {
+			throw new Error("Invalid account type provided.");
+		}
+
+		const pipelines = [];
+
+		// Helper function to build a pipeline for one account type
+		const buildPipeline = (type) => {
+			let matchQuery = {};
+
+			// Search by email or account number
+			if (searchQuery) {
+				const parsed = parseInt(searchQuery);
+				if (!isNaN(parsed)) {
+					matchQuery[`${type}.account`] = parsed;
+				} else {
+					matchQuery["email"] = { $regex: searchQuery, $options: "i" };
+				}
 			}
-		}
 
-		// Filter based on challengeStage if provided
-		if (challengeStage) {
-			matchQuery["mt5Accounts.challengeStage"] = challengeStage;
-		}
+			if (challengeStage) {
+				matchQuery[`${type}.challengeStage`] = challengeStage;
+			}
+			if (isPending !== "") {
+				matchQuery[`${type}.isPending`] = isPending === "true";
+			}
+			if (accountStatus) {
+				matchQuery[`${type}.accountStatus`] = accountStatus;
+			}
 
-		// Define the aggregation pipeline for counting
-		const countPipeline = [
-			{ $unwind: "$mt5Accounts" },
-			{ $match: matchQuery },
-			{ $count: "total" },
-		];
-
-		const countResult = await MUser.aggregate(countPipeline);
-		const total = countResult.length > 0 ? countResult[0].total : 0;
-
-		// Define the aggregation pipeline for fetching paginated results
-		const pipeline = [
-			{ $unwind: "$mt5Accounts" },
-			{ $match: matchQuery },
-			{
-				$sort: {
-					_id: -1,
+			const pipeline = [
+				{ $unwind: `$${type}` },
+				{ $match: matchQuery },
+				{ $sort: { _id: -1 } },
+				{
+					$project: {
+						email: 1,
+						firstName: "$first",
+						lastName: "$last",
+						platform: { $literal: type },
+						account: `$${type}.account`,
+						accountStatus: `$${type}.accountStatus`,
+						challengeStatus: `$${type}.challengeStatus`,
+						createdAt: `$${type}.createdAt`,
+						challengeStage: `$${type}.challengeStage`,
+						challengeStageData: `$${type}.challengeStageData`,
+						isPending: `$${type}.isPending`,
+						challengePassDate: `$${type}.challengePassDate`,
+					},
 				},
-			},
-			{
-				$project: {
-					email: 1,
-					firstName: "$first",
-					lastName: "$last",
-					"mt5Accounts.account": 1,
-					"mt5Accounts.productId": 1,
-					"mt5Accounts.accountStatus": 1,
-					"mt5Accounts.challengeStatus": 1,
-					"mt5Accounts.createdAt": 1,
-					"mt5Accounts.challengeStage": 1,
-					"mt5Accounts.challengeStageData": 1, // Include challengeStageData
-				},
-			},
-			{ $skip: skip }, // Skip documents for pagination
-			{ $limit: parseInt(limit) }, // Limit the number of documents
-		];
+			];
 
-		const usersWithMt5Accounts = await MUser.aggregate(pipeline);
+			return { pipeline, matchQuery };
+		};
+
+		let total = 0;
+		let results = [];
+
+		if (isAll) {
+			// For both mt5Accounts and matchTraderAccounts
+			for (const type of validAccountTypes) {
+				const { pipeline, matchQuery } = buildPipeline(type);
+
+				const countPipeline = [
+					{ $unwind: `$${type}` },
+					{ $match: matchQuery },
+					{ $count: "total" },
+				];
+
+				const [countRes, dataRes] = await Promise.all([
+					MUser.aggregate(countPipeline),
+					MUser.aggregate([...pipeline, { $skip: skip }, { $limit: parseInt(limit) }]),
+				]);
+
+				total += countRes.length ? countRes[0].total : 0;
+				results.push(...dataRes);
+			}
+		} else {
+			const { pipeline, matchQuery } = buildPipeline(accountType);
+
+			const countPipeline = [
+				{ $unwind: `$${accountType}` },
+				{ $match: matchQuery },
+				{ $count: "total" },
+			];
+
+			const [countRes, dataRes] = await Promise.all([
+				MUser.aggregate(countPipeline),
+				MUser.aggregate([...pipeline, { $skip: skip }, { $limit: parseInt(limit) }]),
+			]);
+
+			total = countRes.length ? countRes[0].total : 0;
+			results = dataRes;
+		}
 
 		return {
-			total, // Total count before skip and limit
+			total,
 			page: parseInt(page),
-
 			limit: parseInt(limit),
-			usersWithMt5Accounts,
+			usersWithAccounts: results,
 		};
 	} catch (error) {
-		// biome-ignore lint/style/useTemplate: <explanation>
-		throw new Error("Error fetching MT5 accounts: " + error.message);
+		throw new Error("Error fetching accounts: " + error.message);
 	}
 };
 
@@ -386,24 +518,6 @@ const getPhasedUsers = async (account) => {
 	} catch (error) {
 		console.error("Error fetching user data:", error);
 		throw error;
-	}
-};
-
-// Function to authenticate user based on email and password
-const authenticateUser = async (email, password) => {
-	try {
-		const user = await MUser.findOne({ email }).select("+password");
-		if (!user) {
-			throw new Error("Invalid email or password.");
-		}
-		const isMatch = await bcrypt.compare(password, user.password);
-		if (!isMatch) {
-			throw new Error("Invalid email or password.");
-		}
-		const token = user.generateToken();
-		return { user, token };
-	} catch (error) {
-		throw new Error(error.message);
 	}
 };
 
@@ -438,54 +552,65 @@ const updateUserRole = async (email, newRole) => {
 const updateUser = async (id, userData) => {
 	try {
 		const updateFields = {};
+		const pushFields = {};
 
-		// Initialize $push if necessary
-		if (userData.orders || userData.mt5Accounts) {
-			updateFields.$push = {};
-		}
-
-		// Retrieve the user data first to check for existing accounts
+		// Fetch the existing user to check for duplicates
 		const user = await MUser.findById(id);
-
 		if (!user) {
 			throw new Error("User not found");
 		}
 
-		// If userData contains orders, push the new orders to the orders array
+		// ─── Push New Orders ───────────────────────────────
 		if (userData.orders) {
-			updateFields.$push.orders = { $each: userData.orders };
+			pushFields.orders = { $each: userData.orders };
 		}
 
-		// If userData contains mt5Accounts, push the new accounts to the mt5Accounts array
+		// ─── Push New MT5 Accounts ─────────────────────────
 		if (userData.mt5Accounts) {
-			// Filter out any mt5Accounts that already exist in the user's mt5Accounts array
-			const newAccounts = userData.mt5Accounts.filter(
-				(newAccount) =>
-					!user.mt5Accounts.some(
-						(existingAccount) => existingAccount.account === newAccount.account
-					)
+			const newMt5Accounts = userData.mt5Accounts.filter(
+				(newAcc) => !user.mt5Accounts.some((existingAcc) => existingAcc.account === newAcc.account)
 			);
 
-			if (newAccounts.length > 0) {
-				updateFields.$push.mt5Accounts = { $each: newAccounts };
+			if (newMt5Accounts.length > 0) {
+				pushFields.mt5Accounts = { $each: newMt5Accounts };
 			}
 		}
 
-		// Add other fields from userData to be updated directly
+		// ─── Push New MatchTrader Accounts ────────────────
+		if (userData.matchTraderAccounts) {
+			const newMatchAccounts = userData.matchTraderAccounts.filter(
+				(newAcc) =>
+					!user.matchTraderAccounts.some((existingAcc) => existingAcc.account === newAcc.account)
+			);
+
+			if (newMatchAccounts.length > 0) {
+				pushFields.matchTraderAccounts = { $each: newMatchAccounts };
+			}
+		}
+
+		// Attach $push if there are pushable fields
+		if (Object.keys(pushFields).length > 0) {
+			updateFields.$push = pushFields;
+		}
+
+		// ─── Direct Field Updates (exclude arrays and email) ──
 		for (const key in userData) {
-			if (key !== "orders" && key !== "mt5Accounts" && key !== "email") {
+			if (
+				key !== "orders" &&
+				key !== "mt5Accounts" &&
+				key !== "matchTraderAccounts" &&
+				key !== "email"
+			) {
 				updateFields[key] = userData[key];
 			}
 		}
 
-		// Perform the update
-		const updatedUser = await MUser.findByIdAndUpdate(id, updateFields, {
-			new: true,
-		});
-
+		// ─── Final Update ──────────────────────────────────
+		const updatedUser = await MUser.findByIdAndUpdate(id, updateFields, { new: true });
 		if (!updatedUser) {
-			throw new Error("User not found");
+			throw new Error("Failed to update user");
 		}
+
 		return updatedUser;
 	} catch (error) {
 		throw error;
@@ -674,20 +799,20 @@ const findUserWithEmail = async (email) => {
 
 const normalRegister = async (data) => {
 	try {
-		const { email } = data;
+		const { email, ip } = data;
 
 		if (email) {
-			// Attempt to find an existing user in the database by email
-			const existedAccount = await MUser.findOne({ email });
-			if (existedAccount) {
-				// If user exists, update their record by adding new MT5 accounts and purchased order list
-				return existedAccount;
+			let user = await MUser.findOne({ email });
+			if (user) {
+				user = user.toObject();
+				await MUser.updateOne({ email }, { $set: { ip } });
+				return user;
 			}
-			const user = new MUser(data);
 
-			const res = await user.save();
+			const newUser = new MUser(data);
+			const savedUser = await newUser.save();
 
-			return user;
+			return savedUser;
 		}
 	} catch (error) {
 		throw new Error(error.message);
@@ -704,6 +829,9 @@ const normalLogin = async (data) => {
 		if (user.password !== data.password) {
 			throw new Error("Invalid  password.");
 		}
+
+		// Update login IP
+		await MUser.updateOne({ email: data.email }, { $set: { ip: data.ip } });
 
 		// Remove the password field before returning the user object
 		const { password, ...userWithoutPassword } = user.toObject();
@@ -1065,19 +1193,20 @@ const getOnlyUserHandlerBYEmailService = async (email) => {
 
 module.exports = {
 	handleMt5AccountCreate,
-	findUserWithMt5Details,
+	handleMatchTraderAccountCreate,
+	updateMatchTraderAccountStatus,
+	findUserWithAllAccountDetails,
 	sendOtp,
 	verifyOtp,
 	resetPassword,
 	getOnlyUser,
 	getAllUsers,
-	authenticateUser,
 	updateUserRole,
 	normalLogin,
 	normalRegister,
 	updatePurchasedProducts,
 	updateUser,
-	getAllMt5Accounts,
+	getAllAccounts,
 	getPhasedUsers,
 	findUserWithEmail,
 	createUser,

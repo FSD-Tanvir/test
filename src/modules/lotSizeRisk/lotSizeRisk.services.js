@@ -11,7 +11,7 @@ const {
 	OrderCloseAll,
 	accountUpdate,
 } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
-const { saveRealTimeLog } = require("../disableAccounst/disableAccounts.services");
+const { saveRealTimeLog } = require("../disableAccounts/disableAccounts.services");
 const MUser = require("../users/users.schema");
 const LotSizeRiskModel = require("./lotSizeRisk.schema");
 

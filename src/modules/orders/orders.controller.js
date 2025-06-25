@@ -20,9 +20,11 @@ const allOrders = async (req, res) => {
 			page = 1,
 			limit = 10,
 			search,
-			date, //  date parameter - (2024-10-01)
-			accountSize, //  accountSize parameter - (50000)
+			startDate,
+			endDate,
+			accountSize,
 			couponName,
+			platform,
 		} = req.query;
 
 		const orders = await ordersService.allOrders(
@@ -32,9 +34,11 @@ const allOrders = async (req, res) => {
 			page,
 			limit,
 			search,
-			date,
+			startDate,
+			endDate,
 			accountSize,
-			couponName
+			couponName,
+			platform
 		);
 
 		res.status(200).json(orders);
