@@ -3,7 +3,7 @@ const { sendEmailSingleRecipient } = require("../../helper/mailing");
 const MUser = require("../users/users.schema");
 const { invoiceMailingHTMLTemplate } = require("../../helper/utils/invoiceMailingHTMLTemplate");
 const { MCoupon } = require("../coupon/coupon.schema");
-const { calculateDiscount, calculateTotal } = require("../../helper/utils/orderCalculations");
+
 const MAffiliate = require("../affiliate/affiliate.schema");
 const {
 	orderCreationEmailTemplate,
