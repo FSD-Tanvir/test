@@ -9,13 +9,13 @@ const sandboxURL = "https://service-sandbox.tazapay.com/v3/checkout";
 const sandboxSecretKey =
 	"Basic YWtfdGVzdF9NRlI3WkdKNDFRQ1lPTDBISlpMQjpza190ZXN0X215aE5zYmFmRXVpaFY4c0VVVXdBaVBod0dIZHdhVGdTZk9EVGtyRVBtZnpESlNkbUNmNEJFSnF6R2w2eDI0R0FvbEl6MnhPMUNVVEx6a1owSzNQZ3o1NGxUTVlEQUp6YWhWdzdFcERNOXExcWhjcjBvNXJxSXpaaVUzMHRqOGxE";
 
-// const tazaPayURL = config.tazapay_base_url;
-// const tazaPaySecretKey = config.tazapay_secret_key;
+const tazaPayURL = config.tazapay_base_url;
+const tazaPaySecretKey = config.tazapay_secret_key;
 
 /* --------------------------------------- //! For Sandbox -------------------------------------- */
 
-const tazaPayURL = sandboxURL;
-const tazaPaySecretKey = sandboxSecretKey;
+// const tazaPayURL = sandboxURL;
+// const tazaPaySecretKey = sandboxSecretKey;
 
 // Function to make the Tazapay API request
 const createTazaPayCheckout = async (transactionData) => {
@@ -46,16 +46,16 @@ const createTazaPayCheckout = async (transactionData) => {
 
 	if (platform === matchTraderConstant) {
 		// Local development URL for Match-trader platform
-		successUrl = `http://localhost:5173/tazaPay/payment-success/match-trader/${updatedOrderId}`;
+		// successUrl = `http://localhost:5173/tazaPay/payment-success/match-trader/${updatedOrderId}`;
 
 		// Production URL (uncomment when deploying)
-		// successUrl = `https://foxx-funded.com/tazaPay/payment-success/match-trader/${updatedOrderId}`;
+		successUrl = `https://foxx-funded.com/tazaPay/payment-success/match-trader/${updatedOrderId}`;
 	} else if (platform === mt5Constant) {
 		// Local development URL for MT5 platform
-		successUrl = `http://localhost:5173/tazaPay/payment-success/${updatedOrderId}`;
+		// successUrl = `http://localhost:5173/tazaPay/payment-success/${updatedOrderId}`;
 
 		// Production URL (uncomment when deploying)
-		// successUrl = `https://foxx-funded.com/tazaPay/payment-success/${updatedOrderId}`;
+		successUrl = `https://foxx-funded.com/tazaPay/payment-success/${updatedOrderId}`;
 	}
 
 	const options = {
