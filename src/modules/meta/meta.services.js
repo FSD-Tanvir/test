@@ -1,3 +1,4 @@
+const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants");
 const DisableAccount = require("../disableAccounts/disableAccounts.schema");
 const { MOrder } = require("../orders/orders.schema");
 const MUser = require("../users/users.schema");
@@ -6,73 +7,78 @@ const MWithDrawRequest = require("../withDrawRequests/withDrawRequests.schema");
 const getMt5MetaData = async () => {
 	try {
 		const today = new Date();
-		today.setHours(0, 0, 0, 0); // Set the time to midnight for today's start
+		today.setHours(0, 0, 0, 0);
 
 		const yesterday = new Date(today);
-		yesterday.setDate(today.getDate() - 1); // Set the date to yesterday
+		yesterday.setDate(today.getDate() - 1);
 
-		// Get the total count of users
 		const totalUsers = await MUser.countDocuments();
 
-		// Get the count of breached accounts
-		const totalBreachedAccounts = await DisableAccount.countDocuments();
-
-		// Get the count of users with mt5Accounts
+		// Get users with MT5 and MatchTrader accounts
 		const usersWithMt5Accounts = await MUser.countDocuments({
 			mt5Accounts: { $exists: true, $not: { $size: 0 } },
 		});
+		const usersWithMatchTraderAccounts = await MUser.countDocuments({
+			matchTraderAccounts: { $exists: true, $not: { $size: 0 } },
+		});
 
+		// Total breached accounts per platform
+		const totalBreachedAccountsMt5 = await DisableAccount.countDocuments({ platform: mt5Constant });
+		const totalBreachedAccountsMatchTrader = await DisableAccount.countDocuments({
+			platform: matchTraderConstant,
+		});
+		const totalBreachedAccounts = totalBreachedAccountsMt5 + totalBreachedAccountsMatchTrader;
+
+		// Disabled account IDs per platform
+		const disabledMt5AccountIds = (
+			await DisableAccount.find({ platform: mt5Constant }).distinct("account")
+		).map(Number);
+		const disabledMatchTraderAccountIds = (
+			await DisableAccount.find({ platform: { $ne: mt5Constant } }).distinct("account")
+		).map(Number);
+
+		// Total account counts
 		const totalMt5Accounts = await MUser.aggregate([
 			{ $unwind: "$mt5Accounts" },
-			{
-				$group: {
-					_id: null,
-					totalMt5Accounts: { $sum: 1 },
-				},
-			},
+			{ $group: { _id: null, total: { $sum: 1 } } },
+		]);
+		const totalMatchTraderAccounts = await MUser.aggregate([
+			{ $unwind: "$matchTraderAccounts" },
+			{ $group: { _id: null, total: { $sum: 1 } } },
 		]);
 
-		const disabledAccountIds = (await DisableAccount.distinct("mt5Account")).map((id) =>
-			Number(id)
-		);
-
-		// Aggregation pipeline to calculate the counts directly in MongoDB
-		const result = await MUser.aggregate([
+		const buildAggregation = (accountField, disabledIds) => [
 			{
-				// Filter out mt5Accounts that match disabledAccountIds directly within the mt5Accounts array
 				$addFields: {
-					mt5Accounts: {
+					[accountField]: {
 						$filter: {
-							input: "$mt5Accounts",
+							input: `$${accountField}`,
 							as: "account",
-							cond: { $not: { $in: ["$$account.account", disabledAccountIds] } },
+							cond: { $not: { $in: ["$$account.account", disabledIds] } },
 						},
 					},
 				},
 			},
-
-			{ $unwind: "$mt5Accounts" },
-
+			{ $unwind: `$${accountField}` },
 			{
 				$group: {
 					_id: null,
-					// totalMt5Accounts: { $sum: 1 },
-					activeMt5Accounts: {
-						$sum: { $cond: [{ $eq: ["$mt5Accounts.accountStatus", "active"] }, 1, 0] },
+					active: {
+						$sum: { $cond: [{ $eq: [`$${accountField}.accountStatus`, "active"] }, 1, 0] },
 					},
-					inActiveMt5Accounts: {
-						$sum: { $cond: [{ $eq: ["$mt5Accounts.accountStatus", "inActive"] }, 1, 0] },
+					inActive: {
+						$sum: { $cond: [{ $eq: [`$${accountField}.accountStatus`, "inActive"] }, 1, 0] },
 					},
 					passedChallenge: {
-						$sum: { $cond: [{ $eq: ["$mt5Accounts.challengeStatus", "passed"] }, 1, 0] },
+						$sum: { $cond: [{ $eq: [`$${accountField}.challengeStatus`, "passed"] }, 1, 0] },
 					},
 					passedPhase1: {
 						$sum: {
 							$cond: [
 								{
 									$and: [
-										{ $eq: ["$mt5Accounts.challengeStage", "phase1"] },
-										{ $eq: ["$mt5Accounts.challengeStatus", "passed"] },
+										{ $eq: [`$${accountField}.challengeStage`, "phase1"] },
+										{ $eq: [`$${accountField}.challengeStatus`, "passed"] },
 									],
 								},
 								1,
@@ -85,8 +91,8 @@ const getMt5MetaData = async () => {
 							$cond: [
 								{
 									$and: [
-										{ $eq: ["$mt5Accounts.challengeStage", "phase2"] },
-										{ $eq: ["$mt5Accounts.challengeStatus", "passed"] },
+										{ $eq: [`$${accountField}.challengeStage`, "phase2"] },
+										{ $eq: [`$${accountField}.challengeStatus`, "passed"] },
 									],
 								},
 								1,
@@ -95,35 +101,21 @@ const getMt5MetaData = async () => {
 						},
 					},
 					phase1Challenges: {
-						$sum: { $cond: [{ $eq: ["$mt5Accounts.challengeStage", "phase1"] }, 1, 0] },
+						$sum: { $cond: [{ $eq: [`$${accountField}.challengeStage`, "phase1"] }, 1, 0] },
 					},
 					phase2Challenges: {
-						$sum: { $cond: [{ $eq: ["$mt5Accounts.challengeStage", "phase2"] }, 1, 0] },
+						$sum: { $cond: [{ $eq: [`$${accountField}.challengeStage`, "phase2"] }, 1, 0] },
 					},
 					fundedChallenges: {
-						$sum: { $cond: [{ $eq: ["$mt5Accounts.challengeStage", "funded"] }, 1, 0] },
-					},
-					instantFundingChallenges: {
-						$sum: {
-							$cond: [
-								{
-									$regexMatch: {
-										input: "$mt5Accounts.challengeStageData.challengeName",
-										regex: "Instant Funding",
-									},
-								},
-								1,
-								0,
-							],
-						},
+						$sum: { $cond: [{ $eq: [`$${accountField}.challengeStage`, "funded"] }, 1, 0] },
 					},
 					oneStepChallenges: {
 						$sum: {
 							$cond: [
 								{
 									$regexMatch: {
-										input: "$mt5Accounts.challengeStageData.challengeName",
-										regex: "oneStep",
+										input: `$${accountField}.challengeStageData.challengeName`,
+										regex: /oneStep/i,
 									},
 								},
 								1,
@@ -131,13 +123,13 @@ const getMt5MetaData = async () => {
 							],
 						},
 					},
-					twoStepChallenges: {
+					instantFundingChallenges: {
 						$sum: {
 							$cond: [
 								{
 									$regexMatch: {
-										input: "$mt5Accounts.challengeStageData.challengeName",
-										regex: "twoStep",
+										input: `$${accountField}.challengeStageData.challengeName`,
+										regex: /instant funding/i,
 									},
 								},
 								1,
@@ -147,26 +139,43 @@ const getMt5MetaData = async () => {
 					},
 				},
 			},
+		];
+
+		const [mt5Result, matchTraderResult] = await Promise.all([
+			MUser.aggregate(buildAggregation("mt5Accounts", disabledMt5AccountIds)),
+			MUser.aggregate(buildAggregation("matchTraderAccounts", disabledMatchTraderAccountIds)),
 		]);
 
-		// Get the total count of today's new signups based on user.createdAt
-		const todaysNewSignup = await MUser.countDocuments({
-			createdAt: {
-				$gte: today,
-			},
-		});
+		const mergedResult = {
+			activeMt5Accounts: mt5Result[0]?.active || 0,
+			inActiveMt5Accounts: mt5Result[0]?.inActive || 0,
+			activeMatchTraderAccounts: matchTraderResult[0]?.active || 0,
+			passedChallenge:
+				(mt5Result[0]?.passedChallenge || 0) + (matchTraderResult[0]?.passedChallenge || 0),
+			passedPhase1: (mt5Result[0]?.passedPhase1 || 0) + (matchTraderResult[0]?.passedPhase1 || 0),
+			passedPhase2: (mt5Result[0]?.passedPhase2 || 0) + (matchTraderResult[0]?.passedPhase2 || 0),
+			phase1Challenges:
+				(mt5Result[0]?.phase1Challenges || 0) + (matchTraderResult[0]?.phase1Challenges || 0),
+			phase2Challenges:
+				(mt5Result[0]?.phase2Challenges || 0) + (matchTraderResult[0]?.phase2Challenges || 0),
+			fundedChallenges:
+				(mt5Result[0]?.fundedChallenges || 0) + (matchTraderResult[0]?.fundedChallenges || 0),
+			oneStepChallenges:
+				(mt5Result[0]?.oneStepChallenges || 0) + (matchTraderResult[0]?.oneStepChallenges || 0),
+			instantFundingChallenges:
+				(mt5Result[0]?.instantFundingChallenges || 0) +
+				(matchTraderResult[0]?.instantFundingChallenges || 0),
+		};
 
-		// Get the total count of yesterday's new signups
+		const todaysNewSignup = await MUser.countDocuments({ createdAt: { $gte: today } });
+
 		const yesterdaysNewSignup = await MUser.countDocuments({
-			createdAt: {
-				$gte: new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate()),
-				$lt: today,
-			},
+			createdAt: { $gte: yesterday, $lt: today },
 		});
 
-		// Get the total count of mt5Accounts from last month
 		const lastMonthDate = new Date();
 		lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+
 		const totalMt5AccountsLastMonth = await MUser.aggregate([
 			{ $unwind: "$mt5Accounts" },
 			{
@@ -177,15 +186,22 @@ const getMt5MetaData = async () => {
 					},
 				},
 			},
-			{
-				$group: {
-					_id: null,
-					totalMt5Accounts: { $sum: 1 },
-				},
-			},
+			{ $group: { _id: null, total: { $sum: 1 } } },
 		]);
 
-		// Get the total count of users from last month
+		const totalMatchTraderAccountsLastMonth = await MUser.aggregate([
+			{ $unwind: "$matchTraderAccounts" },
+			{
+				$match: {
+					"matchTraderAccounts.createdAt": {
+						$gte: new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1),
+						$lt: new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 1),
+					},
+				},
+			},
+			{ $group: { _id: null, total: { $sum: 1 } } },
+		]);
+
 		const lastMonthUserCount = await MUser.countDocuments({
 			createdAt: {
 				$gte: new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1),
@@ -193,15 +209,9 @@ const getMt5MetaData = async () => {
 			},
 		});
 
-		// --- New Payout Section ---
-		// Get the total number of payout requests
 		const totalPayoutRequests = await MWithDrawRequest.countDocuments();
-
-		// Get the total number of approved payout requests and sum of approved amounts
 		const approvedPayouts = await MWithDrawRequest.aggregate([
-			{
-				$match: { status: "approved" },
-			},
+			{ $match: { status: "approved" } },
 			{
 				$group: {
 					_id: null,
@@ -211,74 +221,42 @@ const getMt5MetaData = async () => {
 			},
 		]);
 
-		const totalApprovedRequests =
-			approvedPayouts.length > 0 ? approvedPayouts[0].totalApprovedRequests : 0;
-		const totalApprovedAmount =
-			approvedPayouts.length > 0 ? approvedPayouts[0].totalApprovedAmount : 0;
+		const totalMt5AccountsCount = totalMt5Accounts[0]?.total || 0;
+		const totalMatchTraderAccountsCount = totalMatchTraderAccounts[0]?.total || 0;
+		const totalAccountsCombined = totalMt5AccountsCount + totalMatchTraderAccountsCount;
 
-		const totalMt5AccountsCurrent = totalMt5Accounts[0].totalMt5Accounts;
-		const totalMt5AccountsLastMonthCount =
-			totalMt5AccountsLastMonth.length > 0 ? totalMt5AccountsLastMonth[0].totalMt5Accounts : 0;
-		const accountsChange = totalMt5AccountsCurrent - totalMt5AccountsLastMonthCount;
+		const mt5LastMonth = totalMt5AccountsLastMonth[0]?.total || 0;
+		const matchTraderLastMonth = totalMatchTraderAccountsLastMonth[0]?.total || 0;
 
+		const accountsChangeFromLastMonth =
+			totalAccountsCombined - (mt5LastMonth + matchTraderLastMonth);
+		const matchTraderChangeFromLastMonth = totalMatchTraderAccountsCount - matchTraderLastMonth;
+		const mt5AccountsChangeFromLastMonth = totalMt5AccountsCount - mt5LastMonth;
 		const usersChange = totalUsers - lastMonthUserCount;
-
-		// Calculate the change in signups from yesterday to today
 		const signupChange = todaysNewSignup - yesterdaysNewSignup;
 
-		// Calculate the change in MT5 accounts from last month
-		const mt5AccountsChangeFromLastMonth = totalMt5AccountsCurrent - totalMt5AccountsLastMonthCount;
-
-		// Return the counts (if result array is not empty), including totalBreachedAccounts and the computed values
-		return result.length > 0
-			? {
-					...result[0],
-					totalMt5Accounts: totalMt5Accounts.length > 0 ? totalMt5Accounts[0].totalMt5Accounts : 0,
-					totalUsers,
-					usersWithMt5Accounts,
-					totalBreachedAccounts,
-					totalNonBreachedAccounts: totalMt5Accounts[0].totalMt5Accounts - totalBreachedAccounts,
-					accountsChangeFromLastMonth: accountsChange,
-					usersChangeFromLastMonth: usersChange,
-					signupChangeFromYesterday: signupChange, // Change in signups from yesterday
-					todaysNewSignup, // Today's new signup based on user.createdAt
-					mt5AccountsChangeFromLastMonth, // Change in MT5 accounts from last month
-					lastMonthUserCount, // **Added this line**
-
-					// Payout stats
-					totalPayoutRequests, // Total number of payout requests
-					totalApprovedRequests, // Total approved payout requests
-					totalApprovedAmount, // Total approved payout amount
-			  }
-			: {
-					totalUsers,
-					usersWithMt5Accounts,
-					totalBreachedAccounts,
-					totalNonBreachedAccounts: 0,
-					totalMt5Accounts: 0,
-					activeMt5Accounts: 0,
-					inActiveMt5Accounts: 0,
-					passedChallenge: 0,
-					passedPhase1: 0, // Default value for passedPhase1
-					passedPhase2: 0, // Default value for passedPhase2
-					phase1Challenges: 0,
-					phase2Challenges: 0,
-					fundedChallenges: 0,
-					instantFundingChallenges: 0,
-					oneStepChallenges: 0,
-					twoStepChallenges: 0,
-					accountsChangeFromLastMonth: 0,
-					usersChangeFromLastMonth: 0,
-					signupChangeFromYesterday: 0, // Default value if no results
-					todaysNewSignup: 0, // Default value if no results
-					mt5AccountsChangeFromLastMonth: 0, // Default value if no results
-					lastMonthUserCount: 0, // **Added this line**
-
-					// Default payout stats
-					totalPayoutRequests: 0,
-					totalApprovedRequests: 0,
-					totalApprovedAmount: 0,
-			  };
+		return {
+			...mergedResult,
+			totalUsers,
+			usersWithMt5Accounts,
+			usersWithMatchTraderAccounts,
+			totalMt5Accounts: totalMt5AccountsCount,
+			totalMatchTraderAccounts: totalMatchTraderAccountsCount,
+			totalBreachedAccounts,
+			totalBreachedAccountsMt5,
+			totalBreachedAccountsMatchTrader,
+			totalNonBreachedAccounts: totalAccountsCombined - totalBreachedAccounts,
+			accountsChangeFromLastMonth,
+			mt5AccountsChangeFromLastMonth,
+			matchTraderChangeFromLastMonth,
+			usersChangeFromLastMonth: usersChange,
+			signupChangeFromYesterday: signupChange,
+			todaysNewSignup,
+			lastMonthUserCount,
+			totalPayoutRequests,
+			totalApprovedRequests: approvedPayouts[0]?.totalApprovedRequests || 0,
+			totalApprovedAmount: approvedPayouts[0]?.totalApprovedAmount || 0,
+		};
 	} catch (error) {
 		throw new Error(error.message);
 	}

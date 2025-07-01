@@ -13,7 +13,6 @@ const offerUUIDConstants = {
 };
 
 module.exports = {
-	groupNames,
 	accountDisableDetails,
 	offerUUIDConstants,
 };
