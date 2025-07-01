@@ -262,102 +262,91 @@ const getMt5MetaData = async () => {
 	}
 };
 
-/* ------------  get the count mt5 accounts created on that day ----------- */
-const getAccountsOverTime = async (startDate, endDate) => {
+/* ------------  get the count mt5 and match trader accounts created on that day ----------- */
+const getCombinedAccountsOverTime = async (startDate, endDate) => {
 	try {
-		// Define the match stage with an empty object by default
-		const matchStage = {};
+		const getAggregation = (accountField, startDate, endDate) => {
+			const matchStage = {};
 
-		// If only startDate is provided, filter for accounts created from startDate onwards
-		if (startDate) {
-			matchStage["mt5Accounts.createdAt"] = { $gte: new Date(startDate) };
-		}
+			if (startDate && endDate) {
+				const adjustedEndDate = new Date(endDate);
+				adjustedEndDate.setHours(23, 59, 59, 999);
+				matchStage[`${accountField}.createdAt`] = {
+					$gte: new Date(startDate),
+					$lte: adjustedEndDate,
+				};
+			} else if (startDate) {
+				matchStage[`${accountField}.createdAt`] = { $gte: new Date(startDate) };
+			}
 
-		// If both startDate and endDate are provided, filter between them
-		if (startDate && endDate) {
-			const adjustedEndDate = new Date(endDate);
-			adjustedEndDate.setHours(23, 59, 59, 999); // Include the entire end day
-
-			matchStage["mt5Accounts.createdAt"] = {
-				$gte: new Date(startDate),
-				$lte: adjustedEndDate,
-			};
-		}
-
-		// Get all users' mt5Accounts grouped by date, with optional date filtering
-		const result = await MUser.aggregate([
-			// Unwind mt5Accounts to access each account
-			{ $unwind: "$mt5Accounts" },
-
-			// Convert createdAt to a date object in case it's a string
-			{
-				$addFields: {
-					"mt5Accounts.createdAt": {
-						$toDate: "$mt5Accounts.createdAt",
-					},
-				},
-			},
-
-			// Add the match stage for filtering by date if startDate or endDate is provided
-			{ $match: matchStage },
-
-			// Group by the createdAt date (day level)
-			{
-				$group: {
-					_id: {
-						$dateToString: {
-							format: "%Y-%m-%d",
-							date: "$mt5Accounts.createdAt",
+			return [
+				{ $unwind: `$${accountField}` },
+				{
+					$addFields: {
+						[`${accountField}.createdAt`]: {
+							$toDate: `$${accountField}.createdAt`,
 						},
-					}, // Group by day
-					count: { $sum: 1 }, // Count the number of accounts per day
-				},
-			},
-
-			// Project to rename _id to createdDay and remove _id
-			{
-				$project: {
-					_id: 0, // Remove the _id field
-					createdDay: "$_id", // Rename _id to createdDay
-					count: 1, // Keep the count field
-				},
-			},
-
-			// Sort by date in descending order to get the latest records
-			{ $sort: { createdDay: -1 } },
-
-			// Limit to the latest 100 records
-			{ $limit: 100 },
-
-			// Optional: Sort the data back in ascending order (if needed)
-			{ $sort: { createdDay: 1 } },
-		]);
-
-		// Calculate the total count of the documents that match the criteria
-		const totalCount = await MUser.aggregate([
-			// Unwind mt5Accounts to access each account
-			{ $unwind: "$mt5Accounts" },
-
-			// Convert createdAt to a date object in case it's a string
-			{
-				$addFields: {
-					"mt5Accounts.createdAt": {
-						$toDate: "$mt5Accounts.createdAt",
 					},
 				},
-			},
+				{ $match: matchStage },
+				{
+					$group: {
+						_id: {
+							$dateToString: {
+								format: "%Y-%m-%d",
+								date: `$${accountField}.createdAt`,
+							},
+						},
+						count: { $sum: 1 },
+					},
+				},
+				{
+					$project: {
+						_id: 0,
+						createdDay: "$_id",
+						count: 1,
+					},
+				},
+				{ $sort: { createdDay: 1 } },
+			];
+		};
 
-			// Add the match stage for filtering by date if startDate or endDate is provided
-			{ $match: matchStage },
-
-			// Count the total number of accounts
-			{ $count: "totalCount" },
+		const [mt5Data, matchTraderData] = await Promise.all([
+			MUser.aggregate(getAggregation("mt5Accounts", startDate, endDate)),
+			MUser.aggregate(getAggregation("matchTraderAccounts", startDate, endDate)),
 		]);
 
-		// Return both the result and total count
+		const dateMap = new Map();
+
+		// Merge MT5 data
+		for (const entry of mt5Data) {
+			if (!dateMap.has(entry.createdDay)) {
+				dateMap.set(entry.createdDay, { createdDay: entry.createdDay, mt5: 0, matchTrader: 0 });
+			}
+			dateMap.get(entry.createdDay).mt5 = entry.count;
+		}
+
+		// Merge MatchTrader data
+		for (const entry of matchTraderData) {
+			if (!dateMap.has(entry.createdDay)) {
+				dateMap.set(entry.createdDay, { createdDay: entry.createdDay, mt5: 0, matchTrader: 0 });
+			}
+			dateMap.get(entry.createdDay).matchTrader = entry.count;
+		}
+
+		// Convert to array and compute total count renamed as 'count'
+		const combinedData = Array.from(dateMap.values())
+			.map((entry) => ({
+				...entry,
+				count: entry.mt5 + entry.matchTrader,
+			}))
+			.sort((a, b) => new Date(a.createdDay) - new Date(b.createdDay));
+
+		const totalCount = combinedData.reduce((acc, cur) => acc + cur.count, 0);
+
 		return {
-			data: result,
-			totalCount: totalCount.length > 0 ? totalCount[0].totalCount : 0, // If no documents match, return 0
+			data: combinedData,
+			totalCount,
 		};
 	} catch (error) {
 		throw new Error(error.message);
@@ -699,39 +688,48 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 			FFIF100K: "Foxx Funded 100k Instant Funding",
 		};
 
-		// Step 1: Fetch counts for challenges
-		const counts = await Promise.all(
-			Object.entries(challenges).map(async ([key, name]) => {
-				const matchCriteria = {
-					"mt5Accounts.challengeStageData.challengeName": {
-						$regex: `^${name}(?:\\s*\\(.*\\))?$`, // Match name with possible suffixes (e.g., "Phase-1")
-						$options: "i", // Case-insensitive match
-					},
-				};
-
-				// Apply date filtering if applicable
-
-				if (startDate || endDate) {
-					matchCriteria["mt5Accounts.createdAt"] = {};
-					if (startDate) matchCriteria["mt5Accounts.createdAt"].$gte = new Date(startDate);
-					if (endDate) matchCriteria["mt5Accounts.createdAt"].$lt = new Date(endDate);
-				}
-
-				const mt5AccountCount = await MUser.aggregate([
-					{ $unwind: "$mt5Accounts" },
-					{ $match: matchCriteria },
-					{ $count: "count" },
-				]);
-
-				const count = mt5AccountCount.length > 0 ? mt5AccountCount[0].count : 0;
-				return [name, { count }];
-			})
-		);
-
-		// Step 2: Fetch total sales for challenges
 		const challengeNames = Object.values(challenges);
 
-		// Build the match stage for total sales aggregation
+		// Helper to get counts for either mt5Accounts or matchTraderAccounts
+		const getAccountCounts = async (accountField) => {
+			return Promise.all(
+				Object.entries(challenges).map(async ([key, name]) => {
+					const matchCriteria = {
+						[`${accountField}.challengeStageData.challengeName`]: {
+							$regex: `^${name}(?:\\s*\\(.*\\))?$`,
+							$options: "i",
+						},
+					};
+
+					if (startDate || endDate) {
+						matchCriteria[`${accountField}.createdAt`] = {};
+						if (startDate) matchCriteria[`${accountField}.createdAt`].$gte = new Date(startDate);
+						if (endDate) matchCriteria[`${accountField}.createdAt`].$lt = new Date(endDate);
+					}
+
+					const accountCount = await MUser.aggregate([
+						{ $unwind: `$${accountField}` },
+						{ $match: matchCriteria },
+						{ $count: "count" },
+					]);
+
+					const count = accountCount.length > 0 ? accountCount[0].count : 0;
+					return [name, count];
+				})
+			);
+		};
+
+		// Get counts for mt5Accounts and matchTraderAccounts in parallel
+		const [mt5CountsArr, matchTraderCountsArr] = await Promise.all([
+			getAccountCounts("mt5Accounts"),
+			getAccountCounts("matchTraderAccounts"),
+		]);
+
+		// Convert counts arrays to maps for easy lookup
+		const mt5CountsMap = new Map(mt5CountsArr);
+		const matchTraderCountsMap = new Map(matchTraderCountsArr);
+
+		// Step 2: Fetch total sales for these challenges from orders
 		const matchStage = {
 			orderStatus: "Delivered",
 			paymentStatus: "Paid",
@@ -740,8 +738,8 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 				{
 					$or: challengeNames.map((name) => ({
 						"orderItems.challengeName": {
-							$regex: `^${name}(?:\\s*\\(.*\\))?$`, // Match names with potential suffixes
-							$options: "i", // Case-insensitive
+							$regex: `^${name}(?:\\s*\\(.*\\))?$`,
+							$options: "i",
 						},
 					})),
 				},
@@ -751,7 +749,6 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 		if (startDate) {
 			matchStage.createdAt = { $gte: new Date(startDate) };
 		}
-
 		if (endDate) {
 			matchStage.createdAt = matchStage.createdAt
 				? { ...matchStage.createdAt, $lte: new Date(endDate) }
@@ -776,21 +773,14 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 
 		const salesResults = await MOrder.aggregate(pipeline);
 
-		// Combine counts and sales into one object
+		// Combine counts and sales into one result object
 		const combinedResults = challengeNames.reduce((acc, name) => {
 			acc[name] = {
-				count: 0,
+				count: (mt5CountsMap.get(name) || 0) + (matchTraderCountsMap.get(name) || 0), // sum of both counts
 				totalSales: 0,
 			};
 			return acc;
 		}, {});
-
-		// Populate counts
-		counts.forEach(([name, { count }]) => {
-			if (combinedResults[name]) {
-				combinedResults[name].count = count;
-			}
-		});
 
 		// Populate total sales
 		salesResults.forEach(({ _id, totalSales }) => {
@@ -808,7 +798,7 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 
 module.exports = {
 	getMt5MetaData,
-	getAccountsOverTime,
+	getCombinedAccountsOverTime,
 	getOrdersOverTime,
 	getMetaSales,
 	getSpecificChallengeSalesMeta,

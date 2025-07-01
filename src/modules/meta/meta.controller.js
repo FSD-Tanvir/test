@@ -1,10 +1,9 @@
 const {
 	getMt5MetaData,
-	getUsersOverTime,
 	getOrdersOverTime,
-	getAccountsOverTime,
 	getMetaSales,
 	getSpecificChallengeSalesMeta,
+	getCombinedAccountsOverTime,
 } = require("./meta.services");
 
 const getMt5MetaDataHandler = async (req, res) => {
@@ -23,7 +22,7 @@ const getAccountsOverTimeHandler = async (req, res) => {
 		const { startDate, endDate } = req.query; // or use req.body for POST requests if necessary
 
 		// Call the service function with the optional date range
-		const result = await getAccountsOverTime(startDate, endDate);
+		const result = await getCombinedAccountsOverTime(startDate, endDate);
 
 		// Send the result back as a JSON response
 		return res.status(200).json({

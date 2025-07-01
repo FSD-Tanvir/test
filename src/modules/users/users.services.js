@@ -346,7 +346,7 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = 
 
 		const regex = new RegExp(searchQuery, "i");
 
-		// Initial search match before lookup
+		// Initial match
 		const preMatch = searchQuery
 			? {
 					$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
@@ -356,6 +356,7 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = 
 		const pipeline = [
 			{ $match: preMatch },
 
+			// Lookup veriff sessions by email
 			{
 				$lookup: {
 					from: "veriffs",
@@ -365,17 +366,25 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = 
 				},
 			},
 
-			{ $unwind: { path: "$veriffSessions", preserveNullAndEmptyArrays: true } },
-
+			// Lookup veriff decision statuses for all sessions
 			{
 				$lookup: {
 					from: "veriffdecisionstatuses",
-					localField: "veriffSessions.person.sessionId",
-					foreignField: "verification.id",
+					let: { sessionIds: "$veriffSessions.person.sessionId" },
+					pipeline: [
+						{
+							$match: {
+								$expr: {
+									$in: ["$verification.id", "$$sessionIds"],
+								},
+							},
+						},
+					],
 					as: "decisionData",
 				},
 			},
 
+			// Determine if the user is verified
 			{
 				$addFields: {
 					isVerified: {
@@ -400,38 +409,28 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = 
 				},
 			},
 
-			// Deduplicate users by _id
+			// Apply second level search if needed
+			...(searchQuery
+				? [
+						{
+							$match: {
+								$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
+							},
+						},
+				  ]
+				: []),
+
+			// Apply isVerified filter if provided
+			...(isVerifiedFilter !== null ? [{ $match: { isVerified: isVerifiedFilter } }] : []),
+
+			// Pagination
 			{
-				$group: {
-					_id: "$_id",
-					doc: { $first: "$$ROOT" },
+				$facet: {
+					users: [{ $sort: { _id: -1 } }, { $skip: skip }, { $limit: Number(limit) }],
+					totalCount: [{ $count: "count" }],
 				},
 			},
-
-			{ $replaceRoot: { newRoot: "$doc" } },
 		];
-
-		// After grouping, apply search filter AGAIN on the doc fields
-		if (searchQuery) {
-			pipeline.push({
-				$match: {
-					$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
-				},
-			});
-		}
-
-		// Apply isVerified filter after deduplication
-		if (isVerifiedFilter !== null) {
-			pipeline.push({ $match: { isVerified: isVerifiedFilter } });
-		}
-
-		// Facet for pagination and total count
-		pipeline.push({
-			$facet: {
-				users: [{ $sort: { _id: -1 } }, { $skip: skip }, { $limit: Number(limit) }],
-				totalCount: [{ $count: "count" }],
-			},
-		});
 
 		const result = await MUser.aggregate(pipeline);
 
