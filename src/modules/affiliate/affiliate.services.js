@@ -108,8 +108,8 @@ const getAffiliateData = async (email) => {
 };
 
 const getAllAffiliates = async () => {
-	const affiliates = await MAffiliate.find();
-	return affiliates;
+	const pendingAffiliates = await MAffiliate.find({ status: 'pending' });
+	return pendingAffiliates;
 };
 
 // Function to find an affiliate by referral code
