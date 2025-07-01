@@ -120,13 +120,13 @@ const getOnlyUserHandler = async (req, res) => {
 // Controller to get all users
 const getAllUsers = async (req, res) => {
 	try {
-		const { page = 1, limit = 10, searchQuery = "" } = req.query;
+		const { page = 1, limit = 10, searchQuery = "", isVerified = null } = req.query;
 
-		// Pass the searchQuery to the service function along with pagination parameters
 		const result = await userService.getAllUsers(
 			Number.parseInt(page),
 			Number.parseInt(limit),
-			searchQuery
+			searchQuery,
+			isVerified
 		);
 
 		res.status(200).json(result);

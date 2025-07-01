@@ -339,31 +339,114 @@ const generateAllAccountsCSV = async (filters = {}) => {
 };
 
 // get all user
-const getAllUsers = async (page = 1, limit = 10, searchQuery = "") => {
+const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = null) => {
 	try {
 		const skip = (page - 1) * limit;
+		const isVerifiedFilter = isVerified === "true" ? true : isVerified === "false" ? false : null;
 
-		// Create a search condition for email
-		const searchCondition = searchQuery
-			? { email: { $regex: searchQuery, $options: "i" } } // 'i' for case-insensitive search
+		const regex = new RegExp(searchQuery, "i");
+
+		// Initial search match before lookup
+		const preMatch = searchQuery
+			? {
+					$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
+			  }
 			: {};
 
-		const users = await MUser.find(searchCondition)
-			.sort({ _id: -1 }) // Sort by _id in descending order
-			.skip(skip)
-			.limit(Number.parseInt(limit));
+		const pipeline = [
+			{ $match: preMatch },
 
-		const totalUsers = await MUser.countDocuments(searchCondition);
+			{
+				$lookup: {
+					from: "veriffs",
+					localField: "email",
+					foreignField: "person.email",
+					as: "veriffSessions",
+				},
+			},
+
+			{ $unwind: { path: "$veriffSessions", preserveNullAndEmptyArrays: true } },
+
+			{
+				$lookup: {
+					from: "veriffdecisionstatuses",
+					localField: "veriffSessions.person.sessionId",
+					foreignField: "verification.id",
+					as: "decisionData",
+				},
+			},
+
+			{
+				$addFields: {
+					isVerified: {
+						$gt: [
+							{
+								$size: {
+									$filter: {
+										input: "$decisionData",
+										as: "decision",
+										cond: {
+											$and: [
+												{ $eq: ["$$decision.status", "success"] },
+												{ $eq: ["$$decision.verification.status", "approved"] },
+											],
+										},
+									},
+								},
+							},
+							0,
+						],
+					},
+				},
+			},
+
+			// Deduplicate users by _id
+			{
+				$group: {
+					_id: "$_id",
+					doc: { $first: "$$ROOT" },
+				},
+			},
+
+			{ $replaceRoot: { newRoot: "$doc" } },
+		];
+
+		// After grouping, apply search filter AGAIN on the doc fields
+		if (searchQuery) {
+			pipeline.push({
+				$match: {
+					$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
+				},
+			});
+		}
+
+		// Apply isVerified filter after deduplication
+		if (isVerifiedFilter !== null) {
+			pipeline.push({ $match: { isVerified: isVerifiedFilter } });
+		}
+
+		// Facet for pagination and total count
+		pipeline.push({
+			$facet: {
+				users: [{ $sort: { _id: -1 } }, { $skip: skip }, { $limit: Number(limit) }],
+				totalCount: [{ $count: "count" }],
+			},
+		});
+
+		const result = await MUser.aggregate(pipeline);
+
+		const users = result[0]?.users || [];
+		const totalUsers = result[0]?.totalCount[0]?.count || 0;
 		const totalPages = Math.ceil(totalUsers / limit);
 
 		return {
 			users,
 			totalPages,
-			currentPage: page,
+			currentPage: Number(page),
 			totalUsers,
 		};
 	} catch (error) {
-		// biome-ignore lint/style/useTemplate: <explanation>
+		console.error("Error in getAllUsers:", error.message);
 		throw new Error("Error fetching users: " + error.message);
 	}
 };
