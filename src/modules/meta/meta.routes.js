@@ -5,7 +5,6 @@ const {
 	getOrdersOverTimeHandler,
 	getMetaSalesHandler,
 	getSpecificChallengeSalesMetaHandler,
-	getSpecificTotalChallengeSalesMetaHandler,
 } = require("./meta.controller");
 
 const router = express.Router();
