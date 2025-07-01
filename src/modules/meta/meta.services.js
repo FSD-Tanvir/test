@@ -688,39 +688,48 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 			FFIF100K: "Foxx Funded 100k Instant Funding",
 		};
 
-		// Step 1: Fetch counts for challenges
-		const counts = await Promise.all(
-			Object.entries(challenges).map(async ([key, name]) => {
-				const matchCriteria = {
-					"mt5Accounts.challengeStageData.challengeName": {
-						$regex: `^${name}(?:\\s*\\(.*\\))?$`, // Match name with possible suffixes (e.g., "Phase-1")
-						$options: "i", // Case-insensitive match
-					},
-				};
-
-				// Apply date filtering if applicable
-
-				if (startDate || endDate) {
-					matchCriteria["mt5Accounts.createdAt"] = {};
-					if (startDate) matchCriteria["mt5Accounts.createdAt"].$gte = new Date(startDate);
-					if (endDate) matchCriteria["mt5Accounts.createdAt"].$lt = new Date(endDate);
-				}
-
-				const mt5AccountCount = await MUser.aggregate([
-					{ $unwind: "$mt5Accounts" },
-					{ $match: matchCriteria },
-					{ $count: "count" },
-				]);
-
-				const count = mt5AccountCount.length > 0 ? mt5AccountCount[0].count : 0;
-				return [name, { count }];
-			})
-		);
-
-		// Step 2: Fetch total sales for challenges
 		const challengeNames = Object.values(challenges);
 
-		// Build the match stage for total sales aggregation
+		// Helper to get counts for either mt5Accounts or matchTraderAccounts
+		const getAccountCounts = async (accountField) => {
+			return Promise.all(
+				Object.entries(challenges).map(async ([key, name]) => {
+					const matchCriteria = {
+						[`${accountField}.challengeStageData.challengeName`]: {
+							$regex: `^${name}(?:\\s*\\(.*\\))?$`,
+							$options: "i",
+						},
+					};
+
+					if (startDate || endDate) {
+						matchCriteria[`${accountField}.createdAt`] = {};
+						if (startDate) matchCriteria[`${accountField}.createdAt`].$gte = new Date(startDate);
+						if (endDate) matchCriteria[`${accountField}.createdAt`].$lt = new Date(endDate);
+					}
+
+					const accountCount = await MUser.aggregate([
+						{ $unwind: `$${accountField}` },
+						{ $match: matchCriteria },
+						{ $count: "count" },
+					]);
+
+					const count = accountCount.length > 0 ? accountCount[0].count : 0;
+					return [name, count];
+				})
+			);
+		};
+
+		// Get counts for mt5Accounts and matchTraderAccounts in parallel
+		const [mt5CountsArr, matchTraderCountsArr] = await Promise.all([
+			getAccountCounts("mt5Accounts"),
+			getAccountCounts("matchTraderAccounts"),
+		]);
+
+		// Convert counts arrays to maps for easy lookup
+		const mt5CountsMap = new Map(mt5CountsArr);
+		const matchTraderCountsMap = new Map(matchTraderCountsArr);
+
+		// Step 2: Fetch total sales for these challenges from orders
 		const matchStage = {
 			orderStatus: "Delivered",
 			paymentStatus: "Paid",
@@ -729,8 +738,8 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 				{
 					$or: challengeNames.map((name) => ({
 						"orderItems.challengeName": {
-							$regex: `^${name}(?:\\s*\\(.*\\))?$`, // Match names with potential suffixes
-							$options: "i", // Case-insensitive
+							$regex: `^${name}(?:\\s*\\(.*\\))?$`,
+							$options: "i",
 						},
 					})),
 				},
@@ -740,7 +749,6 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 		if (startDate) {
 			matchStage.createdAt = { $gte: new Date(startDate) };
 		}
-
 		if (endDate) {
 			matchStage.createdAt = matchStage.createdAt
 				? { ...matchStage.createdAt, $lte: new Date(endDate) }
@@ -765,21 +773,14 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 
 		const salesResults = await MOrder.aggregate(pipeline);
 
-		// Combine counts and sales into one object
+		// Combine counts and sales into one result object
 		const combinedResults = challengeNames.reduce((acc, name) => {
 			acc[name] = {
-				count: 0,
+				count: (mt5CountsMap.get(name) || 0) + (matchTraderCountsMap.get(name) || 0), // sum of both counts
 				totalSales: 0,
 			};
 			return acc;
 		}, {});
-
-		// Populate counts
-		counts.forEach(([name, { count }]) => {
-			if (combinedResults[name]) {
-				combinedResults[name].count = count;
-			}
-		});
 
 		// Populate total sales
 		salesResults.forEach(({ _id, totalSales }) => {
