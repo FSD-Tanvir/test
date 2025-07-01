@@ -640,52 +640,116 @@ const getOrderById = async (orderId) => {
 };
 
 // Service function to get orders by referralCode with additional filters
+// const getOrdersByReferralCode = async (referralCode) => {
+// 	try {
+// 		const orders = await MOrder.find({
+// 			referralCode,
+// 			orderStatus: "Delivered",
+// 			paymentStatus: "Paid",
+// 		});
+
+// 		// Total number of orders (totalSales)
+// 		const totalSales = orders.length;
+
+// 		// Total Sales Price (sum of challengePrice from each order)
+// 		const totalSalesPrice = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+// 		// Determine commission rate based on totalSales
+// 		let commissionRate = 0.15; // Default 15% for 1-15 sales
+// 		if (totalSales >= 16 && totalSales <= 50) {
+// 			commissionRate = 0.2; // 20% for 16-50 sales
+// 		} else if (totalSales > 50) {
+// 			commissionRate = 0.3; // 30% for 51+ sales
+// 		}
+
+// 		// Commissions Earned (based on affiliate tier, rounded to two decimal places)
+// 		const commissionsEarned = parseFloat(totalSalesPrice * commissionRate);
+
+// 		await MAffiliate.findOneAndUpdate(
+// 			{ referralCode },
+// 			{
+// 				totalNumberOfSales: totalSales,
+// 				totalSalesAmount: totalSalesPrice,
+// 				commissionsAmount: commissionsEarned,
+// 			},
+// 			{ new: true }
+// 		);
+
+// 		// Return the result with totals
+// 		return {
+// 			success: true,
+// 			totalSales,
+// 			totalSalesPrice,
+// 			commissionsEarned,
+// 			orders,
+// 		};
+// 	} catch (error) {
+// 		throw new Error(error.message);
+// 	}
+// };
+
 const getOrdersByReferralCode = async (referralCode) => {
 	try {
+		// Fetch and sort orders by creation date (oldest first)
 		const orders = await MOrder.find({
 			referralCode,
 			orderStatus: "Delivered",
 			paymentStatus: "Paid",
-		});
+		}).sort({ createdAt: 1 });
 
-		// Total number of orders (totalSales)
 		const totalSales = orders.length;
 
-		// Total Sales Price (sum of challengePrice from each order)
-		const totalSalesPrice = orders.reduce((sum, order) => sum + order.totalPrice, 0);
-		// Determine commission rate based on totalSales
-		let commissionRate = 0.15; // Default 15% for 1-15 sales
-		if (totalSales >= 16 && totalSales <= 50) {
-			commissionRate = 0.2; // 20% for 16-50 sales
-		} else if (totalSales > 50) {
-			commissionRate = 0.3; // 30% for 51+ sales
-		}
+		let totalSalesPrice = 0;
+		let totalCommissions = 0;
 
-		// Commissions Earned (based on affiliate tier, rounded to two decimal places)
-		const commissionsEarned = parseFloat(totalSalesPrice * commissionRate);
+		// Add commissionAmount to each order
+		const enrichedOrders = orders.map((order, index) => {
+			const position = index + 1;
+			const totalPrice = order.totalPrice;
 
+			let commissionRate = 0.15;
+			if (position >= 16 && position <= 30) {
+				commissionRate = 0.2;
+			} else if (position > 30) {
+				commissionRate = 0.3;
+			}
+
+			const commissionAmount = parseFloat((totalPrice * commissionRate).toFixed(2));
+			totalSalesPrice += totalPrice;
+			totalCommissions += commissionAmount;
+
+			// Convert Mongoose document to plain JS object & add commissionAmount
+			const orderObj = order.toObject();
+			orderObj.commissionAmount = commissionAmount;
+
+			return orderObj;
+		});
+
+		// Update affiliate collection
 		await MAffiliate.findOneAndUpdate(
 			{ referralCode },
 			{
 				totalNumberOfSales: totalSales,
 				totalSalesAmount: totalSalesPrice,
-				commissionsAmount: commissionsEarned,
+				commissionsAmount: totalCommissions,
 			},
 			{ new: true }
 		);
 
-		// Return the result with totals
 		return {
 			success: true,
-			totalSales,
-			totalSalesPrice,
-			commissionsEarned,
-			orders,
+			orders: {
+				success: true,
+				totalSales,
+				totalSalesPrice: parseFloat(totalSalesPrice.toFixed(2)),
+				commissionsEarned: parseFloat(totalCommissions.toFixed(2)),
+				orders: enrichedOrders,
+			},
 		};
 	} catch (error) {
 		throw new Error(error.message);
 	}
 };
+
 
 const getOrdersByReferralAndStatus = async () => {
 	try {
