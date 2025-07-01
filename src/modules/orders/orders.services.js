@@ -640,53 +640,6 @@ const getOrderById = async (orderId) => {
 };
 
 // Service function to get orders by referralCode with additional filters
-// const getOrdersByReferralCode = async (referralCode) => {
-// 	try {
-// 		const orders = await MOrder.find({
-// 			referralCode,
-// 			orderStatus: "Delivered",
-// 			paymentStatus: "Paid",
-// 		});
-
-// 		// Total number of orders (totalSales)
-// 		const totalSales = orders.length;
-
-// 		// Total Sales Price (sum of challengePrice from each order)
-// 		const totalSalesPrice = orders.reduce((sum, order) => sum + order.totalPrice, 0);
-// 		// Determine commission rate based on totalSales
-// 		let commissionRate = 0.15; // Default 15% for 1-15 sales
-// 		if (totalSales >= 16 && totalSales <= 50) {
-// 			commissionRate = 0.2; // 20% for 16-50 sales
-// 		} else if (totalSales > 50) {
-// 			commissionRate = 0.3; // 30% for 51+ sales
-// 		}
-
-// 		// Commissions Earned (based on affiliate tier, rounded to two decimal places)
-// 		const commissionsEarned = parseFloat(totalSalesPrice * commissionRate);
-
-// 		await MAffiliate.findOneAndUpdate(
-// 			{ referralCode },
-// 			{
-// 				totalNumberOfSales: totalSales,
-// 				totalSalesAmount: totalSalesPrice,
-// 				commissionsAmount: commissionsEarned,
-// 			},
-// 			{ new: true }
-// 		);
-
-// 		// Return the result with totals
-// 		return {
-// 			success: true,
-// 			totalSales,
-// 			totalSalesPrice,
-// 			commissionsEarned,
-// 			orders,
-// 		};
-// 	} catch (error) {
-// 		throw new Error(error.message);
-// 	}
-// };
-
 const getOrdersByReferralCode = async (referralCode) => {
 	try {
 		// Fetch and sort orders by creation date (oldest first)
