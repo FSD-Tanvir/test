@@ -42,6 +42,14 @@ const getAllAffiliatesHandler = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+const getAllAffiliatesApprovedHandler = async (req, res) => {
+  try {
+    const affiliate = await affiliateService.getAllApprovedAffiliates();
+    res.status(201).json(affiliate);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 const updateAffiliateHandler = async (req, res) => {
   try {
@@ -78,4 +86,5 @@ module.exports = {
   getAllAffiliatesHandler,
   updateAffiliateHandler,
   getAffiliate,
+  getAllAffiliatesApprovedHandler
 };

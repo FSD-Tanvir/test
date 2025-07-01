@@ -5,7 +5,8 @@ const {
 	getAffiliateDataHandler,
 	getAllAffiliatesHandler,
 	updateAffiliateHandler,
-	getAffiliate
+	getAffiliate,
+	getAllAffiliatesApprovedHandler
 } = require("./affiliate.controller.js");
 
 // Route to handle POST requests for creating an affiliate
@@ -13,6 +14,8 @@ router.post("/create", createAffiliate);
 
 // Route to handle GET requests for all affiliates
 router.get("/", getAllAffiliatesHandler);
+
+router.get("/approved", getAllAffiliatesApprovedHandler);
 
 // Route to handle GET requests for affiliate info
 router.get("/affiliate-info/:email", getAffiliateDataHandler);

@@ -111,6 +111,10 @@ const getAllAffiliates = async () => {
 	const pendingAffiliates = await MAffiliate.find({ status: 'pending' });
 	return pendingAffiliates;
 };
+const getAllApprovedAffiliates = async () => {
+	const approvedAffiliates = await MAffiliate.find({ status: 'approved' });
+	return approvedAffiliates;
+};
 
 // Function to find an affiliate by referral code
 const getAffiliateByReferralCode = async (referralCode) => {
@@ -214,4 +218,5 @@ module.exports = {
 	getAllAffiliates,
 	updateAffiliate,
 	getAffiliateByReferralCode,
+	getAllApprovedAffiliates
 };
