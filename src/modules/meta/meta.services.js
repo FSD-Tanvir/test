@@ -664,7 +664,7 @@ const getMetaSales = async (startDate, endDate) => {
 	}
 };
 
-const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
+const getSpecificChallengeSalesMeta = async (startDate, endDate, accountType = "all") => {
 	try {
 		const challenges = {
 			FF5KOneStep: "Foxx Funded 5k oneStep",
@@ -690,7 +690,6 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 
 		const challengeNames = Object.values(challenges);
 
-		// Helper to get counts for either mt5Accounts or matchTraderAccounts
 		const getAccountCounts = async (accountField) => {
 			return Promise.all(
 				Object.entries(challenges).map(async ([key, name]) => {
@@ -719,17 +718,19 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 			);
 		};
 
-		// Get counts for mt5Accounts and matchTraderAccounts in parallel
-		const [mt5CountsArr, matchTraderCountsArr] = await Promise.all([
-			getAccountCounts("mt5Accounts"),
-			getAccountCounts("matchTraderAccounts"),
-		]);
+		let mt5CountsArr = [],
+			matchTraderCountsArr = [];
 
-		// Convert counts arrays to maps for easy lookup
+		if (accountType === "all" || accountType === "mt5") {
+			mt5CountsArr = await getAccountCounts("mt5Accounts");
+		}
+		if (accountType === "all" || accountType === "matchTrader") {
+			matchTraderCountsArr = await getAccountCounts("matchTraderAccounts");
+		}
+
 		const mt5CountsMap = new Map(mt5CountsArr);
 		const matchTraderCountsMap = new Map(matchTraderCountsArr);
 
-		// Step 2: Fetch total sales for these challenges from orders
 		const matchStage = {
 			orderStatus: "Delivered",
 			paymentStatus: "Paid",
@@ -746,9 +747,7 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 			],
 		};
 
-		if (startDate) {
-			matchStage.createdAt = { $gte: new Date(startDate) };
-		}
+		if (startDate) matchStage.createdAt = { $gte: new Date(startDate) };
 		if (endDate) {
 			matchStage.createdAt = matchStage.createdAt
 				? { ...matchStage.createdAt, $lte: new Date(endDate) }
@@ -773,16 +772,14 @@ const getSpecificChallengeSalesMeta = async (startDate, endDate) => {
 
 		const salesResults = await MOrder.aggregate(pipeline);
 
-		// Combine counts and sales into one result object
 		const combinedResults = challengeNames.reduce((acc, name) => {
 			acc[name] = {
-				count: (mt5CountsMap.get(name) || 0) + (matchTraderCountsMap.get(name) || 0), // sum of both counts
+				count: (mt5CountsMap.get(name) || 0) + (matchTraderCountsMap.get(name) || 0),
 				totalSales: 0,
 			};
 			return acc;
 		}, {});
 
-		// Populate total sales
 		salesResults.forEach(({ _id, totalSales }) => {
 			if (combinedResults[_id]) {
 				combinedResults[_id].totalSales = totalSales;

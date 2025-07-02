@@ -81,10 +81,10 @@ const getMetaSalesHandler = async (req, res) => {
 const getSpecificChallengeSalesMetaHandler = async (req, res) => {
 	try {
 		// Extract optional startDate and endDate from query parameters
-		const { startDate, endDate } = req.query;
+		const { startDate, endDate, accountType } = req.query;
 
 		// Pass startDate and endDate to getSpecificChallengeSalesMeta
-		const data = await getSpecificChallengeSalesMeta(startDate, endDate);
+		const data = await getSpecificChallengeSalesMeta(startDate, endDate, accountType);
 
 		return res.status(200).json({
 			success: true,
