@@ -1,37 +1,29 @@
-const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants");
-const { getAllActiveMatchTraderAccounts } = require("../../helper/getAllActiveAccounts");
-const {
-	getSingleTradingAccount,
-} = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi");
 const { allUserDetails, accountDetails } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
-const DisableAccount = require("../disableAccounts/disableAccounts.schema");
-const StoreDataModel = require("./breach.schema");
+const { DisableAccount } = require("../disableAccounts/disableAccounts.schema");
+const { StoreData } = require("./breach.schema");
 
 // Function to store daily data fetched from an external API
 
-const storeDataDaily = async (retryCount = 0) => {
+const storeDataDaily = async () => {
 	try {
-		const mt5Users = await allUserDetails();
-		const matchTraderUsers = await getAllActiveMatchTraderAccounts();
-
-		console.log(`👥 MT5 Users: ${mt5Users.length}, Match Trader Users: ${matchTraderUsers.length}`);
+		const userDetails = await allUserDetails();
+		console.log("👥 Fetched user details:", userDetails);
 
 		const storeData = [];
-
-		// ✅ MT5 Accounts
-		for (const userDetail of mt5Users) {
+		for (const userDetail of userDetails) {
 			const userRights = userDetail.rights;
 			const account = userDetail.login;
 
 			if (typeof userRights === "string" && !userRights.includes("USER_RIGHT_TRADE_DISABLED")) {
 				const accountDetail = await accountDetails(account);
-
 				if (accountDetail) {
-					const asset = Math.max(accountDetail.balance, accountDetail.equity);
+					const asset =
+						accountDetail.balance >= accountDetail.equity
+							? accountDetail.balance
+							: accountDetail.equity;
 
 					storeData.push({
-						account: accountDetail.login,
-						platform: mt5Constant,
+						mt5Account: accountDetail.login,
 						asset: asset,
 						dailyStartingBalance: accountDetail.balance,
 						dailyStartingEquity: accountDetail.equity,
@@ -40,43 +32,16 @@ const storeDataDaily = async (retryCount = 0) => {
 			}
 		}
 
-		// ✅ Match Trader Accounts
-		for (const userDetail of matchTraderUsers) {
-			const account = userDetail.account;
-			const accountDetail = await getSingleTradingAccount(account);
-
-			if (accountDetail) {
-				const balance = accountDetail.financeInfo?.balance;
-				const equity = accountDetail.financeInfo?.equity;
-
-				const asset = Math.max(balance, equity);
-
-				storeData.push({
-					account: account,
-					platform: matchTraderConstant,
-					asset: asset,
-					dailyStartingBalance: balance,
-					dailyStartingEquity: equity,
-				});
-			}
-		}
-
-		// ✅ Store the combined data
-		await StoreDataModel.create({
+		await StoreData.create({
 			dailyData: storeData,
 			createdAt: new Date(),
 		});
 
 		console.log("✅ Daily data stored successfully.");
+		return true;
 	} catch (error) {
-		console.error(`❌ Error storing data (attempt ${retryCount + 1}/3):`, error);
-
-		if (retryCount < 3) {
-			console.log(`🔁 Retrying in 30 minutes (attempt ${retryCount + 2}/3)...`);
-			setTimeout(() => storeDataDaily(retryCount + 1), 30 * 60 * 1000); // Retry after 30 min
-		} else {
-			console.error("⛔ Maximum retry attempts reached. Giving up.");
-		}
+		console.error("❌ Error during data store:", error.message);
+		return false;
 	}
 };
 

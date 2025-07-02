@@ -15,7 +15,6 @@ const cron = require("node-cron");
 const {
 	sendAutomatedTwoPercentEmail,
 } = require("../modules/twoPercentRisk/twoPercentRisk.services");
-// const { fetchAndSaveData } = require("../modules/newsTradingRisk/newsTradingRisk.controller");
 
 const runAllFunctions = () => {
 	/* ---------------------------------------------------------------------------------------------- */

@@ -1,7 +1,4 @@
 const {
-	consistencyBreakDisabledEmailTemplate,
-} = require("../../helper/emailTemplates/consistencyBreakEmailTemplates");
-const {
 	lotSizeDisabledEmailTemplate,
 	sendLotSizeWarningEmailTemplate,
 } = require("../../helper/emailTemplates/lotSizeEmailTemplates");
