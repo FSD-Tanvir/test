@@ -6,7 +6,7 @@ const {
   DisableAccount,
   DisableAccountMatchTrader,
 } = require("../disableAccounts/disableAccounts.schema");
-const { StoreData } = require("./breach.schema");
+const { StoreData, StoreDataMatchTrader } = require("./breach.schema");
 
 // Function to store daily data fetched from an external API
 
@@ -55,28 +55,33 @@ const storeDataDaily = async () => {
 };
 
 // Service to get the latest data for a specific mt5Account
+
 const getUserStoredData = async (account) => {
   try {
-    // Fetch the latest stored document
-    const latestStoreData = await StoreData.findOne().sort({
-      createdAt: -1,
-    });
+    const [latestStoreDataMT5, latestStoreDataMatchTrader] = await Promise.all([
+      StoreData.findOne().sort({ createdAt: -1 }),
+      StoreDataMatchTrader.findOne().sort({ createdAt: -1 }),
+    ]);
 
-    if (!latestStoreData) {
-      throw new Error("No data found");
-    }
-
-    // Filter dailyData to get the relevant account data
-    const userData = latestStoreData.dailyData.find(
+    const mt5Data = latestStoreDataMT5?.dailyData?.find(
       (data) => data.mt5Account == account
     );
 
-    if (!userData) {
-      throw new Error(`No data found for account: ${account}`);
+    if (mt5Data) {
+      return mt5Data;
     }
 
-    return userData;
+    const matchTraderData = latestStoreDataMatchTrader?.dailyData?.find(
+      (data) => data.matchTraderAccount == account
+    );
+
+    if (matchTraderData) {
+      return matchTraderData;
+    }
+
+    throw new Error(`No data found for account: ${account}`);
   } catch (error) {
+    console.error("Error in getUserStoredData:", error.message);
     throw error;
   }
 };

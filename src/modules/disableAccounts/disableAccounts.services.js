@@ -27,8 +27,7 @@ const saveRealTimeLog = async (
       );
     }
 
-    // Check if an entry with the same MT4Account already exists
-    // biome-ignore lint/style/useConst: <explanation>
+    // Check if an entry with the same accountNumber already exists
     let existingLog = await DisableAccount.findOne({
       mt5Account: accountNumber,
     });
@@ -43,12 +42,12 @@ const saveRealTimeLog = async (
     // Create a new log entry if not already existing
     const newLog = new DisableAccount({
       mt5Account: accountNumber,
-      lossPercentage: lossPercentage, // Ensure correct value here
+      lossPercentage: lossPercentage,
       asset: asset,
       balance: balance,
-      initialBalance: initialBalance, // Ensure correct value here
-      equity: equity, // Ensure correct value here
-      message: message, // Ensure correct value here
+      initialBalance: initialBalance,
+      equity: equity,
+      message: message,
     });
 
     // Save the new log entry to the database
@@ -97,25 +96,15 @@ const saveRealTimeLog = async (
 
 const getDisabledAccount = async (account) => {
   try {
-    const disabledAccount = await DisableAccount.findOne({
-      mt5Account: account,
-    });
+    const [mt5Account, matchTraderAccount] = await Promise.all([
+      DisableAccount.findOne({ mt5Account: account }),
+      DisableAccountMatchTrader.findOne({ matchTraderAccount: account }),
+    ]);
 
-    if (disabledAccount) {
-      return disabledAccount;
-    }
-
-    const disabledAccountMatchTrader = await DisableAccountMatchTrader.findOne({
-      matchTraderAccount: account,
-    });
-
-    if (disabledAccountMatchTrader) {
-      return disabledAccountMatchTrader;
-    }
-
-    return null;
+    return mt5Account || matchTraderAccount || null;
   } catch (error) {
-    console.log(error);
+    console.error("Error in getDisabledAccount:", error.message);
+    throw error;
   }
 };
 
