@@ -4,10 +4,7 @@ const { sendMailForOTP, sendEmailSingleRecipient } = require("../../helper/maili
 const { generateToken } = require("../../helper/utils/tokenUtils.js");
 
 const MUser = require("./users.schema.js"); // Assuming the MUser model is in this path
-// const { MOrder } = require("../orders/orders.schema.js");
-const StoreDataModel = require("../breach/breach.schema.js");
 const {
-	connectManager,
 	accountCreateAndDeposit,
 	userDetails,
 	accountDetails,
@@ -18,13 +15,13 @@ const {
 const { getUniqueTradingDays } = require("../../helper/utils/dateUtils.js");
 const { console } = require("node:inspector");
 const { handleNextChallengeStage } = require("../challengePass/challengePass.services.js");
-const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants.js");
 const {
 	createTradingAccountAndDeposit,
 	updateTradingAccount,
 	getSingleTradingAccount,
 	getClosedPositions,
 } = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi.js");
+const { StoreData, StoreDataMatchTrader } = require("../breach/breach.schema.js");
 
 // Function to handle MT5 account creation
 const handleMt5AccountCreate = async (userDetails) => {
@@ -33,14 +30,13 @@ const handleMt5AccountCreate = async (userDetails) => {
 		const createMt5Account = await accountCreateAndDeposit(userDetails);
 		const amount = userDetails.amount;
 
-		const result = await StoreDataModel.findOneAndUpdate(
+		const result = await StoreData.findOneAndUpdate(
 			{}, // Empty filter to match all documents
 			{
 				// Push a new entry into the `dailyData` array
 				$push: {
 					dailyData: {
-						account: createMt5Account?.login,
-						platform: mt5Constant,
+						mt5Account: createMt5Account?.login,
 						asset: amount,
 						dailyStartingBalance: amount,
 						dailyStartingEquity: amount,
@@ -75,13 +71,12 @@ const handleMatchTraderAccountCreate = async (userDetails) => {
 		}
 
 		// Find the last created document and update it by pushing a new entry into the dailyData array
-		await StoreDataModel.findOneAndUpdate(
+		await StoreDataMatchTrader.findOneAndUpdate(
 			{}, // Empty filter to select all documents
 			{
 				$push: {
 					dailyData: {
 						account: Number(createMatchTraderAccount?.accountDetails?.tradingAccount?.login),
-						platform: matchTraderConstant,
 						asset: amount,
 						dailyStartingBalance: amount,
 						dailyStartingEquity: amount,
