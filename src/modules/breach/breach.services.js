@@ -49,7 +49,7 @@ const storeDataDaily = async () => {
 const getUserStoredData = async (account) => {
 	try {
 		// Fetch the latest stored document
-		const latestStoreData = await StoreDataModel.findOne().sort({
+		const latestStoreData = await StoreData.findOne().sort({
 			createdAt: -1,
 		});
 
@@ -73,7 +73,7 @@ const getUserStoredData = async (account) => {
 const getUserStoredDataAll = async (account) => {
 	try {
 		// Fetch all documents for the specified account
-		const allStoreData = await StoreDataModel.find({
+		const allStoreData = await StoreData.find({
 			"dailyData.account": account,
 		});
 
@@ -101,7 +101,7 @@ const deleteAccountDataByDate = async (account, specificDate) => {
 		const endOfDay = new Date(date.setUTCHours(23, 59, 59, 999));
 
 		// Find and update the document by pulling the specific data
-		const result = await StoreDataModel.updateOne(
+		const result = await StoreData.updateOne(
 			{
 				"dailyData.account": account,
 				createdAt: { $gte: startOfDay, $lte: endOfDay },
@@ -120,7 +120,7 @@ const deleteAccountDataByDate = async (account, specificDate) => {
 const updateLastDailyDataByMt5Account = async (mt5Account, newBalance, newAsset, newEquity) => {
 	try {
 		// Find the latest document and update the dailyStartingBalance for the given mt5Account
-		const updatedData = await StoreDataModel.findOneAndUpdate(
+		const updatedData = await StoreData.findOneAndUpdate(
 			{ "dailyData.mt5Account": mt5Account }, // Match mt5Account in dailyData
 			{
 				$set: {
