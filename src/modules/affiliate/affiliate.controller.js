@@ -80,11 +80,25 @@ const getAffiliate = async (req, res) => {
   }
 };
 
+const getAffiliateById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const affiliate = await affiliateService.getAffiliateById(id);
+    if (!affiliate) {
+      return res.status(404).json({ message: "Affiliate not found." });
+    }
+    res.status(200).json(affiliate);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createAffiliate,
   getAffiliateDataHandler,
   getAllAffiliatesHandler,
   updateAffiliateHandler,
   getAffiliate,
-  getAllAffiliatesApprovedHandler
+  getAllAffiliatesApprovedHandler,
+  getAffiliateById
 };

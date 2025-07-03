@@ -6,7 +6,8 @@ const {
 	getAllAffiliatesHandler,
 	updateAffiliateHandler,
 	getAffiliate,
-	getAllAffiliatesApprovedHandler
+	getAllAffiliatesApprovedHandler,
+	getAffiliateById
 } = require("./affiliate.controller.js");
 
 // Route to handle POST requests for creating an affiliate
@@ -22,6 +23,8 @@ router.get("/affiliate-info/:email", getAffiliateDataHandler);
 
 // Route to get affiliate by referral code
 router.get('/:referralCode', getAffiliate);
+
+router.get("/affiliate/:id", getAffiliateById);
 
 // Route to handle PUT requests for updating an affiliate
 router.put("/affiliate-update/:id", updateAffiliateHandler);

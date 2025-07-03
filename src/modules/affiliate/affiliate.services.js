@@ -212,11 +212,28 @@ const updateAffiliate = async (id, affiliateData) => {
 	}
 };
 
+const getAffiliateById = async (id) => {
+	try {
+		const affiliate = await MAffiliate.findById(id);
+		if (!affiliate) {
+			throw new Error("Affiliate not found");
+		}
+		return affiliate;
+	} catch (error) {
+		throw error;
+	}
+}
+
+
+
+
+
 module.exports = {
 	createAffiliate,
 	getAffiliateData,
 	getAllAffiliates,
 	updateAffiliate,
 	getAffiliateByReferralCode,
-	getAllApprovedAffiliates
+	getAllApprovedAffiliates,
+	getAffiliateById
 };
