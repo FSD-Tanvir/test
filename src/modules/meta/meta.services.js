@@ -1,5 +1,8 @@
 const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants");
-const DisableAccount = require("../disableAccounts/disableAccounts.schema");
+const {
+	DisableAccountMatchTrader,
+	DisableAccount,
+} = require("../disableAccounts/disableAccounts.schema");
 const { MOrder } = require("../orders/orders.schema");
 const MUser = require("../users/users.schema");
 const MWithDrawRequest = require("../withDrawRequests/withDrawRequests.schema");
@@ -23,18 +26,16 @@ const getMt5MetaData = async () => {
 		});
 
 		// Total breached accounts per platform
-		const totalBreachedAccountsMt5 = await DisableAccount.countDocuments({ platform: mt5Constant });
-		const totalBreachedAccountsMatchTrader = await DisableAccount.countDocuments({
-			platform: matchTraderConstant,
-		});
+		const totalBreachedAccountsMt5 = await DisableAccount.countDocuments({});
+		const totalBreachedAccountsMatchTrader = await DisableAccountMatchTrader.countDocuments({});
 		const totalBreachedAccounts = totalBreachedAccountsMt5 + totalBreachedAccountsMatchTrader;
 
 		// Disabled account IDs per platform
-		const disabledMt5AccountIds = (
-			await DisableAccount.find({ platform: mt5Constant }).distinct("account")
-		).map(Number);
+		const disabledMt5AccountIds = (await DisableAccount.find({}).distinct("mt5Account")).map(
+			Number
+		);
 		const disabledMatchTraderAccountIds = (
-			await DisableAccount.find({ platform: { $ne: mt5Constant } }).distinct("account")
+			await DisableAccountMatchTrader.find({}).distinct("matchTraderAccount")
 		).map(Number);
 
 		// Total account counts
