@@ -1,12 +1,11 @@
-const DisableAccount = require("./disableAccounts.schema.js");
+const { DisableAccount } = require("./disableAccounts.schema.js");
 const disableAccountService = require("./disableAccounts.services.js");
 
 const getDisabledAccountHandler = async (req, res) => {
 	const { account } = req.params;
 
 	try {
-		const disabledAccount =
-			await disableAccountService.getDisabledAccount(account);
+		const disabledAccount = await disableAccountService.getDisabledAccount(account);
 
 		res.status(200).json({
 			success: true,
@@ -27,13 +26,13 @@ const getDisabledAccountHandler = async (req, res) => {
 const fetchDisabledAccounts = async () => {
 	try {
 		// Fetch only the mt5Account field from disabled accounts
-		const disabledAccounts = await DisableAccount.find({}, 'mt5Account');
+		const disabledAccounts = await DisableAccount.find({}, "mt5Account");
 		return disabledAccounts;
 	} catch (error) {
 		console.error("Error fetching disabled accounts:", error);
 		throw new Error("Failed to fetch disabled accounts");
 	}
-}
+};
 
 // Controller to get all disabled accounts (for other routes, if needed)
 const getAllDisabledAccounts = async (req, res) => {
@@ -53,6 +52,4 @@ const getAllDisabledAccounts = async (req, res) => {
 	}
 };
 
-
-
-module.exports = { getDisabledAccountHandler, getAllDisabledAccounts,fetchDisabledAccounts };
+module.exports = { getDisabledAccountHandler, getAllDisabledAccounts, fetchDisabledAccounts };

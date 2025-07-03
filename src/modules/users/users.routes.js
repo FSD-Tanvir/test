@@ -23,18 +23,26 @@ const {
 	getOnlyUserHandlerByEmail,
 	downloadAllUsersCsvHandler,
 	downloadAllAccountsCsvHandler,
+	createMatchTraderAccount,
+	updateMatchTraderAccountStatusHandler,
+	getAllAccounts,
 } = require("./users.controller.js");
-// Route to create a new user in database and in mt5 manager
-router.post("/create-user", createMt5Account);
 
-// Route to create a new user in database
+// Create MT5 and MatchTrader accounts
+router.post("/create-user", createMt5Account);
+router.post("/create-user-match-trader", createMatchTraderAccount);
+
+// Route to update mt5 account status
 router.put("/update-mt5-status/:account", updateMt5AccountStatusHandler);
+
+// Route to update match trader account status
+router.put("/update-match-trader-status/:account", updateMatchTraderAccountStatusHandler);
 
 // to send credentials through email
 router.post("/credentials", credentials);
 
-// get all mt5 accounts
-router.get("/mt5-accounts", getAllMt5Accounts);
+// get all  accounts (mt5 and match trader)
+router.get("/all-accounts", getAllAccounts);
 
 // Route to get users with 'funded' challenge stage
 router.get("/funded", getFundedUsers);
@@ -50,7 +58,6 @@ router.get("/phased-users/:account", getPhasedUsers);
 
 // get single user
 router.get("/:id", getUserById);
-// router.get("/:id", authMiddleware, getUserById);
 
 // get only user data, not mt5 data
 router.get("/single-user/:id", getOnlyUserHandler);
@@ -60,8 +67,6 @@ router.get("/pass-user/:id", manualChallengePassHandler);
 
 // router.get("/", authMiddleware, getAllUsers);
 router.get("/", getAllUsers);
-
-router.post("/login", loginUser);
 
 router.put("/:id", updateUser);
 

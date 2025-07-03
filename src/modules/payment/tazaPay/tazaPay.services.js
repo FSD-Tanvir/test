@@ -3,10 +3,11 @@ const MTazaPay = require("./tazaPay.schema");
 const { MOrder } = require("../../orders/orders.schema");
 const MUser = require("../../users/users.schema");
 const config = require("../../../config/config");
+const { matchTraderConstant, mt5Constant } = require("../../../constants/commonConstants");
 
 const sandboxURL = "https://service-sandbox.tazapay.com/v3/checkout";
 const sandboxSecretKey =
-    "Basic YWtfdGVzdF9NRlI3WkdKNDFRQ1lPTDBISlpMQjpza190ZXN0X215aE5zYmFmRXVpaFY4c0VVVXdBaVBod0dIZHdhVGdTZk9EVGtyRVBtZnpESlNkbUNmNEJFSnF6R2w2eDI0R0FvbEl6MnhPMUNVVEx6a1owSzNQZ3o1NGxUTVlEQUp6YWhWdzdFcERNOXExcWhjcjBvNXJxSXpaaVUzMHRqOGxE";
+	"Basic YWtfdGVzdF9NRlI3WkdKNDFRQ1lPTDBISlpMQjpza190ZXN0X215aE5zYmFmRXVpaFY4c0VVVXdBaVBod0dIZHdhVGdTZk9EVGtyRVBtZnpESlNkbUNmNEJFSnF6R2w2eDI0R0FvbEl6MnhPMUNVVEx6a1owSzNQZ3o1NGxUTVlEQUp6YWhWdzdFcERNOXExcWhjcjBvNXJxSXpaaVUzMHRqOGxE";
 
 const tazaPayURL = config.tazapay_base_url;
 const tazaPaySecretKey = config.tazapay_secret_key;
@@ -18,178 +19,229 @@ const tazaPaySecretKey = config.tazapay_secret_key;
 
 // Function to make the Tazapay API request
 const createTazaPayCheckout = async (transactionData) => {
-    const {
-        customerName,
-        customerEmail,
-        customerCountry,
-        amount,
-        invoiceCurrency,
-        transactionDescription,
-        orderId,
-    } = transactionData;
+	const {
+		customerName,
+		customerEmail,
+		customerCountry,
+		amount,
+		invoiceCurrency,
+		transactionDescription,
+		orderId,
+	} = transactionData;
 
-    // Convert amount to cents (remove decimal)
-    const amountInCents = Math.round(amount * 100); // Ensures proper handling of decimals
+	// Convert amount to cents (remove decimal)
+	const amountInCents = Math.round(amount * 100); // Ensures proper handling of decimals
 
-    const updatedOrderId = orderId.replace("#", "");
+	const updatedOrderId = orderId.replace("#", "");
 
-    const options = {
-        method: "POST",
-        url: tazaPayURL,
-        headers: {
-            accept: "application/json",
-            "content-type": "application/json",
-            authorization: tazaPaySecretKey,
-        },
-        data: {
-            customer_details: {
-                name: customerName,
-                email: customerEmail,
-                country: customerCountry,
-            },
-            invoice_currency: invoiceCurrency, // Default to 'USD' if not provided
-            amount: amountInCents,
-            transaction_description: transactionDescription,
-            // success_url: `http://localhost:5173/tazaPay/payment-success/${updatedOrderId}`,
-            success_url: `https://foxx-funded.com/tazaPay/payment-success/${updatedOrderId}`,
-            cancel_url: "http://foxx-funded.com",
-        },
-    };
+	const order = await MOrder.findOne({ orderId: `#${updatedOrderId}` });
 
-    try {
-        // Make the request to TazaPay API
-        const response = await axios.request(options);
+	if (!order) {
+		throw new Error("Order not found");
+	}
 
-        // Check if the response is successful (status code 200)
-        if (response) {
-            // Extract paymentId and other necessary data
-            const paymentId = response?.data?.data?.id;
-            const redirectURL = response?.data?.data?.url;
-            const success_url = response?.data?.data?.success_url;
+	const platform = order.platform;
 
-            // Create the checkout object with the necessary details
-            const createdCheckout = await MTazaPay.create({
-                customerName,
-                customerEmail,
-                customerCountry,
-                amount,
-                invoiceCurrency,
-                transactionDescription,
-                tazaPayData: {
-                    redirectURL,
-                },
-                orderId,
-                paymentId,
-            });
+	let successUrl;
 
-            // Return the created checkout object
-            return {
-                createdCheckout,
-                success_url,
-            };
-        } else {
-            throw new Error("Tazapay API response not successful");
-        }
-    } catch (error) {
-        throw new Error("Tazapay API request failed: " + error.message);
-    }
+	if (platform === matchTraderConstant) {
+		// Local development URL for Match-trader platform
+		// successUrl = `http://localhost:5173/tazaPay/payment-success/match-trader/${updatedOrderId}`;
+
+		// Production URL (uncomment when deploying)
+		successUrl = `https://foxx-funded.com/tazaPay/payment-success/match-trader/${updatedOrderId}`;
+	} else if (platform === mt5Constant) {
+		// Local development URL for MT5 platform
+		// successUrl = `http://localhost:5173/tazaPay/payment-success/${updatedOrderId}`;
+
+		// Production URL (uncomment when deploying)
+		successUrl = `https://foxx-funded.com/tazaPay/payment-success/${updatedOrderId}`;
+	}
+
+	const options = {
+		method: "POST",
+		url: tazaPayURL,
+		headers: {
+			accept: "application/json",
+			"content-type": "application/json",
+			authorization: tazaPaySecretKey,
+		},
+		data: {
+			customer_details: {
+				name: customerName,
+				email: customerEmail,
+				country: customerCountry,
+			},
+			invoice_currency: invoiceCurrency, // Default to 'EUR' if not provided
+			amount: amountInCents,
+			transaction_description: transactionDescription,
+			success_url: successUrl,
+			cancel_url: "http://foxx-funded.com",
+		},
+	};
+
+	try {
+		// Make the request to TazaPay API
+		const response = await axios.request(options);
+
+		// Check if the response is successful (status code 200)
+		if (response) {
+			// Extract paymentId and other necessary data
+			const paymentId = response?.data?.data?.id;
+			const redirectURL = response?.data?.data?.url;
+			const success_url = response?.data?.data?.success_url;
+
+			// Create the checkout object with the necessary details
+			const createdCheckout = await MTazaPay.create({
+				customerName,
+				customerEmail,
+				customerCountry,
+				amount,
+				invoiceCurrency,
+				transactionDescription,
+				tazaPayData: {
+					redirectURL,
+				},
+				orderId,
+				paymentId,
+			});
+
+			// Return the created checkout object
+			return {
+				createdCheckout,
+				success_url,
+			};
+		} else {
+			throw new Error("Tazapay API response not successful");
+		}
+	} catch (error) {
+		throw new Error("Tazapay API request failed: " + error.message);
+	}
 };
 
 const getTazaPayCheckout = async (orderId) => {
-    try {
-        // Run both database queries in parallel using Promise.all
-        const [tazaPayDataResponse, orderResponse] = await Promise.all([
-            MTazaPay.findOne({ orderId: `#${orderId}` }),
-            MOrder.findOne({ orderId: `#${orderId}` }),
-        ]);
+	try {
+		// Run both database queries in parallel using Promise.all
+		const [tazaPayDataResponse, orderResponse] = await Promise.all([
+			MTazaPay.findOne({ orderId: `#${orderId}` }),
+			MOrder.findOne({ orderId: `#${orderId}` }),
+		]);
 
-        // Extract the paymentId if available
-        const paymentId = tazaPayDataResponse?.paymentId;
+		// Extract the paymentId if available
+		const paymentId = tazaPayDataResponse?.paymentId;
 
-        if (!paymentId) {
-            throw new Error("Payment ID not found");
-        }
+		if (!paymentId) {
+			throw new Error("Payment ID not found");
+		}
 
-        // Define request options for the API
-        const options = {
-            method: "GET",
-            url: `${tazaPayURL}/${paymentId}`, // Use template literals directly
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json",
-                authorization: tazaPaySecretKey,
-            },
-            timeout: 5000, // Set a timeout for the request
-        };
+		// Define request options for the API
+		const options = {
+			method: "GET",
+			url: `${tazaPayURL}/${paymentId}`, // Use template literals directly
+			headers: {
+				accept: "application/json",
+				"content-type": "application/json",
+				authorization: tazaPaySecretKey,
+			},
+			timeout: 5000, // Set a timeout for the request
+		};
 
-        // Make the API request to TazaPay
-        const response = await axios.request(options);
+		// Make the API request to TazaPay
+		const response = await axios.request(options);
 
-        // Extract the data from the response
-        const tazaPayData = response.data?.data;
+		// Extract the data from the response
+		const tazaPayData = response.data?.data;
 
-        if (!tazaPayData) {
-            throw new Error("TazaPay data not available in the response");
-        }
+		if (!tazaPayData) {
+			throw new Error("TazaPay data not available in the response");
+		}
 
-        // Proceed to next steps with tazaPayData
-        return {
-            tazaPayData,
-            orderResponse,
-        };
-    } catch (error) {
-        // Pass the error message for better error debugging
-        throw new Error(`Tazapay API request failed: ${error.message}`);
-    }
+		// Proceed to next steps with tazaPayData
+		return {
+			tazaPayData,
+			orderResponse,
+		};
+	} catch (error) {
+		// Pass the error message for better error debugging
+		throw new Error(`Tazapay API request failed: ${error.message}`);
+	}
 };
 
 const checkMt5AccountService = async (orderId) => {
-    try {
-        // Find a user with an MT5 account matching the given orderId (productId)
-        const user = await MUser.findOne({
-            "mt5Accounts.productId": `#${orderId}`,
-        });
+	try {
+		// Find a user with an MT5 account matching the given orderId (productId)
+		const user = await MUser.findOne({
+			"mt5Accounts.productId": `#${orderId}`,
+		});
 
-        if (user) {
-            return {
-                success: true,
-                message: `MT5 account found for the given orderId: #${orderId}`,
-            };
-        } else {
-            return {
-                success: false,
-                message: `No MT5 account found for the given orderId: ${orderId}`,
-            };
-        }
-    } catch (error) {
-        console.error("Error checking MT5 account:", error);
-        return {
-            success: false,
-            message: "An error occurred while checking the MT5 account",
-        };
-    }
+		if (user) {
+			return {
+				success: true,
+				message: `MT5 account found for the given orderId: #${orderId}`,
+			};
+		} else {
+			return {
+				success: false,
+				message: `No MT5 account found for the given orderId: ${orderId}`,
+			};
+		}
+	} catch (error) {
+		console.error("Error checking MT5 account:", error);
+		return {
+			success: false,
+			message: "An error occurred while checking the MT5 account",
+		};
+	}
+};
+
+const checkMatchTraderAccountService = async (orderId) => {
+	try {
+		// Find a user with a MatchTrader account matching the given orderId (productId)
+		const user = await MUser.findOne({
+			"matchTraderAccounts.productId": `#${orderId}`,
+		});
+
+		if (user) {
+			return {
+				success: true,
+				message: `MatchTrader account found for the given orderId: #${orderId}`,
+			};
+		} else {
+			return {
+				success: false,
+				message: `No MatchTrader account found for the given orderId: ${orderId}`,
+			};
+		}
+	} catch (error) {
+		console.error("Error checking MatchTrader account:", error);
+		return {
+			success: false,
+			message: "An error occurred while checking the MatchTrader account",
+		};
+	}
 };
 
 const sendToZapier = async (payload) => {
-    try {
-        const ZAPIER_WEBHOOK_URL = "https://hooks.zapier.com/hooks/catch/22372245/2cj1ham/";
-        const response = await axios.post(ZAPIER_WEBHOOK_URL, payload, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error sending data to Zapier:", error.message);
-        throw error;
-    }
+	try {
+		const ZAPIER_WEBHOOK_URL = "https://hooks.zapier.com/hooks/catch/22372245/2cj1ham/";
+		const response = await axios.post(ZAPIER_WEBHOOK_URL, payload, {
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		return response.data;
+	} catch (error) {
+		console.error("Error sending data to Zapier:", error.message);
+		throw error;
+	}
 };
 
 module.exports = {
-    createTazaPayCheckout,
-    getTazaPayCheckout,
-    checkMt5AccountService,
-    sendToZapier,
+	createTazaPayCheckout,
+	getTazaPayCheckout,
+	checkMt5AccountService,
+	sendToZapier,
+	checkMatchTraderAccountService,
 };
 
 // 🚀 ~ createTazaPayCheckout ~ transactionData: {

@@ -1,13 +1,7 @@
+const { getClientIp } = require("../../helper/utils/getClientIp.js");
 const { getAllAccountSummery } = require("../../thirdPartyMt5Api/thirdPartyMt5Api.js");
-const { fetchDisabledAccounts } = require("../disableAccounst/disableAccounst.controller.js");
+const { fetchDisabledAccounts } = require("../disableAccounts/disableAccounts.controller.js");
 const userService = require("./users.services.js");
-
-/**
- * Controller to create a new user
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- *  create user with tradelocker userId and send service .js
- */
 
 const createMt5Account = async (req, res) => {
 	try {
@@ -15,6 +9,21 @@ const createMt5Account = async (req, res) => {
 		res.status(200).json(mt5Account);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
+	}
+};
+
+const createMatchTraderAccount = async (req, res) => {
+	try {
+		const matchTraderAccount = await userService.handleMatchTraderAccountCreate(req.body);
+
+		if (!matchTraderAccount?.success) {
+			return res.status(400).json({ success: false, message: "Account creation failed." });
+		}
+
+		res.status(200).json(matchTraderAccount);
+	} catch (error) {
+		console.error("Controller Error:", error);
+		res.status(500).json({ success: false, error: error.message });
 	}
 };
 
@@ -32,13 +41,30 @@ const updateMt5AccountStatusHandler = async (req, res) => {
 	}
 };
 
+const updateMatchTraderAccountStatusHandler = async (req, res) => {
+	try {
+		const { account } = req.params;
+
+		const updateMatchTraderAccount = await userService.updateMatchTraderAccountStatus(
+			account,
+			req.body
+		);
+		if (!updateMatchTraderAccount) {
+			return res.status(400).json({ error: "Error updating Match Trader account" });
+		}
+		res.status(200).json(updateMatchTraderAccount);
+	} catch (error) {
+		res.status(500).json({ error: error.message });
+	}
+};
+
 const getUserById = async (req, res) => {
 	try {
 		// Extract the user ID from the request parameters
 		const { id } = req.params;
 
 		// Call the service function to find the user by ID and get their MT5 account details
-		const user = await userService.findUserWithMt5Details(id);
+		const user = await userService.findUserWithAllAccountDetails(id);
 
 		// If user is found, respond with a status of 200 and the user object in JSON format
 		res.status(200).json(user);
@@ -94,13 +120,13 @@ const getOnlyUserHandler = async (req, res) => {
 // Controller to get all users
 const getAllUsers = async (req, res) => {
 	try {
-		const { page = 1, limit = 10, searchQuery = "" } = req.query;
+		const { page = 1, limit = 10, searchQuery = "", isVerified = null } = req.query;
 
-		// Pass the searchQuery to the service function along with pagination parameters
 		const result = await userService.getAllUsers(
 			Number.parseInt(page),
 			Number.parseInt(limit),
-			searchQuery
+			searchQuery,
+			isVerified
 		);
 
 		res.status(200).json(result);
@@ -109,19 +135,27 @@ const getAllUsers = async (req, res) => {
 	}
 };
 
-// Controller to get all users with optional challengeStage filtering
-const getAllMt5Accounts = async (req, res) => {
+// Controller to get all trading accounts with optional challengeStage filtering
+const getAllAccounts = async (req, res) => {
 	try {
-		const { page = 1, limit = 10, searchQuery = "", challengeStage = "" } = req.query;
+		const {
+			page = 1,
+			limit = 10,
+			searchQuery = "",
+			challengeStage = "",
+			isPending = "",
+			accountStatus = "",
+			accountType = "", // optional
+		} = req.query;
 
-		const pageNumber = Number.parseInt(page, 10);
-		const limitNumber = Number.parseInt(limit, 10);
-
-		const result = await userService.getAllMt5Accounts(
-			pageNumber,
-			limitNumber,
+		const result = await userService.getAllAccounts(
+			Number(page),
+			Number(limit),
 			searchQuery,
-			challengeStage
+			challengeStage,
+			isPending,
+			accountStatus,
+			accountType || undefined
 		);
 
 		res.status(200).json(result);
@@ -137,22 +171,6 @@ const getPhasedUsers = async (req, res) => {
 		res.status(200).json(users);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
-	}
-};
-
-/**
- * Controller to log in a user
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-const loginUser = async (req, res) => {
-	try {
-		const { email, password } = req.body;
-		const { user, token } = await userService.authenticateUser(email, password);
-
-		res.status(200).json({ user, token }); // Respond with the authenticated user and token
-	} catch (error) {
-		res.status(400).json({ error }); // Respond with an error
 	}
 };
 
@@ -288,7 +306,8 @@ const resetPassword = async (req, res) => {
 
 const normalRegister = async (req, res) => {
 	try {
-		const result = await userService.normalRegister(req.body);
+		const ip = getClientIp(req);
+		const result = await userService.normalRegister({ ...req.body, ip });
 
 		res.status(201).json(result); // Respond with the created user
 	} catch (error) {
@@ -298,7 +317,8 @@ const normalRegister = async (req, res) => {
 
 const normalLogin = async (req, res) => {
 	try {
-		const result = await userService.normalLogin(req.body);
+		const ip = getClientIp(req);
+		const result = await userService.normalLogin({ ...req.body, ip });
 		res.status(200).json(result); // Respond with the authenticated user and token
 	} catch (error) {
 		res.status(400).json({ error }); // Respond with an error
@@ -435,19 +455,20 @@ const getOnlyUserHandlerByEmail = async (req, res) => {
 
 module.exports = {
 	createMt5Account,
+	createMatchTraderAccount,
+	updateMatchTraderAccountStatusHandler,
 	getUserById,
 	forgotPassword,
 	verifyOtp,
 	resetPassword,
 	getOnlyUserHandler,
 	getAllUsers,
-	loginUser,
 	updateUserRole,
 	normalLogin,
 	normalRegister,
 	updatePurchasedProductsHandler,
 	updateUser,
-	getAllMt5Accounts,
+	getAllAccounts,
 	getPhasedUsers,
 	credentials,
 	changePasswordController,

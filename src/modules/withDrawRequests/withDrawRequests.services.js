@@ -8,6 +8,7 @@ const {
 } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const { updateLastDailyDataByMt5Account } = require("../breach/breach.services");
 const { getUniqueTradingDays } = require("../../helper/utils/payoutDateItilis");
+const { getClosedPositions } = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi");
 
 // Create a new withdrawal request
 const createWithDrawRequestService = async (data) => {
@@ -311,7 +312,6 @@ const getAllPayoutsWithDrawRequestsByEmailService = async (email, page, limit) =
 };
 
 
-// Fetch order history for a specific account within a date range
 const getOrderHistory = async (account, startDate, endDate) => {
 	try {
 		const response = await orderHistories(account, startDate, endDate);
@@ -320,6 +320,8 @@ const getOrderHistory = async (account, startDate, endDate) => {
 		throw new Error(error.message);
 	}
 };
+
+
 
 
 
@@ -439,6 +441,17 @@ const getOrderHistoryService = async (account, startDate, endDate) => {
 	};
 };
 
+// getOrderHistoryService by matchTrader
+
+const getOrderHistoryServiceByMatchTrader = async (login) => {
+	try {
+		const matchTraderHistory = await getClosedPositions(login);
+		console.log("Match Trader History:", matchTraderHistory);
+	} catch (error) {
+
+	}
+}
+
 
 
 
@@ -493,5 +506,6 @@ module.exports = {
 	getAllApprovedRequester,
 	getAllPendingRequester,
 	getOrderHistoryService,
-	getOrderHistory
+	getOrderHistoryServiceByMatchTrader,
+	getOrderHistory,
 };

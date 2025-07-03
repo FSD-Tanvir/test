@@ -13,6 +13,7 @@ app.use(bodyParser.json()); // Parse JSON bodies using body-parser
 
 // Importing route modules
 const challengesRoutes = require("./src/modules/challenge/challenges.routes.js");
+const challengesMatchTraderRoutes = require("./src/modules/challengeMatchTrader/challengesMatchTrader.routes.js");
 const usersRoutes = require("./src/modules/users/users.routes.js");
 const orderRoutes = require("./src/modules/orders/orders.routes.js");
 const couponRoutes = require("./src/modules/coupon/coupon.routes.js");
@@ -23,7 +24,7 @@ const zenPayRoutes = require("./src/modules/payment/zenPaymentSystem/zenPayment.
 const paytikoRoutes = require("./src/modules/payment/paytiko/paytiko.routes.js");
 const challengePassRoutes = require("./src/modules/challengePass/challengePass.router.js");
 const errorHandler = require("./src/middleware/errorHandler.js");
-const disableAccountRoutes = require("./src/modules/disableAccounst/disableAccounts.routes.js");
+const disableAccountRoutes = require("./src/modules/disableAccounts/disableAccounts.routes.js");
 const breachRoutes = require("./src/modules/breach/breach.routes.js");
 const veriffRoutes = require("./src/modules/Verification/verification.routes.js");
 const withdrawRequest = require("./src/modules/withDrawRequests/withDrawReuests.routes.js");
@@ -44,6 +45,7 @@ const becomeAffiliateRequesterRoutes = require("./src/modules/becomeAffiliateReq
 
 // Route middleware
 app.use("/api/foxx-funded/v1/challenges", challengesRoutes);
+app.use("/api/foxx-funded/v1/challengesMatchTrader", challengesMatchTraderRoutes);
 app.use("/api/foxx-funded/v1/users", usersRoutes);
 app.use("/api/foxx-funded/v1/orders", orderRoutes);
 app.use("/api/foxx-funded/v1/coupons", couponRoutes);

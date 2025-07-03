@@ -108,8 +108,12 @@ const getAffiliateData = async (email) => {
 };
 
 const getAllAffiliates = async () => {
-	const affiliates = await MAffiliate.find();
-	return affiliates;
+	const pendingAffiliates = await MAffiliate.find({ status: 'pending' });
+	return pendingAffiliates;
+};
+const getAllApprovedAffiliates = async () => {
+	const approvedAffiliates = await MAffiliate.find({ status: 'approved' });
+	return approvedAffiliates;
 };
 
 // Function to find an affiliate by referral code
@@ -208,10 +212,28 @@ const updateAffiliate = async (id, affiliateData) => {
 	}
 };
 
+const getAffiliateById = async (id) => {
+	try {
+		const affiliate = await MAffiliate.findById(id);
+		if (!affiliate) {
+			throw new Error("Affiliate not found");
+		}
+		return affiliate;
+	} catch (error) {
+		throw error;
+	}
+}
+
+
+
+
+
 module.exports = {
 	createAffiliate,
 	getAffiliateData,
 	getAllAffiliates,
 	updateAffiliate,
 	getAffiliateByReferralCode,
+	getAllApprovedAffiliates,
+	getAffiliateById
 };

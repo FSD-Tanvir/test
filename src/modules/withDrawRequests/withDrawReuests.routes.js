@@ -16,7 +16,8 @@ const {
 	getApprovedRequestsController,
 	getPendingRequestsController,
 	getAccountDetailsController,
-	getOrderHistoryControllerInstantFunding
+	getOrderHistoryControllerInstantFunding,
+	getOrderHistoryControllerMatchTrader
 } = require("./withDrawRequests.controller");
 
 const router = express.Router();
@@ -24,6 +25,8 @@ const router = express.Router();
 router.get('/history', getOrderHistoryController)
 
 router.get('/instant-funding/history', getOrderHistoryControllerInstantFunding);
+
+router.get('/match-trader-history', getOrderHistoryControllerMatchTrader);
 
 router.get('/approved-requests', getApprovedRequestsController);
 
