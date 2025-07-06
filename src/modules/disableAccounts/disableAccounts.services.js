@@ -133,7 +133,6 @@ const saveDisableLogByManual = async (accountNumber, message) => {
 		}
 
 		const account = user.mt5Accounts.find((a) => a.account == accountNumber);
-		console.log("Account found:", account);
 		if (!account) {
 			await session.abortTransaction();
 			session.endSession();
@@ -150,7 +149,6 @@ const saveDisableLogByManual = async (accountNumber, message) => {
 		const changeGroup = await accountUpdate(account.account, changeGroupDetails);
 
 
-		console.log("Group change result:", changeGroup);
 
 
 		if (changeGroup !== "OK") {
