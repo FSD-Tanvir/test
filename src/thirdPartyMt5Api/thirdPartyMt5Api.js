@@ -257,8 +257,6 @@ const getAllAccountOnline = async () => {
 
 //  update account details from mt5
 const accountUpdate = async (account, userDetails) => {
-
-
 	// Initialize baseParams with the mandatory token
 	const baseParams = { id: token };
 
@@ -503,7 +501,7 @@ const OrderCloseAll = async (account) => {
 
 
 const nesUrlForTrading = async () => {
-	const url = `${newsUrl}`; 
+	const url = `${newsUrl}`;
 	try {
 		const response = await fetch(url, {
 			method: "GET",

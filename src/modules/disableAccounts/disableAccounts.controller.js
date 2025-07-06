@@ -52,4 +52,23 @@ const getAllDisabledAccounts = async (req, res) => {
 	}
 };
 
-module.exports = { getDisabledAccountHandler, getAllDisabledAccounts, fetchDisabledAccounts };
+
+const createManuallyDisabledAccountHandler = async (req, res) => {
+	console.log("createManuallyDisabledAccountHandler called");
+	try {
+		const { accountNumber } = req.query;
+		const { message } = req.body;
+
+		const result = await disableAccountService.saveDisableLogByManual(accountNumber, message);
+
+		if (!result.success) {
+			return res.status(400).json(result);
+		}
+
+		res.status(201).json(result);
+	} catch (err) {
+		res.status(500).json({ success: false, message: err.message });
+	}
+}
+
+module.exports = { getDisabledAccountHandler, getAllDisabledAccounts, fetchDisabledAccounts, createManuallyDisabledAccountHandler };

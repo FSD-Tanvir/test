@@ -1,6 +1,9 @@
+const { default: mongoose } = require("mongoose");
 const { sendEmailSingleRecipient } = require("../../helper/mailing.js");
 const { disableMailingHTMLTemplate } = require("../../helper/utils/disableMailingHTMLTemplate.js");
 const { findUserByAccount } = require("../../helper/utils/findUser.js");
+const { accountUpdate } = require("../../thirdPartyMt5Api/thirdPartyMt5Api.js");
+const MUser = require("../users/users.schema.js");
 const { DisableAccount, DisableAccountMatchTrader } = require("./disableAccounts.schema.js");
 
 const saveRealTimeLog = async (
@@ -96,7 +99,127 @@ const getDisabledAccount = async (account) => {
 	}
 };
 
+
+
+const saveDisableLogByManual = async (accountNumber, message) => {
+	if (!accountNumber || !message) {
+		throw new Error("accountNumber and message are required");
+	}
+
+	const session = await mongoose.startSession();
+	session.startTransaction();
+
+	try {
+		// Check if log already exists
+		const exists = await DisableAccount.findOne({ mt5Account: accountNumber }).session(session);
+		if (exists) {
+			await session.abortTransaction();
+			session.endSession();
+			return {
+				success: false,
+				message: "Log already exists for this account number",
+			};
+		}
+
+		// Find user
+		const user = await MUser.findOne({ "mt5Accounts.account": accountNumber }).session(session);
+		if (!user) {
+			await session.abortTransaction();
+			session.endSession();
+			return {
+				success: false,
+				message: "User not found for the provided MT5 account",
+			};
+		}
+
+		const account = user.mt5Accounts.find((a) => a.account == accountNumber);
+		console.log("Account found:", account);
+		if (!account) {
+			await session.abortTransaction();
+			session.endSession();
+			return {
+				success: false,
+				message: "MT5 account not found in user's account list",
+			};
+		}
+
+		// External MT5 group change
+		const changeGroupDetails = {
+			Group: "demo\\FXbin",
+		};
+		const changeGroup = await accountUpdate(account.account, changeGroupDetails);
+
+
+		console.log("Group change result:", changeGroup);
+
+
+		if (changeGroup !== "OK") {
+			await session.abortTransaction();
+			session.endSession();
+			return {
+				success: false,
+				message: "Failed to change group in MT5 account",
+			};
+		}
+
+		account.group = changeGroupDetails.Group;
+
+		// Disable MT5 account
+		const userDisableDetails = {
+			Rights: "USER_RIGHT_TRADE_DISABLED",
+			enabled: true,
+		};
+		const disableMT5Account = await accountUpdate(account.account, userDisableDetails);
+		if (disableMT5Account !== "OK") {
+			await session.abortTransaction();
+			session.endSession();
+			return {
+				success: false,
+				message: "Failed to disable MT5 trading rights",
+			};
+		}
+
+		// Save user changes
+		await user.save({ session });
+
+		// Save disable log
+		const newLog = new DisableAccount({
+			mt5Account: accountNumber,
+			equity: 0,
+			lossPercentage: 0,
+			asset: 0,
+			balance: 0,
+			initialBalance: 0,
+			message,
+		});
+		await newLog.save({ session });
+
+		// Commit transaction
+		await session.commitTransaction();
+		session.endSession();
+
+		return {
+			success: true,
+			message: "Log saved and account disabled successfully",
+			data: newLog,
+		};
+	} catch (error) {
+		await session.abortTransaction();
+		session.endSession();
+
+		return {
+			success: false,
+			message: `Transaction failed: ${error.message}`,
+		};
+	}
+};
+module.exports = {
+	saveDisableLogByManual,
+};
+
+
 module.exports = {
 	saveRealTimeLog,
 	getDisabledAccount,
+	saveDisableLogByManual,
 };
