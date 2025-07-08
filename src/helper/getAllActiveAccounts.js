@@ -25,7 +25,7 @@ const getAllActiveAccounts = async () => {
 			$lookup: {
 				from: "disableaccounts",
 				localField: "accountString",
-				foreignField: "account",
+				foreignField: "mt5Account",
 				as: "disabledAccount",
 			},
 		},
@@ -79,7 +79,7 @@ const getAllActiveFundedAccounts = async () => {
 			$lookup: {
 				from: "disableaccounts",
 				localField: "accountString",
-				foreignField: "account",
+				foreignField: "mt5Account",
 				as: "disabledAccount",
 			},
 		},
@@ -135,7 +135,7 @@ const getAllActiveInstantFundedAccounts = async () => {
 			$lookup: {
 				from: "disableaccounts", // Collection name of the DisableAccount model
 				localField: "accountString", // Converted account number as a string
-				foreignField: "account", // Field in DisableAccount
+				foreignField: "mt5Account", // Field in DisableAccount
 				as: "disabledAccount", // Store matching documents in this array
 			},
 		},
@@ -184,9 +184,8 @@ const getAllActiveMatchTraderAccounts = async () => {
 		{
 			$lookup: {
 				from: "disableaccounts",
-				// from: "disableaccount2, // model name
 				localField: "accountString",
-				foreignField: "account",
+				foreignField: "matchTraderAccount",
 				as: "disabledAccount",
 			},
 		},
@@ -240,7 +239,7 @@ const getAllActiveFundedMatchTraderAccounts = async () => {
 			$lookup: {
 				from: "disableaccounts",
 				localField: "accountString",
-				foreignField: "account",
+				foreignField: "matchTraderAccount",
 				as: "disabledAccount",
 			},
 		},
@@ -296,7 +295,7 @@ const getAllActiveInstantFundedMatchTraderAccounts = async () => {
 			$lookup: {
 				from: "disableaccounts", // Collection name of the DisableAccount model
 				localField: "accountString", // Converted account number as a string
-				foreignField: "account", // Field in DisableAccount
+				foreignField: "matchTraderAccount", // Field in DisableAccount
 				as: "disabledAccount", // Store matching documents in this array
 			},
 		},
