@@ -25,11 +25,15 @@ const runAllFunctions = () => {
 	/* ---------------------------------------------------------------------------------------------- */
 	/*                                   //! LOT Size Risk                                     */
 	/* ---------------------------------------------------------------------------------------------- */
-	cron.schedule("30 21 * * *", () => {
+	cron.schedule("00 16 * * *", () => {
 		lotSizeRisk();
 	});
 
-	cron.schedule("25 23 * * *", () => {
+	cron.schedule("00 17 * * *", () => {
+		sendAutomatedLotSizeEmail();
+	});
+
+	cron.schedule("00 19 * * *", () => {
 		sendAutomatedLotSizeEmail();
 	});
 
@@ -51,13 +55,16 @@ const runAllFunctions = () => {
 		sendAutomatedStopLossEmail();
 	});
 
-	sendAutomatedStopLossEmail();
 	/* ---------------------------------------------------------------------------------------------- */
 	/*                                   //! Two Percent Risk                                      */
 	/* ---------------------------------------------------------------------------------------------- */
 
 	cron.schedule("19 0 * * *", () => {
 		sendAutomatedTwoPercentEmail();
+	});
+
+	cron.schedule("19 4 * * *", () => {
+		sendAutomatedTwoPercentEmail(); // runs again at 4:19 AM
 	});
 
 	/* ---------------------------------------------------------------------------------------------- */

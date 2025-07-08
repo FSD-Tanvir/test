@@ -322,7 +322,6 @@ const sendLotSizeWarningEmail = async (account, accountDetails) => {
 
 const sendAutomatedLotSizeEmail = async () => {
 	try {
-		// Aggregation pipeline to group by account and sort
 		const groupedData = await LotSizeRiskModel.aggregate([
 			{
 				$group: {
@@ -341,7 +340,6 @@ const sendAutomatedLotSizeEmail = async () => {
 			{ $sort: { "accounts.createdAt": -1 } },
 		]);
 
-		// Process data to match the desired output structure
 		const processedData = groupedData.map((group) => ({
 			account: group._id,
 			email: group.email,
@@ -349,7 +347,7 @@ const sendAutomatedLotSizeEmail = async () => {
 			totalLotSize: Number(group.totalLotSize),
 			totalLotSizeLimit: Number(group.totalLotSizeLimit),
 			totalTrades: group.count,
-			emailCount: group.emailCount, // Include the emailCount in the output
+			emailCount: group.emailCount,
 			trades: group.accounts.map((trade) => ({
 				ticket: trade.ticket,
 				profit: Number(trade.profit),
@@ -364,9 +362,13 @@ const sendAutomatedLotSizeEmail = async () => {
 
 		for (const account of processedData) {
 			const { email, totalTrades, emailCount, account: accNumb } = account;
+			const isDisabled = account.trades[0]?.isDisabled || false;
+			const currentEmailCount = account.trades[0]?.emailCount || 0;
 
-			// const currentEmailCount = emailCount / totalTrades;
-			const currentEmailCount = account.trades[0].emailCount;
+			if (isDisabled) {
+				console.log(`Account ${accNumb} is already disabled. Skipping.`);
+				continue;
+			}
 
 			const accountDetails = {
 				email,
@@ -377,48 +379,41 @@ const sendAutomatedLotSizeEmail = async () => {
 				trades: account.trades,
 			};
 
-			// Helper function to send an email and update the database
 			const sendEmail = async (subject, template) => {
-				const htmlContent = template(accNumb, accountDetails);
-				const info = await sendEmailSingleRecipient(
-					accountDetails.email,
-					subject,
-					null,
-					htmlContent
-				);
-				if (typeof info === "string" && info.includes("OK")) {
-					await LotSizeRiskModel.updateMany(
-						{ account: accNumb },
-						{ $set: { emailSent: true }, $inc: { emailCount: 1 } }
-					);
+				try {
+					const htmlContent = template(accNumb, accountDetails);
+					const info = await sendEmailSingleRecipient(email, subject, null, htmlContent);
+					if (typeof info === "string" && info.includes("OK")) {
+						await LotSizeRiskModel.updateMany(
+							{ account: accNumb },
+							{ $set: { emailSent: true }, $inc: { emailCount: 1 } }
+						);
+					}
+				} catch (err) {
+					console.error(`Failed to send warning email to ${email}: ${err.message}`);
 				}
 			};
 
-			// Helper function to send the final breach notice and disable the account
-			const disableAccount = async (accNumb, accountDetails) => {
+			const disableAccount = async () => {
 				try {
 					const message = "Lot Size Rule Violation";
-
 					const userDisableDetails = {
-						Rights: "USER_RIGHT_TRADE_DISABLED", // cannot trade, but can login
+						Rights: "USER_RIGHT_TRADE_DISABLED",
 						enabled: true,
 					};
-
 					const changeGroupDetails = {
 						Group: "demo\\FXbin",
 					};
 
-					const [disableMT5Account, orderCloseAll, updateAccGroup] = await Promise.all([
+					const [orderCloseAll, updateGroup, updateRights] = await Promise.all([
 						OrderCloseAll(accNumb),
 						accountUpdate(accNumb, changeGroupDetails),
 						accountUpdate(accNumb, userDisableDetails),
 					]);
 
-					if (disableMT5Account !== "OK") {
-						return {
-							success: false,
-							message: `Failed to disable the account ${accNumb}. Please try again.`,
-						};
+					if (orderCloseAll !== "OK" || updateGroup !== "OK" || updateRights !== "OK") {
+						console.error(`Failed to disable account ${accNumb}. Skipping.`);
+						return;
 					}
 
 					const result = await saveRealTimeLog(
@@ -430,25 +425,28 @@ const sendAutomatedLotSizeEmail = async () => {
 						(equity = 0),
 						message
 					);
-					if (result.success) {
-						console.log(`Log entry saved successfully for ${account}`);
+
+					if (!result.success) {
+						console.error(`Failed to log disable event for ${accNumb}`);
+					} else {
+						console.log(`Log saved for ${accNumb}`);
 					}
+
 					const htmlContent = lotSizeDisabledEmailTemplate(accNumb, accountDetails);
 					await sendEmailSingleRecipient(
 						accountDetails.email,
 						"Final Breach Notice: Permanent Account Action Required",
-						"",
+						null,
 						htmlContent
 					);
+
 					await LotSizeRiskModel.updateMany({ account: accNumb }, { $set: { isDisabled: true } });
 				} catch (error) {
-					console.error(
-						`Failed to send final breach notice to ${accountDetails.email}: ${error.message}`
-					);
+					console.error(`Error disabling account ${accNumb}: ${error.message}`);
 				}
 			};
 
-			// Handle case where no emails have been sent yet
+			// Email and disable logic based on emailCount
 			if (currentEmailCount === 0) {
 				if (totalTrades >= 1)
 					await sendEmail(
@@ -460,34 +458,24 @@ const sendAutomatedLotSizeEmail = async () => {
 						"Important Notice: Compliance with Trading Policies Warning - 2",
 						sendLotSizeWarningEmailTemplate
 					);
-
-				if (!account.trades[0].isDisabled && totalTrades >= 3) {
-					await disableAccount(accNumb, accountDetails);
-				}
-			}
-			//  Handle case where one email has been sent
-			else if (currentEmailCount === 1) {
-				if (totalTrades >= 2) {
+				if (totalTrades >= 3) await disableAccount();
+			} else if (currentEmailCount === 1) {
+				if (totalTrades >= 2)
 					await sendEmail(
-						"Important Notice: Compliance with Trading Policies. Warning - 2",
+						"Important Notice: Compliance with Trading Policies Warning - 2",
 						sendLotSizeWarningEmailTemplate
 					);
-				}
-				if (!account.trades[0].isDisabled && totalTrades >= 3)
-					await disableAccount(accNumb, accountDetails);
-			}
-			//  Handle case where two emails have been sent
-			else if (currentEmailCount === 2) {
-				if (!account.trades[0].isDisabled && totalTrades >= 3)
-					await disableAccount(accNumb, accountDetails);
+				if (totalTrades >= 3) await disableAccount();
+			} else if (currentEmailCount === 2) {
+				if (totalTrades >= 3) await disableAccount();
 			} else {
-				console.log("No action taken");
+				console.log(`No action taken for account ${accNumb}`);
 			}
 		}
 
 		console.log("Email processing for Lot Size completed successfully.");
 	} catch (error) {
-		console.log(error);
+		console.error("Failed to fetch lot size risk data:", error.message);
 		throw new Error("Failed to fetch lot size risk data");
 	}
 };
