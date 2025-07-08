@@ -360,22 +360,22 @@ const sendStopLossWarningEmail = async (account, accountDetails) => {
 /* -------------------------- // Send automated stop loss email ------------------------- */
 const sendAutomatedStopLossEmail = async () => {
 	try {
-		// Aggregation pipeline to group by account
 		const groupedData = await StopLossRiskModel.aggregate([
 			{
 				$group: {
-					_id: "$account", // Group by account
-					accounts: { $push: "$$ROOT" }, // Push the entire document into accounts array
-					count: { $sum: 1 }, // Count how many documents for each account
+					_id: "$account",
+					accounts: { $push: "$$ROOT" },
+					count: { $sum: 1 },
 				},
 			},
 		]);
 
 		for (const account of groupedData) {
-			const tickets = account.accounts.map((account) => account.ticket);
+			const tickets = account.accounts.map((a) => a.ticket);
 			const count = account.count;
 			const currentEmailCount = account.accounts[0].emailCount;
 			const accNumb = account.accounts[0].account;
+
 			const accountDetails = {
 				email: account.accounts[0].email,
 				account: accNumb,
@@ -384,13 +384,12 @@ const sendAutomatedStopLossEmail = async () => {
 				tickets,
 			};
 
-			// Helper function to send the final breach notice and disable the account
 			const disableAccount = async (accNumb, accountDetails) => {
 				try {
 					const message = "Stop Loss Violation";
 
 					const userDisableDetails = {
-						Rights: "USER_RIGHT_TRADE_DISABLED", // cannot trade, but can login
+						Rights: "USER_RIGHT_TRADE_DISABLED",
 						enabled: true,
 					};
 
@@ -398,20 +397,26 @@ const sendAutomatedStopLossEmail = async () => {
 						Group: "demo\\FXbin",
 					};
 
-					const [disableMT5Account, orderCloseAll, updateAccGroup] = await Promise.all([
+					const [closeOrdersResult, updateGroupResult, updateRightsResult] = await Promise.all([
 						OrderCloseAll(accNumb),
 						accountUpdate(accNumb, changeGroupDetails),
 						accountUpdate(accNumb, userDisableDetails),
 					]);
 
-					if (disableMT5Account !== "OK") {
-						return {
-							success: false,
-							message: `Failed to disable the account ${accNumb}. Please try again.`,
-						};
+					if (
+						closeOrdersResult !== "OK" ||
+						updateGroupResult !== "OK" ||
+						updateRightsResult !== "OK"
+					) {
+						console.error(`Failed to disable account ${accNumb}:`, {
+							closeOrdersResult,
+							updateGroupResult,
+							updateRightsResult,
+						});
+						return; // Move on to next account
 					}
 
-					const result = await saveRealTimeLog(
+					const logResult = await saveRealTimeLog(
 						accNumb,
 						(lossPercentage = 0),
 						(asset = 0),
@@ -420,9 +425,13 @@ const sendAutomatedStopLossEmail = async () => {
 						(equity = 0),
 						message
 					);
-					if (result.success) {
-						console.log(`Log entry saved successfully for ${account}`);
+
+					if (logResult.success) {
+						console.log(`Log entry saved successfully for ${accNumb}`);
+					} else {
+						console.error(`Failed to save log for ${accNumb}`);
 					}
+
 					const htmlContent = stopLossDisabledEmailTemplate(accNumb, accountDetails);
 					await sendEmailSingleRecipient(
 						accountDetails.email,
@@ -430,18 +439,18 @@ const sendAutomatedStopLossEmail = async () => {
 						"",
 						htmlContent
 					);
+
 					await StopLossRiskModel.updateMany({ account: accNumb }, { $set: { isDisabled: true } });
 				} catch (error) {
-					console.error(
-						`Failed to send final breach notice to ${accountDetails.email}: ${error.message}`
-					);
+					console.error(`Error processing account ${accNumb}: ${error.message}`);
+					return; // Move on to next account
 				}
 			};
 
 			if (!account.accounts[0].isDisabled && count >= 3) {
 				await disableAccount(accNumb, accountDetails);
 			} else {
-				console.log("No action taken");
+				console.log(`No action taken for account ${accNumb}`);
 			}
 		}
 

@@ -47,6 +47,11 @@ const runAllFunctions = () => {
 		sendAutomatedStopLossEmail();
 	});
 
+	cron.schedule("00 3 * * *", () => {
+		sendAutomatedStopLossEmail();
+	});
+
+	sendAutomatedStopLossEmail();
 	/* ---------------------------------------------------------------------------------------------- */
 	/*                                   //! Two Percent Risk                                      */
 	/* ---------------------------------------------------------------------------------------------- */
