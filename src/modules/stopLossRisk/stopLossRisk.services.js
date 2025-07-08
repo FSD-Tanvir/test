@@ -371,20 +371,36 @@ const sendAutomatedStopLossEmail = async () => {
 		]);
 
 		for (const account of groupedData) {
-			const tickets = account.accounts.map((a) => a.ticket);
+			const accNumb = account._id;
+			const accounts = account.accounts;
+			const primaryEntry = accounts[0];
+
+			if (!primaryEntry) {
+				console.log(`No data found for account ${accNumb}`);
+				continue;
+			}
+
+			const isDisabled = primaryEntry.isDisabled || false;
+			const email = primaryEntry.email || null;
+			const emailCount = primaryEntry.emailCount || 0;
+			const accountSize = primaryEntry.accountSize || 0;
+			const tickets = accounts.map((a) => a.ticket);
 			const count = account.count;
-			const currentEmailCount = account.accounts[0].emailCount;
-			const accNumb = account.accounts[0].account;
+
+			if (isDisabled) {
+				console.log(`Account ${accNumb} is already disabled. Skipping.`);
+				continue;
+			}
 
 			const accountDetails = {
-				email: account.accounts[0].email,
+				email,
 				account: accNumb,
-				accountSize: account.accounts[0].accountSize,
-				emailCount: currentEmailCount,
+				accountSize,
+				emailCount,
 				tickets,
 			};
 
-			const disableAccount = async (accNumb, accountDetails) => {
+			const disableAccount = async () => {
 				try {
 					const message = "Stop Loss Violation";
 
@@ -408,12 +424,12 @@ const sendAutomatedStopLossEmail = async () => {
 						updateGroupResult !== "OK" ||
 						updateRightsResult !== "OK"
 					) {
-						console.error(`Failed to disable account ${accNumb}:`, {
+						console.error(`❌ Failed to disable account ${accNumb}`, {
 							closeOrdersResult,
 							updateGroupResult,
 							updateRightsResult,
 						});
-						return; // Move on to next account
+						return;
 					}
 
 					const logResult = await saveRealTimeLog(
@@ -421,42 +437,42 @@ const sendAutomatedStopLossEmail = async () => {
 						(lossPercentage = 0),
 						(asset = 0),
 						(balance = 0),
-						(initialBalance = accountDetails.accountSize),
+						(initialBalance = accountSize),
 						(equity = 0),
 						message
 					);
 
 					if (logResult.success) {
-						console.log(`Log entry saved successfully for ${accNumb}`);
+						console.log(`✅ Log saved for account ${accNumb}`);
 					} else {
-						console.error(`Failed to save log for ${accNumb}`);
+						console.error(`⚠️ Log failed for account ${accNumb}`);
 					}
 
 					const htmlContent = stopLossDisabledEmailTemplate(accNumb, accountDetails);
 					await sendEmailSingleRecipient(
-						accountDetails.email,
+						email,
 						"Final Breach Notice: Permanent Account Action Required",
 						"",
 						htmlContent
 					);
 
 					await StopLossRiskModel.updateMany({ account: accNumb }, { $set: { isDisabled: true } });
-				} catch (error) {
-					console.error(`Error processing account ${accNumb}: ${error.message}`);
-					return; // Move on to next account
+					console.log(`✅ Account ${accNumb} disabled and email sent.`);
+				} catch (err) {
+					console.error(`Error disabling account ${accNumb}: ${err.message}`);
 				}
 			};
 
-			if (!account.accounts[0].isDisabled && count >= 3) {
-				await disableAccount(accNumb, accountDetails);
+			if (count >= 3) {
+				await disableAccount();
 			} else {
-				console.log(`No action taken for account ${accNumb}`);
+				console.log(`No action taken for account ${accNumb}, only ${count} records found.`);
 			}
 		}
 
-		console.log("Email processing for Stop Loss completed successfully.");
+		console.log("✅ Email processing for Stop Loss completed.");
 	} catch (error) {
-		console.log(error);
+		console.error("❌ Failed to fetch stop loss risk data:", error.message);
 		throw new Error("Failed to fetch stop loss risk data");
 	}
 };
