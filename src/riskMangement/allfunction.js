@@ -40,7 +40,10 @@ const runAllFunctions = () => {
 		stopLossRisk();
 	});
 
-	cron.schedule("10 23 * * *", () => {
+	cron.schedule("30 22 * * *", () => {
+		sendAutomatedStopLossEmail();
+	});
+	cron.schedule("00 23 * * *", () => {
 		sendAutomatedStopLossEmail();
 	});
 
