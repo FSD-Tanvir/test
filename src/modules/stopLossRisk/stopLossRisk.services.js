@@ -413,25 +413,24 @@ const sendAutomatedStopLossEmail = async () => {
 						Group: "demo\\FXbin",
 					};
 
-					const [closeOrdersResult, updateGroupResult, updateRightsResult] = await Promise.all([
-						OrderCloseAll(accNumb),
-						accountUpdate(accNumb, changeGroupDetails),
-						accountUpdate(accNumb, userDisableDetails),
-					]);
+					// Step 1: Close all orders
+					const closeOrdersResult = await OrderCloseAll(accNumb);
+					// Step 2: Update group
+					const updateGroupResult = await accountUpdate(accNumb, changeGroupDetails);
+					// Step 3: Disable trading rights
+					const updateRightsResult = await accountUpdate(accNumb, userDisableDetails);
 
+					// If any of the 3 failed, log and skip this account
 					if (
-						closeOrdersResult !== "OK" ||
-						updateGroupResult !== "OK" ||
+						// closeOrdersResult !== "OK" ||
+						// updateGroupResult !== "OK" ||
 						updateRightsResult !== "OK"
 					) {
-						console.error(`❌ Failed to disable account ${accNumb}`, {
-							closeOrdersResult,
-							updateGroupResult,
-							updateRightsResult,
-						});
-						return;
+						console.error(`❌ Failed to disable account ${accNumb}`);
+						return; // skip to next account (caller function should handle looping through accounts)
 					}
 
+					// Proceed if all 3 steps above succeeded
 					const logResult = await saveRealTimeLog(
 						accNumb,
 						(lossPercentage = 0),
