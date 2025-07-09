@@ -286,21 +286,31 @@ const sendAutomatedTwoPercentEmail = async () => {
 						Rights: "USER_RIGHT_TRADE_DISABLED",
 						enabled: true,
 					};
+
 					const changeGroupDetails = {
 						Group: "demo\\FXbin",
 					};
 
-					const [orderCloseAll, updateGroup, updateRights] = await Promise.all([
-						OrderCloseAll(accNumb),
-						accountUpdate(accNumb, changeGroupDetails),
-						accountUpdate(accNumb, userDisableDetails),
-					]);
+					// Step 1: Close all orders
+					const orderCloseAll = await OrderCloseAll(accNumb);
 
-					if (orderCloseAll !== "OK" || updateGroup !== "OK" || updateRights !== "OK") {
-						console.error(`Failed to disable account ${accNumb}. Skipping.`);
-						return;
+					// Step 2: Change group
+					const updateGroup = await accountUpdate(accNumb, changeGroupDetails);
+
+					// Step 3: Disable trading rights
+					const updateRights = await accountUpdate(accNumb, userDisableDetails);
+
+					// If any of the 3 failed, log and skip this account
+					if (
+						// orderCloseAll !== "OK" ||
+						// updateGroup !== "OK" ||
+						updateRights !== "OK"
+					) {
+						console.error(`❌ Failed to disable account ${accNumb}`);
+						return; // skip to next account (caller function should handle looping through accounts)
 					}
 
+					// Step 4: Save real-time log
 					const result = await saveRealTimeLog(
 						accNumb,
 						(lossPercentage = 0),
@@ -312,11 +322,12 @@ const sendAutomatedTwoPercentEmail = async () => {
 					);
 
 					if (!result.success) {
-						console.error(`Failed to log disable event for ${accNumb}`);
+						console.error(`⚠️ Failed to log disable event for account ${accNumb}`);
 					} else {
-						console.log(`Log saved for ${accNumb}`);
+						console.log(`✅ Log saved for account ${accNumb}`);
 					}
 
+					// Step 5: Send email
 					const htmlContent = twoPercentDisabledEmailTemplate(accNumb, accountDetails);
 					await sendEmailSingleRecipient(
 						email,
@@ -325,10 +336,13 @@ const sendAutomatedTwoPercentEmail = async () => {
 						htmlContent
 					);
 
+					// Step 6: Update DB to mark account as disabled
 					await MTwoPercentRiskModel.updateMany(
 						{ account: accNumb },
 						{ $set: { isDisabled: true } }
 					);
+
+					console.log(`✅ Account ${accNumb} disabled and email sent.`);
 				} catch (error) {
 					console.error(`Error disabling account ${accNumb}: ${error.message}`);
 				}

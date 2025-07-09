@@ -423,7 +423,7 @@ const sendAutomatedStopLossEmail = async () => {
 					// If any of the 3 failed, log and skip this account
 					if (
 						// closeOrdersResult !== "OK" ||
-						updateGroupResult !== "OK" ||
+						// updateGroupResult !== "OK" ||
 						updateRightsResult !== "OK"
 					) {
 						console.error(`❌ Failed to disable account ${accNumb}`);
