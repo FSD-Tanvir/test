@@ -66,7 +66,7 @@ const orderSchema = new Schema(
 		platform: {
 			type: String,
 			enum: [mt5Constant, matchTraderConstant],
-			required: true,
+			// required: true,
 		},
 	},
 	{
