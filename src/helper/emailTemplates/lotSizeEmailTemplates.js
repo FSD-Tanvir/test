@@ -163,7 +163,6 @@ const lotSizeDisabledEmailTemplate = (account, accountDetails) => {
             <div class="highlight">
                 <p><strong>Account Number:</strong> ${account}</p>
                 <p><strong>Initial Account Balance:</strong> $${accountDetails?.accountSize}</p>
-                <p><strong>Lot Size Limit:</strong> ${accountDetails?.totalLotSizeLimit}</p>
             </div>
     
             <!-- Trade Details Section -->
