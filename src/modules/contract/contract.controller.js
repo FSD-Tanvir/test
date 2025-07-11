@@ -1,5 +1,6 @@
 const { google } = require("googleapis");
 const fs = require("fs");
+const config = require("../../config/config");
 const path = require("path");
 const {
 	uploadContractServices,
@@ -8,14 +9,18 @@ const {
 } = require("./contract.services");
 const MContract = require("./contract.schema");
 
-const auth = new google.auth.GoogleAuth({
-	keyFile: path.join(__dirname, "./service-account-key.json"),
-	scopes: ["https://www.googleapis.com/auth/drive"],
-});
+const CLIENT_ID = config.CLIENT_ID;
+const CLIENT_SECRET = config.CLIENT_SECRET;
+const REDIRECT_URI = config.REDIRECT_URI;
+const REFRESH_TOKEN = config.REFRESH_TOKEN;
+
+const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+
+oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 const drive = google.drive({
 	version: "v3",
-	auth: auth,
+	auth: oauth2Client,
 });
 
 const uploadContractController = async (req, res) => {
