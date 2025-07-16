@@ -24,13 +24,12 @@ const createWithDrawRequest = async (req, res) => {
 			email,
 			accountNumber,
 			amount,
-			paymentMethod,
 		} = req.body;
 
-		if (!email || !amount || !paymentMethod || !accountNumber) {
+		if (!email || !amount || !accountNumber) {
 			return res.status(400).json({
 				message:
-					"Email, amount, payment method, and account number are required.",
+					"Email, amount,  and account number are required.",
 			});
 		}
 

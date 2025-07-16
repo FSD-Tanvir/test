@@ -17,12 +17,7 @@ const WithDrawRequestSchema = new Schema(
         traderSplit: { type: Number, default: 0 },
         riskDeduction: { type: Number, default: 0 },
         afterRiskDeduction: { type: Number, default: 0 },
-        paymentMethod: { type: String },
-        bankName: { type: String },
-        bankAccountNumber: { type: Number },
-        iban: { type: String },
-        bicn: { type: String },
-        ustd: { type: String },
+        riseEmail: { type: String },
         comment: { type: String },
         status: {
             type: String,
