@@ -518,10 +518,19 @@ const getAllAccounts = async (
       let matchQuery = {};
 
       // Search by email or account number
+      // if (searchQuery) {
+      //   const parsed = parseInt(searchQuery);
+      //   if (!isNaN(parsed)) {
+      //     matchQuery[`${type}.account`] = parsed;
+      //   } else {
+      //     matchQuery["email"] = { $regex: searchQuery, $options: "i" };
+      //   }
+      // }
+
       if (searchQuery) {
-        const parsed = parseInt(searchQuery);
-        if (!isNaN(parsed)) {
-          matchQuery[`${type}.account`] = parsed;
+        const isNumeric = /^\d+$/.test(searchQuery); // only true if it's *only* digits
+        if (isNumeric) {
+          matchQuery[`${type}.account`] = parseInt(searchQuery);
         } else {
           matchQuery["email"] = { $regex: searchQuery, $options: "i" };
         }
