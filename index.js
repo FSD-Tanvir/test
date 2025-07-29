@@ -10,6 +10,7 @@ app.use(cors()); // Enable CORS for all routes
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json()); // Parse JSON bodies
 app.use(bodyParser.json()); // Parse JSON bodies using body-parser
+app.set("trust proxy", true);
 
 // Importing route modules
 const challengesRoutes = require("./src/modules/challenge/challenges.routes.js");
