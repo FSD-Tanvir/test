@@ -912,28 +912,19 @@ const normalRegister = async (data) => {
 
 const normalLogin = async (data) => {
 	try {
-		const email = data.email?.toLowerCase();
-
-		// Find user with case-insensitive email match
-		const user = await MUser.findOne({
-			email: { $regex: new RegExp(`^${email}$`, "i") },
-		}).select("+password");
-
+		const user = await MUser.findOne({ email: data.email }).select("+password");
 		if (!user) {
 			throw new Error("Invalid email or password.");
 		}
 
 		if (user.password !== data.password) {
-			throw new Error("Invalid password.");
+			throw new Error("Invalid  password.");
 		}
 
-		// Update login IP (using same case-insensitive match)
-		await MUser.updateOne(
-			{ email: { $regex: new RegExp(`^${email}$`, "i") } },
-			{ $set: { ip: data.ip } }
-		);
+		// Update login IP
+		await MUser.updateOne({ email: data.email }, { $set: { ip: data.ip } });
 
-		// Remove the password before returning
+		// Remove the password field before returning the user object
 		const { password, ...userWithoutPassword } = user.toObject();
 
 		const token = generateToken(user._id, user.role);
