@@ -883,27 +883,33 @@ const findUserWithEmail = async (email) => {
 };
 const normalRegister = async (data) => {
 	try {
-		// Normalize email to lowercase
 		const email = data.email?.toLowerCase();
 		const { ip } = data;
 
 		if (email) {
-			// Find user using the normalized lowercase email
-			let user = await MUser.findOne({ email });
+			// Case-insensitive check for existing email
+			let user = await MUser.findOne({
+				email: { $regex: new RegExp(`^${email}$`, "i") },
+			});
 
 			if (user) {
 				user = user.toObject();
 
 				// Update IP if user exists
-				await MUser.updateOne({ email }, { $set: { ip } });
+				await MUser.updateOne(
+					{ email: { $regex: new RegExp(`^${email}$`, "i") } },
+					{ $set: { ip } }
+				);
+
 				return user;
 			}
 
-			// Create new user with normalized email
+			// Create new user with lowercase email
 			const newUser = new MUser({ ...data, email });
 			const savedUser = await newUser.save();
-
 			return savedUser;
+		} else {
+			throw new Error("Email is required.");
 		}
 	} catch (error) {
 		throw new Error(error.message);
