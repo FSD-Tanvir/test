@@ -321,7 +321,7 @@ const normalLogin = async (req, res) => {
 		const result = await userService.normalLogin({ ...req.body, ip });
 		res.status(200).json(result); // Respond with the authenticated user and token
 	} catch (error) {
-		res.status(400).json({ error }); // Respond with an error
+		res.status(400).json({ error: error.message || "An unexpected error occurred." });
 	}
 };
 
