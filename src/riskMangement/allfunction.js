@@ -15,6 +15,7 @@ const cron = require("node-cron");
 const {
 	sendAutomatedTwoPercentEmail,
 } = require("../modules/twoPercentRisk/twoPercentRisk.services");
+const { callRefreshMT5BridgeSession } = require("../helper/mt5TokenValidator");
 
 const runAllFunctions = () => {
 	/* ---------------------------------------------------------------------------------------------- */
@@ -74,5 +75,15 @@ const runAllFunctions = () => {
 	cron.schedule("45 12 * * *", () => {
 		checkAndSaveInactiveAccounts();
 	});
+
+	/* ---------------------------------------------------------------------------------------------- */
+	/*                                   //! Mt5 Token Refresh                                     */
+	/* ---------------------------------------------------------------------------------------------- */
+
+	setInterval(() => {
+		callRefreshMT5BridgeSession();
+	}, 2 * 60 * 60 * 1000);
+
+	callRefreshMT5BridgeSession();
 };
 module.exports = { runAllFunctions };
