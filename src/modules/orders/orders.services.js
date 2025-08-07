@@ -69,9 +69,7 @@ const allOrders = async (
 		const validPaymentStatuses = ["Unpaid", "Processing", "Paid", "Refunded", "Failed"];
 		const validPlatforms = [mt5Constant, matchTraderConstant];
 
-		let filter = {
-			$or: [{ isGiveAway: false }, { isGiveAway: { $exists: false } }],
-		};
+			let filter = {};
 
 		// Order status filter
 		if (orderStatus && validOrderStatuses.includes(orderStatus)) {
