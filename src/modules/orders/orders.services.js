@@ -141,9 +141,9 @@ const allOrders = async (
 		}
 
 		// Platform filter
-		if (platform && validPlatforms.includes(platform)) {
-			filter.platform = platform;
-		}
+		// if (platform && validPlatforms.includes(platform)) {
+		// 	filter.platform = platform;
+		// }
 
 		// Convert page and limit
 		const pageNumber = Number.parseInt(page, 10);
