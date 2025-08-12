@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
+// Define the ban schema
 const banSchema = new Schema({
     email: { type: String, required: true },
     date: { type: Date, default: Date.now },
