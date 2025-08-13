@@ -754,6 +754,11 @@ const assignNewMT5Account = async (
 			</div>
 		</div>
 
+		<div style="margin-top: 20px; text-align: center;">
+     <a href="https://discord.com/invite/XTwRAEVm4G">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
+
 		<!-- Footer Section -->
 		<div class="footer" style="background-color: #f7f8fa; padding: 20px; text-align: center; font-size: 12px; color: #888888; border-top: 1px solid #eeeeee; margin-top: 20px;">
 			<p>⚠ <strong>Warning:</strong><br>Please ensure that you are familiar with all the <a href="https://foxx-funded.com/faqs" target="_blank" rel="noopener noreferrer" style="color: #DB8112; text-decoration: none; font-weight: 600;">rules and regulations</a> of <strong>Foxx Funded</strong>. Failure to comply may result in breach or disqualification. Stay informed and follow the guidelines closely to ensure your progress! 🚨</p>
