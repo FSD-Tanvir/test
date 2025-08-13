@@ -5,7 +5,7 @@ const invoiceMailingHTMLTemplate = async (order) => {
 		addOnsRow = `
                 <tr>
                     <td colspan="2">Addons:</td>
-                    <td>+ $${order?.addOns}</td>
+                    <td>+ €${order?.addOns}</td>
                 </tr>
             `;
 	}
@@ -203,8 +203,8 @@ const invoiceMailingHTMLTemplate = async (order) => {
                             ${
 															order.orderItems[0].challengePrice !== null &&
 															order.orderItems[0].challengePrice !== undefined
-																? order.orderItems[0].challengePrice.toFixed(2)
-																: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																? `€${order.orderItems[0].challengePrice.toFixed(2)}`
+																: '<a href="https://discord.com/invite/XTwRAEVm4G" target="_blank">Please contact on Discord</a>'
 														}
                         </td>
                     </tr>
@@ -215,14 +215,14 @@ const invoiceMailingHTMLTemplate = async (order) => {
                         <td>
                             ${
 															order.subtotal !== null && order.subtotal !== undefined
-																? order.subtotal.toFixed(2)
-																: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																? `€${order.subtotal.toFixed(2)}`
+																: '<a href="https://discord.com/invite/XTwRAEVm4G" target="_blank">Please contact on Discord</a>'
 														}
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2">Discount:</td>
-                        <td>- $${order.discountPrice}</td>
+                        <td>- €${order.discountPrice}</td>
                     </tr>
                     <tr>
                         <td colspan="2">Payment method:</td>
@@ -233,8 +233,8 @@ const invoiceMailingHTMLTemplate = async (order) => {
                         <td>
                             ${
 															order.totalPrice !== null && order.totalPrice !== undefined
-																? order.totalPrice.toFixed(2)
-																: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																? `€${order.totalPrice.toFixed(2)}`
+																: '<a href="https://discord.com/invite/XTwRAEVm4G" target="_blank">Please contact on Discord</a>'
 														}
                         </td>
                     </tr>
@@ -259,6 +259,11 @@ const invoiceMailingHTMLTemplate = async (order) => {
     <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
         Need further assistance? <a href="https://foxx-funded.com/en/contact-us#contact-section" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
     </p>
+
+    <div style="margin-top: 20px; text-align: center;">
+     <a href="https://discord.com/invite/XTwRAEVm4G">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
 
         <div class="footer">
             <p>Thank you for shopping with us! </p>

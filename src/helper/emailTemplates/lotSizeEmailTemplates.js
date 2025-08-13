@@ -260,11 +260,10 @@ const lotSizeDisabledEmailTemplate = (account, accountDetails) => {
     
             </p>
     
-            <div class="social-links">
-                <a href="https://t.me/+2QVq5aChxiBlOWFk">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
-                </a>
-            </div>
+              <div style="margin-top: 20px; text-align: center;">
+     <a href="https://discord.com/invite/XTwRAEVm4G">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
         </div>
     
         <!-- Footer Section -->
@@ -474,11 +473,10 @@ const sendLotSizeWarningEmailTemplate = (account, accountDetails) => {
     
             </p>
             
-            <div class="social-links">
-                <a href="https://t.me/+2QVq5aChxiBlOWFk">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
-                </a>
-            </div>
+              <div style="margin-top: 20px; text-align: center;">
+     <a href="https://discord.com/invite/XTwRAEVm4G">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
         </div>
         
         <!-- Footer Section -->
