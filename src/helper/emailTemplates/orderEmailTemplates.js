@@ -54,9 +54,12 @@ const orderCreationEmailTemplate = (orderId, buyerDetails) => {
     
         <!-- Social Media Section -->
         <div style="margin-top: 20px; text-align: center;">
-            <a href="https://t.me/+2QVq5aChxiBlOWFk " style="margin-right: 10px;">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn :ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 36px; height: 36px;">
-            </a>
+     <a href="https://discord.com/invite/XTwRAEVm4G">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
+
+
+
         </div>
     
         <!-- Footer Section -->
@@ -256,6 +259,17 @@ const sendingMt5CredentialsEmailTemplate = (matchingAccount) => {
     <p style="font-size: 14px; color: #777; margin-top: 20px; line-height: 1.6;">
         Need further assistance? <a href="https://foxx-funded.com/en/contact-us#contact-section" style="color: #DB8112; text-decoration: none; font-weight: bold;">Contact our support team</a>.
     </p>
+
+    <!-- Social Media Section -->
+        <div style="margin-top: 20px; text-align: center;">
+     <a href="https://discord.com/invite/XTwRAEVm4G">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
+
+
+
+        </div>
+
 
             
         </div>
@@ -463,6 +477,16 @@ const sendingMatchTraderCredentialsEmailTemplate = (matchingAccount) => {
                     <a href="https://foxx-funded.com/en/contact-us#contact-section" class="help-link">Contact our support team</a>.
                 </p>
             </div>
+
+             <!-- Social Media Section -->
+        <div style="margin-top: 20px; text-align: center;">
+     <a href="https://discord.com/invite/XTwRAEVm4G">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
+
+
+
+        </div>
         </div>
         <div class="footer">
             <p>Thank you for choosing our services.</p>

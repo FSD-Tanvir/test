@@ -204,7 +204,7 @@ const invoiceMailingHTMLTemplate = async (order) => {
 															order.orderItems[0].challengePrice !== null &&
 															order.orderItems[0].challengePrice !== undefined
 																? order.orderItems[0].challengePrice.toFixed(2)
-																: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																: '<a href="https://discord.com/invite/XTwRAEVm4G" target="_blank">Please contact on Discord</a>'
 														}
                         </td>
                     </tr>
@@ -216,7 +216,7 @@ const invoiceMailingHTMLTemplate = async (order) => {
                             ${
 															order.subtotal !== null && order.subtotal !== undefined
 																? order.subtotal.toFixed(2)
-																: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																: '<a href="https://discord.com/invite/XTwRAEVm4G" target="_blank">Please contact on Discord</a>'
 														}
                         </td>
                     </tr>
@@ -234,7 +234,7 @@ const invoiceMailingHTMLTemplate = async (order) => {
                             ${
 															order.totalPrice !== null && order.totalPrice !== undefined
 																? order.totalPrice.toFixed(2)
-																: '<a href="https://discord.com/invite/2NpszcabHC" target="_blank">Please contact on Discord</a>'
+																: '<a href="https://discord.com/invite/XTwRAEVm4G" target="_blank">Please contact on Discord</a>'
 														}
                         </td>
                     </tr>

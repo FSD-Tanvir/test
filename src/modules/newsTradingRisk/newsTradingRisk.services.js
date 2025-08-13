@@ -376,7 +376,7 @@ const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
   				<a  href="https://t.me/summitsrikecapital">
     				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram">
   				</a>
-  				<a style="margin-left: 20px;" href="https://discord.com/invite/2NpszcabHC">
+  				<a style="margin-left: 20px;" href="https://discord.com/invite/XTwRAEVm4G">
     				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRILFgGb5Qgu-Lc9kkKFcnjKso7EI85qQcy8A&s" alt="Discord">
   				</a>
 			</div>

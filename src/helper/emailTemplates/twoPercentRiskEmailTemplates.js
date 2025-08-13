@@ -42,9 +42,10 @@ const twoPercentDisabledEmailTemplate = (account, accountDetails) => {
             </p>
 									
 								</p>
-								<a href="https://t.me/+2QVq5aChxiBlOWFk" style="display: inline-block; margin: 0 auto;">
-									<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 32px; height: 32px; vertical-align: middle;">
-								</a>
+								<a href="https://discord.com/invite/your-server-code">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
+
 							</div>
 						</div>
 				
@@ -114,9 +115,10 @@ const sendTwoPercentWarningEmailTemplate = (account, accountDetails) => {
 		
 					<!-- Social Links -->
 					<div style="text-align: center; margin-top: 30px;">
-						<a href="https://t.me/+2QVq5aChxiBlOWFk" style="text-decoration: none; display: inline-block;">
-							<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUQ9pRZvmScqICRjNBvAHEjIawnL1erY-AcQ&s" alt="Telegram" style="width: 40px; height: 40px;">
-						</a>
+						<a href="https://discord.com/invite/your-server-code">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
+</a>
+
 					</div>
 				</div>
 				
