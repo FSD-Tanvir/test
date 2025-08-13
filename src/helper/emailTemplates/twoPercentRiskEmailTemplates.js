@@ -42,7 +42,8 @@ const twoPercentDisabledEmailTemplate = (account, accountDetails) => {
             </p>
 									
 								</p>
-								<a href="https://discord.com/invite/your-server-code">
+								  <div style="margin-top: 20px; text-align: center;">
+     <a href="https://discord.com/invite/XTwRAEVm4G">
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
 </a>
 
@@ -113,13 +114,10 @@ const sendTwoPercentWarningEmailTemplate = (account, accountDetails) => {
    
             </p>
 		
-					<!-- Social Links -->
-					<div style="text-align: center; margin-top: 30px;">
-						<a href="https://discord.com/invite/your-server-code">
+					  <div style="margin-top: 20px; text-align: center;">
+     <a href="https://discord.com/invite/XTwRAEVm4G">
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMuxUS2wuAPTPNaRFscfcQ_tJ7YQNVwVjLvw&s" alt="Discord" width="48" height="48">
 </a>
-
-					</div>
 				</div>
 				
 				<!-- Footer Section -->
