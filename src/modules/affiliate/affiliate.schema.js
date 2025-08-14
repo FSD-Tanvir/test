@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 
 const affiliateSchema = new Schema({
-    fullName: { type: String },
+    first: { type: String },
+    last: { type: String },
     email: {
         type: String,
         unique: true,
@@ -16,7 +17,10 @@ const affiliateSchema = new Schema({
     referralCode: {
         type: String,
         unique: true,
-        trim: true
+        trim: true,
+        default: function () {
+            return `${this.first?.[0] || ''}${this.last?.[0] || ''}${Date.now().toString(36)}`.toUpperCase();
+        }
     },
     referralLink: {
         type: String,
@@ -52,14 +56,12 @@ const affiliateSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ["approved", "rejected", "pending"],
-        default: "pending",
+        default: "approved",
     },
     whatsAppNumber: {
         type: Number,
         trim: true,
         unique: true,
-        required: true,
     },
 }, {
     timestamps: true

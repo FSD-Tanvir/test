@@ -308,7 +308,6 @@ const normalRegister = async (req, res) => {
 	try {
 		const ip = getClientIp(req);
 		const result = await userService.normalRegister({ ...req.body, ip });
-
 		res.status(201).json(result); // Respond with the created user
 	} catch (error) {
 		res.status(400).json({ error }); // Respond with an error
