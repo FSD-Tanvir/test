@@ -4,7 +4,6 @@ const {
 	createAffiliate,
 	getAffiliateDataHandler,
 	getAllAffiliatesHandler,
-	updateAffiliateHandler,
 	getAffiliate,
 	getAllAffiliatesApprovedHandler,
 	getAffiliateById
@@ -27,6 +26,6 @@ router.get('/:referralCode', getAffiliate);
 router.get("/affiliate/:id", getAffiliateById);
 
 // Route to handle PUT requests for updating an affiliate
-router.put("/affiliate-update/:id", updateAffiliateHandler);
+// router.put("/affiliate-update/:id", updateAffiliateHandler);
 
 module.exports = router;
