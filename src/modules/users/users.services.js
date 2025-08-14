@@ -22,6 +22,7 @@ const {
 	getClosedPositions,
 } = require("../../thirdPartyMatchTraderApi/thirdPartyMatchTraderApi.js");
 const { StoreData, StoreDataMatchTrader } = require("../breach/breach.schema.js");
+const { createAffiliate } = require("../affiliate/affiliate.services.js");
 
 // Function to handle MT5 account creation
 const handleMt5AccountCreate = async (userDetails) => {
@@ -346,8 +347,8 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = 
 		// Initial match
 		const preMatch = searchQuery
 			? {
-					$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
-			  }
+				$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
+			}
 			: {};
 
 		const pipeline = [
@@ -409,12 +410,12 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = 
 			// Apply second level search if needed
 			...(searchQuery
 				? [
-						{
-							$match: {
-								$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
-							},
+					{
+						$match: {
+							$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
 						},
-				  ]
+					},
+				]
 				: []),
 
 			// Apply isVerified filter if provided
@@ -907,6 +908,15 @@ const normalRegister = async (data) => {
 			// Create new user with lowercase email
 			const newUser = new MUser({ ...data, email });
 			const savedUser = await newUser.save();
+			try {
+				await createAffiliate({
+					email: savedUser.email,
+					first: savedUser.first,
+					last: savedUser.last,
+				});
+			} catch (affiliateErr) {
+				console.error("Affiliate creation failed:", affiliateErr);
+			}
 			return savedUser;
 		} else {
 			throw new Error("Email is required.");
