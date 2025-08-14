@@ -44,19 +44,19 @@ const createTazaPayCheckout = async (transactionData) => {
 
 	let successUrl;
 
-	if (platform === matchTraderConstant) {
-		// Local development URL for Match-trader platform
-		// successUrl = `http://localhost:5173/tazaPay/payment-success/match-trader/${updatedOrderId}`;
+	// if (platform === matchTraderConstant) {
+	// 	// Local development URL for Match-trader platform
+	// 	// successUrl = `http://localhost:5173/tazaPay/payment-success/match-trader/${updatedOrderId}`;
 
-		// Production URL (uncomment when deploying)
-		successUrl = `https://foxx-funded.com/tazaPay/payment-success/match-trader/${updatedOrderId}`;
-	} else if (platform === mt5Constant) {
-		// Local development URL for MT5 platform
-		// successUrl = `http://localhost:5173/tazaPay/payment-success/${updatedOrderId}`;
+	// 	// Production URL (uncomment when deploying)
+	// 	successUrl = `https://foxx-funded.com/tazaPay/payment-success/match-trader/${updatedOrderId}`;
+	// } else if (platform === mt5Constant) {
+	// 	// Local development URL for MT5 platform
+	// 	// successUrl = `http://localhost:5173/tazaPay/payment-success/${updatedOrderId}`;
 
-		// Production URL (uncomment when deploying)
-		successUrl = `https://foxx-funded.com/tazaPay/payment-success/${updatedOrderId}`;
-	}
+	// 	// Production URL (uncomment when deploying)
+	// }
+	// successUrl = `https://foxx-funded.com/tazaPay/payment-success/${updatedOrderId}`;
 
 	const options = {
 		method: "POST",
@@ -75,7 +75,7 @@ const createTazaPayCheckout = async (transactionData) => {
 			invoice_currency: invoiceCurrency, // Default to 'EUR' if not provided
 			amount: amountInCents,
 			transaction_description: transactionDescription,
-			success_url: successUrl,
+			success_url: `https://foxx-funded.com/tazaPay/payment-success/${updatedOrderId}`,
 			cancel_url: "http://foxx-funded.com",
 		},
 	};
