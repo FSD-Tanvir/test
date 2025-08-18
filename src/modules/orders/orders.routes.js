@@ -12,6 +12,7 @@ const {
 	fetchOrdersByReferralCode,
 	fetchOrdersByReferralAndStatus,
 	getSingleOrderByOrderIdHandler,
+	saveCommentController,
 } = require("./orders.controller"); // Replace 'your-controller-file' with the actual file name
 
 // Route to handle POST requests for creating an order
@@ -43,5 +44,8 @@ router.get("/single-order/:orderId", getSingleOrderByOrderIdHandler);
 
 // Route to handle PUT requests for updating a specific order by ID
 router.put("/:id", updateOrder);
+
+// Importing the order comment service
+router.put("/:id/comment", saveCommentController);
 
 module.exports = router;

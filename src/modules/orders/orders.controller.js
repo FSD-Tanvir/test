@@ -170,6 +170,27 @@ const fetchOrdersByReferralAndStatus = async (req, res) => {
 	}
 };
 
+const saveCommentController = async (req, res) => {
+	const { id } = req.params;   // this is _id from frontend
+	const { comment } = req.body;
+
+	if (!comment || !comment.trim()) {
+		return res.status(400).json({ message: "Comment is required" });
+	}
+
+	try {
+		const updatedOrder = await ordersService.saveComment(id, comment);
+		res.status(200).json({
+			message: "Comment updated successfully",
+			order: updatedOrder,
+		});
+	} catch (error) {
+		res.status(500).json({
+			message: "Failed to update comment",
+			error: error.message,
+		});
+	}
+};
 module.exports = {
 	createOrder,
 	allOrders,
@@ -181,4 +202,5 @@ module.exports = {
 	fetchOrdersByReferralCode,
 	fetchOrdersByReferralAndStatus,
 	getSingleOrderByOrderIdHandler,
+	saveCommentController
 };
