@@ -169,41 +169,55 @@ const updateWithDrawRequestByIdService = async (id, updateData) => {
 		if (updatedWithDrawRequest.status === "approved") {
 			const emailSubject = `Withdrawal Request Approved - Account ${withdrawRequest.accountNumber}`;
 			const emailBody = `
-                            <p>Dear ${withdrawRequest?.name},</p>
-                            <p>Congratulations! We are pleased to inform you that your withdrawal has been approved!</p>
-                            <p><strong>Payout details here:</strong></p>
-                            <ul>
-                                <li><strong>Date Requested:</strong> ${new Date(
-				updatedWithDrawRequest.createdAt
-			).toUTCString()}</li>
-                                <li><strong>MetaTrader Account:</strong> ${withdrawRequest.accountNumber
-				}</li>
-                                <li><strong>Withdrawn Amount:</strong> $${withdrawRequest?.traderSplit.toFixed(
-					2
-				)}</li>
-                                <li><strong>Status:</strong> Approved</li>
-                            </ul>
-                            <p>While your trading account is currently disabled, we would appreciate it if you could upload your payout proof on our Discord or any social media, after which your account will be re-enabled for trading.
-As a broker-backed prop firm, we’re excited to offer a new feature: you can now directly deposit your SSC payout into our own broker, Haven Capital, instantly. Enjoy the benefits of trading with our broker’s top-tier conditions, designed to enhance your trading experience.
-Please note, after your first withdrawal, you may request your next payout as soon as you place your next trade. For more details, please visit your account dashboard.  </p>
-                            <br>
-                            <p>Please note, after your first withdrawal, you can request your next withdrawal 14 days after your    next trade is placed. To check your trading and withdrawal history, please visit your account dashboard.</p>
-                            <p>Thank you for choosing Foxx-Funded!</p>
-                            <p>Best regards,<br>The Foxx-Funded Team</p>
-                               <p style="font-size: 14px; color: #777; margin-top: 20px;">
-                     <!-- Help Message -->
-    <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
-        If you need any help or have questions about your account, please contact our team at 
-        <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
-    </p>
+                            <p>Hello ${withdrawRequest?.name},</p>
+<p>Your payout request has been approved – congratulations on your results and consistency! 🚀</p>
 
-            </p>
+<p>To receive your payout, please complete the following steps:</p>
+<ol>
+  <li>Accept the invitation sent via RISE (our payment platform).</li>
+  <li>Leave a review on Trustpilot about your experience with Foxx Funded:<br>
+      <a href="https://www.trustpilot.com/review/foxx-funded.com" target="_blank">https://www.trustpilot.com/review/foxx-funded.com</a>
+  </li>
+  <li>Reply to this email with a screenshot of your review.</li>
+</ol>
+<p>Once these steps are completed, your payout will be released immediately. ✅</p>
+
+<p><strong>Payout details here:</strong></p>
+<ul>
+  <li><strong>Date Requested:</strong> ${new Date(updatedWithDrawRequest.createdAt).toUTCString()}</li>
+  <li><strong>MetaTrader Account:</strong> ${withdrawRequest.accountNumber}</li>
+  <li><strong>Withdrawn Amount:</strong> $${withdrawRequest?.traderSplit.toFixed(2)}</li>
+  <li><strong>Status:</strong> Approved</li>
+</ul>
+
+<p>
+  While your trading account is currently disabled, we would appreciate it if you could upload your payout proof on our Discord or any social media, after which your account will be re-enabled for trading.
+  As a broker-backed prop firm, we’re excited to offer a new feature: you can now directly deposit your SSC payout into our own broker, Haven Capital, instantly. Enjoy the benefits of trading with our broker’s top-tier conditions, designed to enhance your trading experience.
+</p>
+
+<p>
+  Please note, after your first withdrawal, you may request your next payout as soon as you place your next trade. For more details, please visit your account dashboard.
+</p>
+<br>
+<p>
+  Please note, after your first withdrawal, you can request your next withdrawal 14 days after your next trade is placed. To check your trading and withdrawal history, please visit your account dashboard.
+</p>
+
+<p>Thank you for choosing Foxx-Funded!</p>
+<p>Best regards,<br>The Foxx-Funded Team</p>
+
+<p style="font-size: 14px; color: #777; margin-top: 20px;">
+  <p style="font-size: 14px; color: #333; margin-top: 20px; line-height: 1.6;">
+    If you need any help or have questions about your account, please contact our team at 
+    <a href="mailto:contact@foxx-funded.com" style="color: #DB8112; text-decoration: none; font-weight: bold;">contact@foxx-funded.com</a>.
+  </p>
+</p>
                         `;
 			// Send the approval email
 			await sendEmailSingleRecipient(
 				withdrawRequest?.email,
 				emailSubject,
-				"Your withdrawal request has been approved",
+				"Payout Approved – Congratulations!",
 				emailBody
 			);
 		} else if (updatedWithDrawRequest.status === "rejected") {
