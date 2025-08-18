@@ -11,6 +11,7 @@ const {
 	sendingMatchTraderCredentialsEmailTemplate,
 } = require("../../helper/emailTemplates/orderEmailTemplates");
 const { mt5Constant, matchTraderConstant } = require("../../constants/commonConstants");
+const { getAffiliateByReferralCode } = require("../affiliate/affiliate.services");
 
 /**
  * Asynchronously creates a new order in the database.
@@ -387,16 +388,31 @@ const getOrdersByReferralCode = async (referralCode) => {
 		let totalSalesPrice = 0;
 		let totalCommissions = 0;
 
+		// Fetch affiliate data once
+		const affiliateData = await getAffiliateByReferralCode(referralCode);
+
 		// Add commissionAmount to each order
 		const enrichedOrders = orders.map((order, index) => {
 			const position = index + 1;
 			const totalPrice = order.totalPrice;
 
-			let commissionRate = 0.15;
-			if (position >= 16 && position <= 30) {
-				commissionRate = 0.2;
-			} else if (position > 30) {
-				commissionRate = 0.3;
+			let commissionRate;
+
+			// ✅ If commissionsPercentage is provided in affiliate data, use it
+			if (
+				affiliateData?.commissionsPercentage !== null &&
+				affiliateData?.commissionsPercentage !== undefined &&
+				affiliateData?.commissionsPercentage !== ""
+			) {
+				commissionRate = affiliateData.commissionsPercentage / 100;
+			} else {
+				// ✅ Fallback to tier-based logic
+				commissionRate = 0.15;
+				if (position >= 16 && position <= 30) {
+					commissionRate = 0.2;
+				} else if (position > 30) {
+					commissionRate = 0.3;
+				}
 			}
 
 			const commissionAmount = parseFloat((totalPrice * commissionRate).toFixed(2));
@@ -435,6 +451,7 @@ const getOrdersByReferralCode = async (referralCode) => {
 		throw new Error(error.message);
 	}
 };
+
 
 
 const getOrdersByReferralAndStatus = async () => {
