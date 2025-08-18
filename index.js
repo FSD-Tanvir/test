@@ -43,7 +43,6 @@ const stopLossRiskRoutes = require("./src/modules/stopLossRisk/stopLossRisk.rout
 const lotSizeRiskRoutes = require("./src/modules/lotSizeRisk/lotSizeRisk.routes.js");
 const sevenDaysTradingChallengeRoutes = require("./src/modules/sevenDaysTradingChallenge/sevenDaysTradingChallenge.routes.js");
 const becomeAffiliateRequesterRoutes = require("./src/modules/becomeAffiliateRequester/becomeAffiliateRequester.routes.js");
-const orderTableCommentRoutes = require("./src/modules/orderTableComment/orderTableComment.routes.js");
 // Route middleware
 app.use("/api/foxx-funded/v1/challenges", challengesRoutes);
 app.use("/api/foxx-funded/v1/challengesMatchTrader", challengesMatchTraderRoutes);
@@ -73,7 +72,7 @@ app.use("/api/foxx-funded/v1/consistencyBreak", consistencyBreakRoutes);
 app.use("/api/foxx-funded/v1/lotSizeRisk", lotSizeRiskRoutes);
 app.use("/api/foxx-funded/v1/sevenDaysTradingChallenge", sevenDaysTradingChallengeRoutes);
 app.use("/api/foxx-funded/v1/becomeAffiliate", becomeAffiliateRequesterRoutes);
-app.use("/api/foxx-funded/v1/orderTableComment", orderTableCommentRoutes);
+
 
 runAllFunctions();
 
