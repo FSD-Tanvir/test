@@ -12,7 +12,12 @@ const {
 	getUsersWithFundedAccounts50kAndChallengeTwoStep,
 	getUsersWithFundedAccounts100kAndChallengeTwoStep,
 	getUsersWithFundedAccounts200kAndChallengeTwoStep,
-	getUsersWithFundedAccounts300kAndChallengeTwoStep
+	getUsersWithFundedAccounts300kAndChallengeTwoStep,
+	getUsersWithFundedAccounts5kAndChallengeInstantFundIng,
+	getUsersWithFundedAccounts10kAndChallengeInstantFundIng,
+	getUsersWithFundedAccounts25kAndChallengeInstantFundIng,
+	getUsersWithFundedAccounts50kAndChallengeInstantFundIng,
+	getUsersWithFundedAccounts100kAndChallengeInstantFundIng
 } = require("../../helper/utils/topAccount");
 const { getSingleAccountSummery } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 const { getDisabledAccount } = require("../disableAccounts/disableAccounts.services");
@@ -683,6 +688,268 @@ const get300kAccountTwoStep = async () => {
 	}
 };
 
+
+
+
+const get10kAccountIF = async () => {
+	try {
+		// Step 1: Fetch account summary
+		const FundedAccountsFor10k = await getUsersWithFundedAccounts10kAndChallengeInstantFundIng();
+		// Step 2: Create an array of promises and resolve them using Promise.all
+		const resultArrayPromises = FundedAccountsFor10k.flatMap((user) => {
+			return user.mt5Accounts.map(async (mt5Account) => {
+				const matchingAccount = await getSingleAccountSummery(mt5Account.account);
+
+				if (matchingAccount.length > 0) {
+					const accountSummary = matchingAccount[0];
+					const equity = accountSummary.equity;
+
+					// Assuming mt5Account.accountSize holds the account size
+					if (equity > mt5Account.challengeStageData.accountSize) {
+						const disabledAccount = await getDisabledAccount(accountSummary.login);
+
+						if (!disabledAccount) {
+							// If the account is not disabled, return the account details
+							return {
+								challengeName: mt5Account.challengeStageData.challengeName, // Assuming this is the challenge name field
+								accountNumber: accountSummary.login,
+								balance: accountSummary.balance,
+								profit: accountSummary.profit,
+								equity: accountSummary.equity,
+							};
+						}
+					}
+				}
+				return null;
+			});
+		});
+		// Wait for all promises to resolve
+		const resultArray = (await Promise.all(resultArrayPromises)).filter(
+			(account) => account !== null
+		);
+
+		// Step 3: Sort by equity in descending order and slice the top 20
+		const top20Accounts = resultArray
+			.sort((a, b) => b.equity - a.equity) // Sort accounts by equity in descending order
+			.slice(0, 20); // Take the top 20 accounts
+
+		// console.log(top20Accounts); // Output the top 20 accounts based on equity
+		return top20Accounts;
+	} catch (error) {
+		console.error("Error fetching account data:", error);
+		throw error;
+	}
+};
+const get50kAccountIF = async () => {
+	try {
+		// Step 1: Fetch account summary
+		const FundedAccountsFor5k = await getUsersWithFundedAccounts50kAndChallengeInstantFundIng();
+
+		// Step 2: Create an array of promises and resolve them using Promise.all
+		const resultArrayPromises = FundedAccountsFor5k.flatMap((user) => {
+			return user.mt5Accounts.map(async (mt5Account) => {
+				const matchingAccount = await getSingleAccountSummery(mt5Account.account);
+
+				if (matchingAccount.length > 0) {
+					const accountSummary = matchingAccount[0];
+					const equity = accountSummary.equity;
+
+					// Assuming mt5Account.accountSize holds the account size
+					if (equity > mt5Account.challengeStageData.accountSize) {
+						const disabledAccount = await getDisabledAccount(accountSummary.login);
+
+						if (!disabledAccount) {
+							// If the account is not disabled, return the account details
+							return {
+								challengeName: mt5Account.challengeStageData.challengeName, // Assuming this is the challenge name field
+								accountNumber: accountSummary.login,
+								balance: accountSummary.balance,
+								profit: accountSummary.profit,
+								equity: accountSummary.equity,
+							};
+						}
+					}
+				}
+				return null;
+			});
+		});
+
+		// Wait for all promises to resolve
+		const resultArray = (await Promise.all(resultArrayPromises)).filter(
+			(account) => account !== null
+		);
+
+		// Step 3: Sort by equity in descending order and slice the top 20
+		const top20Accounts = resultArray
+			.sort((a, b) => b.equity - a.equity) // Sort accounts by equity in descending order
+			.slice(0, 20); // Take the top 20 accounts
+
+		// console.log(top20Accounts); // Output the top 20 accounts based on equity
+		return top20Accounts;
+	} catch (error) {
+		console.error("Error fetching account data:", error);
+		throw error;
+	}
+};
+const get100kAccountIF = async () => {
+	try {
+		// Step 1: Fetch account summary
+		const FundedAccountsFor5k = await getUsersWithFundedAccounts100kAndChallengeInstantFundIng();
+
+		// Step 2: Create an array of promises and resolve them using Promise.all
+		const resultArrayPromises = FundedAccountsFor5k.flatMap((user) => {
+			return user.mt5Accounts.map(async (mt5Account) => {
+				const matchingAccount = await getSingleAccountSummery(mt5Account.account);
+
+				if (matchingAccount.length > 0) {
+					const accountSummary = matchingAccount[0];
+					const equity = accountSummary.equity;
+
+					// Assuming mt5Account.accountSize holds the account size
+					if (equity > mt5Account.challengeStageData.accountSize) {
+						const disabledAccount = await getDisabledAccount(accountSummary.login);
+
+						if (!disabledAccount) {
+							// If the account is not disabled, return the account details
+							return {
+								challengeName: mt5Account.challengeStageData.challengeName, // Assuming this is the challenge name field
+								accountNumber: accountSummary.login,
+								balance: accountSummary.balance,
+								profit: accountSummary.profit,
+								equity: accountSummary.equity,
+							};
+						}
+					}
+				}
+				return null;
+			});
+		});
+
+		// Wait for all promises to resolve
+		const resultArray = (await Promise.all(resultArrayPromises)).filter(
+			(account) => account !== null
+		);
+
+		// Step 3: Sort by equity in descending order and slice the top 20
+		const top20Accounts = resultArray
+			.sort((a, b) => b.equity - a.equity) // Sort accounts by equity in descending order
+			.slice(0, 20); // Take the top 20 accounts
+
+		// console.log(top20Accounts); // Output the top 20 accounts based on equity
+		return top20Accounts;
+	} catch (error) {
+		console.error("Error fetching account data:", error);
+		throw error;
+	}
+};
+
+const get25kAccountIF = async () => {
+	try {
+		// Step 1: Fetch account summary
+		const FundedAccountsFor25k = await getUsersWithFundedAccounts25kAndChallengeInstantFundIng();
+
+		// Step 2: Create an array of promises and resolve them using Promise.all
+		const resultArrayPromises = FundedAccountsFor25k.flatMap((user) => {
+			return user.mt5Accounts.map(async (mt5Account) => {
+				const matchingAccount = await getSingleAccountSummery(mt5Account.account);
+
+				if (matchingAccount.length > 0) {
+					const accountSummary = matchingAccount[0];
+					const equity = accountSummary.equity;
+
+					// Assuming mt5Account.accountSize holds the account size
+					if (equity > mt5Account.challengeStageData.accountSize) {
+						const disabledAccount = await getDisabledAccount(accountSummary.login);
+
+						if (!disabledAccount) {
+							// If the account is not disabled, return the account details
+							return {
+								challengeName: mt5Account.challengeStageData.challengeName, // Assuming this is the challenge name field
+								accountNumber: accountSummary.login,
+								balance: accountSummary.balance,
+								profit: accountSummary.profit,
+								equity: accountSummary.equity,
+							};
+						}
+					}
+				}
+				return null;
+			});
+		});
+
+		// Wait for all promises to resolve
+		const resultArray = (await Promise.all(resultArrayPromises)).filter(
+			(account) => account !== null
+		);
+
+		// Step 3: Sort by equity in descending order and slice the top 20
+		const top20Accounts = resultArray
+			.sort((a, b) => b.equity - a.equity) // Sort accounts by equity in descending order
+			.slice(0, 20); // Take the top 20 accounts
+
+		// console.log(top20Accounts); // Output the top 20 accounts based on equity
+		return top20Accounts;
+	} catch (error) {
+		console.error("Error fetching account data:", error);
+		throw error;
+	}
+};
+const get5kAccountIF = async () => {
+	try {
+		// Step 1: Fetch account summary
+		const FundedAccountsFor5k = await getUsersWithFundedAccounts5kAndChallengeInstantFundIng();
+
+		// Step 2: Create an array of promises and resolve them using Promise.all
+		const resultArrayPromises = FundedAccountsFor5k.flatMap((user) => {
+			return user.mt5Accounts.map(async (mt5Account) => {
+				const matchingAccount = await getSingleAccountSummery(mt5Account.account);
+
+				if (matchingAccount.length > 0) {
+					const accountSummary = matchingAccount[0];
+					const equity = accountSummary.equity;
+
+					// Assuming mt5Account.accountSize holds the account size
+					if (equity > mt5Account.challengeStageData.accountSize) {
+						const disabledAccount = await getDisabledAccount(accountSummary.login);
+
+						if (!disabledAccount) {
+							// If the account is not disabled, return the account details
+							return {
+								challengeName: mt5Account.challengeStageData.challengeName, // Assuming this is the challenge name field
+								accountNumber: accountSummary.login,
+								balance: accountSummary.balance,
+								profit: accountSummary.profit,
+								equity: accountSummary.equity,
+							};
+						}
+					}
+				}
+				return null;
+			});
+		});
+
+		// Wait for all promises to resolve
+		const resultArray = (await Promise.all(resultArrayPromises)).filter(
+			(account) => account !== null
+		);
+
+		// Step 3: Sort by equity in descending order and slice the top 20
+		const top20Accounts = resultArray
+			.sort((a, b) => b.equity - a.equity) // Sort accounts by equity in descending order
+			.slice(0, 20); // Take the top 20 accounts
+
+		// console.log(top20Accounts); // Output the top 20 accounts based on equity
+		return top20Accounts;
+	} catch (error) {
+		console.error("Error fetching account data:", error);
+		throw error;
+	}
+};
+
+
+
+
+
 module.exports = {
 	get5kAccount,
 	get10kAccount,
@@ -696,5 +963,10 @@ module.exports = {
 	get50kAccountTwoStep,
 	get100kAccountTwoStep,
 	get200kAccountTwoStep,
-	get300kAccountTwoStep
+	get300kAccountTwoStep,
+	get10kAccountIF,
+	get25kAccountIF,
+	get50kAccountIF,
+	get100kAccountIF,
+	get5kAccountIF,
 };
