@@ -58,7 +58,7 @@ const orderSchema = new Schema(
 			ref: "Coupon",
 			default: null,
 		},
-
+		comment: { type: String, default: "" },
 		addOns: { type: [String], default: [] },
 		addOnsAmount: { type: Number, default: null },
 		addOnsName: { type: String, default: null },

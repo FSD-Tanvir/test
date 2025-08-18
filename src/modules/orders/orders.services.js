@@ -69,7 +69,7 @@ const allOrders = async (
 		const validPaymentStatuses = ["Unpaid", "Processing", "Paid", "Refunded", "Failed"];
 		const validPlatforms = [mt5Constant, matchTraderConstant];
 
-			let filter = {};
+		let filter = {};
 
 		// Order status filter
 		if (orderStatus && validOrderStatuses.includes(orderStatus)) {
@@ -605,6 +605,24 @@ const getSingleOrderByOrderId = async (orderId) => {
 	}
 };
 
+const saveComment = async (id, comment) => {
+	if (!id) {
+		throw new Error("Order ID is required");
+	}
+
+	const order = await MOrder.findByIdAndUpdate(
+		id,
+		{ $set: { comment: comment.trim() } },
+		{ new: true }
+	);
+
+	if (!order) {
+		throw new Error("Order not found");
+	}
+
+	return order;
+};
+
 module.exports = {
 	createOrder,
 	allOrders,
@@ -617,4 +635,5 @@ module.exports = {
 	getOrdersByReferralAndStatus,
 	sendingFollowUpUnPaidEmail,
 	getSingleOrderByOrderId,
+	saveComment,
 };
