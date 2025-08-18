@@ -13,7 +13,13 @@ const { fetchTop5kAccounts,
     fetchTop100kAccountsTwoStep,
     fetchTop200kAccountsTwoStep,
     fetchTop300kAccountsTwoStep,
-    fetchTop300kAccounts } = require('./leaderBoard.controller');
+    fetchTop300kAccounts,
+    fetchTop10kAccountsIF,
+    fetchTop25kAccountsIF,
+    fetchTop50kAccountsIF,
+    fetchTop100kAccountsIF,
+    fetchTop5kAccountsIF
+} = require('./leaderBoard.controller');
 const router = express.Router();
 
 
@@ -33,5 +39,13 @@ router.get('/leaderboardOf50kTwoStep', fetchTop50kAccountsTwoStep);
 router.get('/leaderboardOf100kTwoStep', fetchTop100kAccountsTwoStep);
 router.get('/leaderboardOf200kTwoStep', fetchTop200kAccountsTwoStep);
 router.get('/leaderboardOf300kTwoStep', fetchTop300kAccountsTwoStep);
+
+
+
+router.get('/leaderboardOf10kIf', fetchTop10kAccountsIF);
+router.get('/leaderboardOf25kIf', fetchTop25kAccountsIF);
+router.get('/leaderboardOf50kIf', fetchTop50kAccountsIF);
+router.get('/leaderboardOf100kIf', fetchTop100kAccountsIF);
+router.get('/leaderboardOf5kIf', fetchTop5kAccountsIF);
 
 module.exports = router
