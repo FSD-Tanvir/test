@@ -47,7 +47,7 @@ const getUsersWithFundedAccounts10kAndChallenge = async () => {
             mt5Accounts: {
                 $elemMatch: {
                     challengeStage: "funded",
-                    "challengeStageData.challengeName": "10K Standard Challenge",
+                    "challengeStageData.challengeName": "Foxx Funded 10k oneStep",
                     accountStatus: "active" // Check if the account is active
                 }
             }
@@ -63,7 +63,7 @@ const getUsersWithFundedAccounts10kAndChallenge = async () => {
             const filteredAccounts = user.mt5Accounts.filter(account => {
                 return account.challengeStage === "funded" &&
                     account.accountStatus === "active" &&
-                    account.challengeStageData.challengeName === "10K Standard Challenge";
+                    account.challengeStageData.challengeName === "Foxx Funded 10k oneStep";
             });
 
             // Return user data with filtered accounts
@@ -73,10 +73,12 @@ const getUsersWithFundedAccounts10kAndChallenge = async () => {
             };
         });
 
+        console.log(filteredUsers.length, "Filtered Users with 10k Challenge");
+
         return filteredUsers;
     } catch (error) {
         console.error("Error retrieving users:", error);
-        throw new Error("Error fetching users with funded, active 5K Standard Challenge accounts.");
+        throw new Error("Error fetching users with funded, active Foxx Funded 10k oneStep accounts.");
     }
 };
 const getUsersWithFundedAccounts25kAndChallenge = async () => {
@@ -86,7 +88,7 @@ const getUsersWithFundedAccounts25kAndChallenge = async () => {
             mt5Accounts: {
                 $elemMatch: {
                     challengeStage: "funded",
-                    "challengeStageData.challengeName": "25K Standard Challenge",
+                    "challengeStageData.challengeName": "Foxx Funded 25k oneStep",
                     accountStatus: "active" // Check if the account is active
                 }
             }
@@ -102,7 +104,7 @@ const getUsersWithFundedAccounts25kAndChallenge = async () => {
             const filteredAccounts = user.mt5Accounts.filter(account => {
                 return account.challengeStage === "funded" &&
                     account.accountStatus === "active" &&
-                    account.challengeStageData.challengeName === "25K Standard Challenge";
+                    account.challengeStageData.challengeName === "Foxx Funded 25k oneStep";
             });
 
             // Return user data with filtered accounts
@@ -115,7 +117,7 @@ const getUsersWithFundedAccounts25kAndChallenge = async () => {
         return filteredUsers;
     } catch (error) {
         console.error("Error retrieving users:", error);
-        throw new Error("Error fetching users with funded, active 25K Standard Challenge accounts.");
+        throw new Error("Error fetching users with funded, active Foxx Funded 25k oneStep accounts.");
     }
 };
 const getUsersWithFundedAccounts50kAndChallenge = async () => {
@@ -125,7 +127,7 @@ const getUsersWithFundedAccounts50kAndChallenge = async () => {
             mt5Accounts: {
                 $elemMatch: {
                     challengeStage: "funded",
-                    "challengeStageData.challengeName": "50K Standard Challenge",
+                    "challengeStageData.challengeName": "Foxx Funded 50k oneStep",
                     accountStatus: "active" // Check if the account is active
                 }
             }
@@ -141,7 +143,7 @@ const getUsersWithFundedAccounts50kAndChallenge = async () => {
             const filteredAccounts = user.mt5Accounts.filter(account => {
                 return account.challengeStage === "funded" &&
                     account.accountStatus === "active" &&
-                    account.challengeStageData.challengeName === "50K Standard Challenge";
+                    account.challengeStageData.challengeName === "Foxx Funded 50k oneStep";
             });
 
             // Return user data with filtered accounts
@@ -154,7 +156,7 @@ const getUsersWithFundedAccounts50kAndChallenge = async () => {
         return filteredUsers;
     } catch (error) {
         console.error("Error retrieving users:", error);
-        throw new Error("Error fetching users with funded, active 50K Standard Challenge accounts.");
+        throw new Error("Error fetching users with funded, active Foxx Funded 50k oneStep accounts.");
     }
 };
 const getUsersWithFundedAccounts100kAndChallenge = async () => {
@@ -164,7 +166,7 @@ const getUsersWithFundedAccounts100kAndChallenge = async () => {
             mt5Accounts: {
                 $elemMatch: {
                     challengeStage: "funded",
-                    "challengeStageData.challengeName": "100K Standard Challenge",
+                    "challengeStageData.challengeName": "Foxx Funded 100k oneStep",
                     accountStatus: "active" // Check if the account is active
                 }
             }
@@ -180,7 +182,7 @@ const getUsersWithFundedAccounts100kAndChallenge = async () => {
             const filteredAccounts = user.mt5Accounts.filter(account => {
                 return account.challengeStage === "funded" &&
                     account.accountStatus === "active" &&
-                    account.challengeStageData.challengeName === "100K Standard Challenge";
+                    account.challengeStageData.challengeName === "Foxx Funded 100k oneStep";
             });
 
             // Return user data with filtered accounts
@@ -193,7 +195,7 @@ const getUsersWithFundedAccounts100kAndChallenge = async () => {
         return filteredUsers;
     } catch (error) {
         console.error("Error retrieving users:", error);
-        throw new Error("Error fetching users with funded, active 100K Standard Challenge accounts.");
+        throw new Error("Error fetching users with funded, active Foxx Funded 100k oneStep accounts.");
     }
 };
 const getUsersWithFundedAccounts200kAndChallenge = async () => {
@@ -203,7 +205,7 @@ const getUsersWithFundedAccounts200kAndChallenge = async () => {
             mt5Accounts: {
                 $elemMatch: {
                     challengeStage: "funded",
-                    "challengeStageData.challengeName": "200K Standard Challenge",
+                    "challengeStageData.challengeName": "Foxx Funded 200k oneStep",
                     accountStatus: "active" // Check if the account is active
                 }
             }
@@ -219,7 +221,7 @@ const getUsersWithFundedAccounts200kAndChallenge = async () => {
             const filteredAccounts = user.mt5Accounts.filter(account => {
                 return account.challengeStage === "funded" &&
                     account.accountStatus === "active" &&
-                    account.challengeStageData.challengeName === "200K Standard Challenge";
+                    account.challengeStageData.challengeName === "Foxx Funded 200k oneStep";
             });
 
             // Return user data with filtered accounts
@@ -232,7 +234,46 @@ const getUsersWithFundedAccounts200kAndChallenge = async () => {
         return filteredUsers;
     } catch (error) {
         console.error("Error retrieving users:", error);
-        throw new Error("Error fetching users with funded, active 200K Standard Challenge accounts.");
+        throw new Error("Error fetching users with funded, active Foxx Funded 200k oneStep accounts.");
+    }
+};
+const getUsersWithFundedAccounts300kAndChallenge = async () => {
+    try {
+        // Find users with funded, active accounts and the 5K Standard Challenge
+        const users = await MUser.find({
+            mt5Accounts: {
+                $elemMatch: {
+                    challengeStage: "funded",
+                    "challengeStageData.challengeName": "Foxx Funded 300k oneStep",
+                    accountStatus: "active" // Check if the account is active
+                }
+            }
+        });
+
+        // Check if any users are found
+        if (!users || users.length === 0) {
+            return [];
+        }
+
+        // Filter out only the mt5Accounts that match the criteria for each user
+        const filteredUsers = users.map(user => {
+            const filteredAccounts = user.mt5Accounts.filter(account => {
+                return account.challengeStage === "funded" &&
+                    account.accountStatus === "active" &&
+                    account.challengeStageData.challengeName === "Foxx Funded 300k oneStep";
+            });
+
+            // Return user data with filtered accounts
+            return {
+                ...user.toObject(), // Convert Mongoose document to plain object
+                mt5Accounts: filteredAccounts // Only include the filtered mt5Accounts
+            };
+        });
+
+        return filteredUsers;
+    } catch (error) {
+        console.error("Error retrieving users:", error);
+        throw new Error("Error fetching users with funded, active Foxx Funded 300k oneStep accounts.");
     }
 };
 
@@ -245,5 +286,6 @@ module.exports = {
     getUsersWithFundedAccounts50kAndChallenge,
     getUsersWithFundedAccounts100kAndChallenge,
     getUsersWithFundedAccounts200kAndChallenge,
+    getUsersWithFundedAccounts300kAndChallenge,
 
 };

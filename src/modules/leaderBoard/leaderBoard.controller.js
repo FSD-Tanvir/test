@@ -1,4 +1,4 @@
-const { get5kAccount,get10kAccount, get25kAccount, get50kAccount, get100kAccount, get200kAccount } = require("./leaderBoard.services");
+const { get5kAccount, get10kAccount, get25kAccount, get50kAccount, get100kAccount, get200kAccount, get300kAccount } = require("./leaderBoard.services");
 
 const fetchTop5kAccounts = async (req, res) => {
     try {
@@ -90,7 +90,22 @@ const fetchTop10kAccounts = async (req, res) => {
         });
     }
 };
+const fetchTop300kAccounts = async (req, res) => {
+    try {
+        const topAccounts = await get300kAccount();
+        return res.status(200).json({
+            success: true,
+            data: topAccounts,
+        });
+    } catch (error) {
+        console.error("Error in fetching accounts:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error fetching accounts. Please try again later.",
+        });
+    }
+};
 
 module.exports = {
-	fetchTop5kAccounts,fetchTop10kAccounts,fetchTop25kAccounts,fetchTop50kAccounts,fetchTop100kAccounts,fetchTop200kAccounts
+    fetchTop5kAccounts, fetchTop10kAccounts, fetchTop25kAccounts, fetchTop50kAccounts, fetchTop100kAccounts, fetchTop200kAccounts, fetchTop300kAccounts
 };
