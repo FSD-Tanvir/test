@@ -51,15 +51,15 @@ const getAllAffiliatesApprovedHandler = async (req, res) => {
   }
 };
 
-// const updateAffiliateHandler = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const affiliate = await affiliateService.updateAffiliate(id, req.body);
-//     res.status(201).json(affiliate);
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//   }
-// };
+const updateAffiliateHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const affiliate = await affiliateService.updateAffiliate(id, req.body);
+    res.status(201).json(affiliate);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 
 // Controller to get an affiliate by referral code
 const getAffiliate = async (req, res) => {
@@ -99,5 +99,6 @@ module.exports = {
   getAllAffiliatesHandler,
   getAffiliate,
   getAllAffiliatesApprovedHandler,
-  getAffiliateById
+  getAffiliateById,
+  updateAffiliateHandler
 };
