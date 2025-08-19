@@ -263,7 +263,10 @@ const getOnlyUser = async (id) => {
 const generateAllUsersCSV = async () => {
 	try {
 		// Select only necessary fields: email, first, last, mt5Accounts
-		const users = await MUser.find({}, "email first last mt5Accounts createdAt").lean();
+		const users = await MUser.find(
+			{},
+			"email first last mt5Accounts createdAt phone country"
+		).lean();
 
 		if (!users.length) throw new Error("No users found");
 
