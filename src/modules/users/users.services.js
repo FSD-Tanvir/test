@@ -281,6 +281,8 @@ const generateAllUsersCSV = async () => {
 				email: user.email,
 				firstName: user.first.trim(),
 				lastName: user.last.trim(),
+				phone: user.phone,
+				country: user.country,
 				createdAt: formattedCreatedAt, // Use the formatted date
 				challengeNames,
 			};
@@ -347,8 +349,8 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = 
 		// Initial match
 		const preMatch = searchQuery
 			? {
-				$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
-			}
+					$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
+			  }
 			: {};
 
 		const pipeline = [
@@ -410,12 +412,12 @@ const getAllUsers = async (page = 1, limit = 10, searchQuery = "", isVerified = 
 			// Apply second level search if needed
 			...(searchQuery
 				? [
-					{
-						$match: {
-							$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
+						{
+							$match: {
+								$or: [{ email: regex }, { first: regex }, { last: regex }, { userId: regex }],
+							},
 						},
-					},
-				]
+				  ]
 				: []),
 
 			// Apply isVerified filter if provided
