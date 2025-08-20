@@ -72,7 +72,6 @@ const getUsersWithFundedAccounts10kAndChallenge = async () => {
             };
         });
 
-        console.log(filteredUsers.length, "Filtered Users with 10k Challenge");
 
         return filteredUsers;
     } catch (error) {
@@ -311,7 +310,6 @@ const getUsersWithFundedAccounts10kAndChallengeTwoStep = async () => {
             };
         });
 
-        console.log(filteredUsers.length, "Filtered Users with 10k Challenge");
 
         return filteredUsers;
     } catch (error) {
@@ -353,7 +351,6 @@ const getUsersWithFundedAccounts25kAndChallengeTwoStep = async () => {
                 mt5Accounts: filteredAccounts // Only include the filtered mt5Accounts
             };
         });
-        console.log(filteredUsers.length, "Filtered Users with 25k Challenge");
 
         return filteredUsers;
     } catch (error) {
@@ -550,7 +547,6 @@ const getUsersWithFundedAccounts10kAndChallengeInstantFundIng = async () => {
             };
         });
 
-        console.log(filteredUsers.length, "Filtered Users with 10k Challenge");
 
         return filteredUsers;
     } catch (error) {
@@ -592,7 +588,6 @@ const getUsersWithFundedAccounts25kAndChallengeInstantFundIng = async () => {
                 mt5Accounts: filteredAccounts // Only include the filtered mt5Accounts
             };
         });
-        console.log(filteredUsers.length, "Filtered Users with 25k Challenge");
 
         return filteredUsers;
     } catch (error) {

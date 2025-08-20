@@ -64,8 +64,6 @@ const lotSizeRisk = async () => {
 	const storedTicketSet = new Set(storedTickets.map((doc) => doc.ticket));
 
 	const processBatch = async (accounts, batchNumber) => {
-		console.log(`Processing batch number ${batchNumber}`);
-
 		const allGroupedOrders = await Promise.all(
 			accounts.map(async (account) => {
 				try {
@@ -272,9 +270,8 @@ const disableLotRiskedAccount = async (account, accountDetails) => {
 		// Return a success message but add a warning about email failure
 		return {
 			success: true,
-			message: `The account "${account}" has been successfully disabled due to Lot Size Risk. ${
-				emailSent ? "An email notification has been sent." : "However, email notification failed."
-			}`,
+			message: `The account "${account}" has been successfully disabled due to Lot Size Risk. ${emailSent ? "An email notification has been sent." : "However, email notification failed."
+				}`,
 			emailSent,
 		};
 	} catch (error) {
@@ -366,7 +363,6 @@ const sendAutomatedLotSizeEmail = async () => {
 			const currentEmailCount = account.trades[0]?.emailCount || 0;
 
 			if (isDisabled) {
-				console.log(`Account ${accNumb} is already disabled. Skipping.`);
 				continue;
 			}
 
@@ -454,8 +450,6 @@ const sendAutomatedLotSizeEmail = async () => {
 
 					// Step 6: Update database status
 					await LotSizeRiskModel.updateMany({ account: accNumb }, { $set: { isDisabled: true } });
-
-					console.log(`✅ Account ${accNumb} disabled and email sent.`);
 				} catch (error) {
 					console.error(`Error disabling account ${accNumb}: ${error.message}`);
 				}
@@ -488,7 +482,6 @@ const sendAutomatedLotSizeEmail = async () => {
 			}
 		}
 
-		console.log("Email processing for Lot Size completed successfully.");
 	} catch (error) {
 		console.error("Failed to fetch lot size risk data:", error.message);
 		throw new Error("Failed to fetch lot size risk data");

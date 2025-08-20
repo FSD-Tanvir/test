@@ -60,7 +60,6 @@ const deleteAccountDataController = async (req, res) => {
 const getAllAccounts = async (req, res) => {
 	try {
 		const accounts = await fetchAllAccounts();
-		console.log(accounts);
 		res.status(200).json({
 			success: true,
 			data: accounts,

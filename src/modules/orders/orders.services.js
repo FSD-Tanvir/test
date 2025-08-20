@@ -604,7 +604,6 @@ const sendingFollowUpUnPaidEmail = async () => {
 					null,
 					htmlTemplate
 				);
-				console.log("Follow-up email sent successfully to:", buyerDetails.email);
 			}
 		}
 	} catch (error) {

@@ -55,7 +55,6 @@ const updateExpiredCoupons = async () => {
 				{ expiryDate: { $lt: now }, status: "active" },
 				{ $set: { status: "expired" } },
 			);
-		console.log(`${result.modifiedCount} coupons updated to expired status.`);
 	} catch (error) {
 		console.error("Error updating expired coupons:", error);
 	}

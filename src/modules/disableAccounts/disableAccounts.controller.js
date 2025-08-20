@@ -54,7 +54,6 @@ const getAllDisabledAccounts = async (req, res) => {
 
 
 const createManuallyDisabledAccountHandler = async (req, res) => {
-	console.log("createManuallyDisabledAccountHandler called");
 	try {
 		const { accountNumber } = req.query;
 		const { message } = req.body;
