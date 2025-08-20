@@ -94,7 +94,6 @@ const passingChallengeUsingAPI = async (mt5Account) => {
 
 			// Check if accNumber is available
 			if (!accNumber) {
-				console.log("Account number is missing, skipping this account.");
 				continue; // Skip to the next iteration if accNumber is not available
 			}
 
@@ -461,9 +460,8 @@ const assignNewMT5Account = async (
 			master_pass: generatePassword(),
 			investor_pass: generatePassword(),
 			amount: account.challengeStageData.accountSize,
-			FirstName: `Foxx Funded - ${
-				account?.challengeStageData?.challengeName
-			} (${newChallengeStage}) ${user.first ? user.first : ""}`,
+			FirstName: `Foxx Funded - ${account?.challengeStageData?.challengeName
+				} (${newChallengeStage}) ${user.first ? user.first : ""}`,
 			LastName: user?.last,
 			Country: user?.country,
 			Address: user?.addr,
@@ -527,32 +525,32 @@ const assignNewMT5Account = async (
 					phase2:
 						newChallengeStage === "phase2"
 							? {
-									maxDailyDrawdown: 4,
-									maxDrawdown: 8,
-									tradingPeriod: "360 Days",
-									profitTarget: 7,
-									minTradingDays: 5,
-									drawdownType: "equity-based",
-									profitSpilt: "90/10",
-									payouts: false,
-									leverage: 100,
-									stage: "phase2",
-							  }
+								maxDailyDrawdown: 4,
+								maxDrawdown: 8,
+								tradingPeriod: "360 Days",
+								profitTarget: 7,
+								minTradingDays: 5,
+								drawdownType: "equity-based",
+								profitSpilt: "90/10",
+								payouts: false,
+								leverage: 100,
+								stage: "phase2",
+							}
 							: null,
 					funded:
 						newChallengeStage === "funded"
 							? {
-									maxDailyDrawdown: 4,
-									maxDrawdown: 8,
-									tradingPeriod: "Unlimited",
-									profitTarget: null,
-									minTradingDays: 1,
-									drawdownType: "equity-based",
-									profitSpilt: "90/10",
-									payouts: true,
-									leverage: 100,
-									stage: "funded",
-							  }
+								maxDailyDrawdown: 4,
+								maxDrawdown: 8,
+								tradingPeriod: "Unlimited",
+								profitTarget: null,
+								minTradingDays: 1,
+								drawdownType: "equity-based",
+								profitSpilt: "90/10",
+								payouts: true,
+								leverage: 100,
+								stage: "funded",
+							}
 							: null,
 				},
 			},

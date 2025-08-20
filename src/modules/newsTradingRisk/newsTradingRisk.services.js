@@ -213,7 +213,6 @@ const sendWarningEmailForNewsTrading = async (account, accountDetails) => {
 };
 
 const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
-	console.log("accountDetails", accountDetails);
 	try {
 		const message = "News Trading Violation";
 
@@ -407,9 +406,8 @@ const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
 		}
 		return {
 			success: true,
-			message: `The account "${account}" has been successfully disabled due to exceeding the News Trading Risk. ${
-				emailSent ? "An email notification has been sent." : "However, email notification failed."
-			}`,
+			message: `The account "${account}" has been successfully disabled due to exceeding the News Trading Risk. ${emailSent ? "An email notification has been sent." : "However, email notification failed."
+				}`,
 			emailSent,
 		};
 	} catch (error) {

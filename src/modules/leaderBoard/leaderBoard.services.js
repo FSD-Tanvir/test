@@ -26,7 +26,6 @@ const get5kAccount = async () => {
 	try {
 		// Step 1: Fetch account summary
 		const FundedAccountsFor5k = await getUsersWithFundedAccounts5kAndChallenge();
-		console.log(FundedAccountsFor5k.length, "FundedAccountsFor5k");
 
 		// Step 2: Create an array of promises and resolve them using Promise.all
 		const resultArrayPromises = FundedAccountsFor5k.flatMap((user) => {
@@ -66,8 +65,6 @@ const get5kAccount = async () => {
 		const top20Accounts = resultArray
 			.sort((a, b) => b.equity - a.equity) // Sort accounts by equity in descending order
 			.slice(0, 20); // Take the top 20 accounts
-
-		// console.log(top20Accounts); // Output the top 20 accounts based on equity
 		return top20Accounts;
 	} catch (error) {
 		console.error("Error fetching account data:", error);
@@ -116,8 +113,6 @@ const get10kAccount = async () => {
 		const top20Accounts = resultArray
 			.sort((a, b) => b.equity - a.equity) // Sort accounts by equity in descending order
 			.slice(0, 20); // Take the top 20 accounts
-
-		// console.log(top20Accounts); // Output the top 20 accounts based on equity
 		return top20Accounts;
 	} catch (error) {
 		console.error("Error fetching account data:", error);
@@ -167,8 +162,6 @@ const get50kAccount = async () => {
 		const top20Accounts = resultArray
 			.sort((a, b) => b.equity - a.equity) // Sort accounts by equity in descending order
 			.slice(0, 20); // Take the top 20 accounts
-
-		// console.log(top20Accounts); // Output the top 20 accounts based on equity
 		return top20Accounts;
 	} catch (error) {
 		console.error("Error fetching account data:", error);

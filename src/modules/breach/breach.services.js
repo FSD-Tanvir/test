@@ -11,7 +11,6 @@ const storeDataDaily = async (retryCount = 0) => {
 	try {
 		const mt5Users = await allUserDetails();
 
-		console.log(`👥 MT5 Users: ${mt5Users.length}`);
 
 		const storeData = [];
 

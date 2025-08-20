@@ -73,7 +73,6 @@ const consistencyBreak = async () => {
 	const storedTicketSet = new Set(storedTickets.map((doc) => doc.ticket));
 
 	const processBatch = async (accounts, batchNumber) => {
-		console.log(`Processing batch number ${batchNumber}`);
 
 		const allGroupedOrders = await Promise.all(
 			accounts.map(async (account) => {
@@ -287,9 +286,8 @@ const disableConsistencyBreakAccount = async (account, accountDetails) => {
 		// Return a success message but add a warning about email failure
 		return {
 			success: true,
-			message: `The account "${account}" has been successfully disabled due to Consistency Break Risk. ${
-				emailSent ? "An email notification has been sent." : "However, email notification failed."
-			}`,
+			message: `The account "${account}" has been successfully disabled due to Consistency Break Risk. ${emailSent ? "An email notification has been sent." : "However, email notification failed."
+				}`,
 			emailSent,
 		};
 	} catch (error) {
@@ -506,7 +504,6 @@ const sendAutomatedConsistencyBreakEmail = async () => {
 			// }
 		}
 
-		console.log("Email processing for Consistency completed successfully.");
 	} catch (error) {
 		console.error(error);
 		throw new Error("Failed to fetch consistency break data or send emails");

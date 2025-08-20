@@ -6,7 +6,6 @@ const createAffiliate = async (affiliateData) => {
 	const affiliate = new MAffiliate(affiliateData);
 
 	const savedAffiliateRequest = await affiliate.save();
-	console.log("Affiliate request saved:", savedAffiliateRequest);
 	const htmlTemplate = `
 	<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #DB8112; border-radius: 10px; background-color: #ffffff; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center;">
 		<div style="text-align: center; margin-bottom: 15px;">
