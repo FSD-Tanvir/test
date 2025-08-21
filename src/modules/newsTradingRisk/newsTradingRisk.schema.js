@@ -17,6 +17,8 @@ const newsTradingRiskSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+newsTradingRiskSchema.index({ date: 1, country: 1 });
+
 const MNewsTradingRisk = mongoose.model("NewsTradingRisk", newsTradingRiskSchema);
 
 module.exports = { MNewsTradingRisk };
