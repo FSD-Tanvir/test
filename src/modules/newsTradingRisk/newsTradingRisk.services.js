@@ -3,22 +3,83 @@ const { OrderCloseAll, accountUpdate } = require("../../thirdPartyMt5Api/thirdPa
 const { saveRealTimeLog } = require("../disableAccounts/disableAccounts.services");
 const { MNewsTradingRisk } = require("./newsTradingRisk.schema");
 
-const getAllNewsTradingRisks = async () => {
-	const risks = await MNewsTradingRisk.find().sort({ createdAt: -1 });
 
-	return risks.map((risk) => {
-		// Only include non-null accounts
-		const filteredDetails = risk.newsTradingRiskAccountDetails.filter(
-			(detail) => detail.account !== null
-		);
 
-		// Convert to plain JS object and replace the array
-		return {
-			...risk.toObject(),
-			newsTradingRiskAccountDetails: filteredDetails,
+const getEconomicEvents = async (filters = {}) => {
+	const match = {};
+
+	// Filter by country
+	if (filters.country) match.country = filters.country;
+
+	// Filter by impact
+	if (filters.impact && ["Low", "Medium", "High"].includes(filters.impact)) {
+		match.impact = filters.impact;
+	}
+
+	const pipeline = [];
+
+	// Day-of-week filter (calculate based on UTC-6)
+	if (filters.day) {
+		const daysMap = {
+			Sunday: 1,
+			Monday: 2,
+			Tuesday: 3,
+			Wednesday: 4,
+			Thursday: 5,
+			Friday: 6,
+			Saturday: 7,
 		};
+		const targetDay = daysMap[filters.day];
+
+		if (targetDay) {
+			pipeline.push({
+				$addFields: {
+					dateAsDate: { $toDate: "$date" }, // convert string to Date if needed
+				},
+			});
+			pipeline.push({
+				$addFields: {
+					dayOfWeek: {
+						$dayOfWeek: { $add: ["$dateAsDate", -6 * 60 * 60 * 1000] },
+					},
+				},
+			});
+			pipeline.push({ $match: { dayOfWeek: targetDay } });
+		}
+	} else {
+		// If no day filter, still convert date to Date type for safe subtraction
+		pipeline.push({
+			$addFields: {
+				dateAsDate: { $toDate: "$date" },
+			},
+		});
+	}
+
+	// Apply other filters
+	if (Object.keys(match).length > 0) {
+		pipeline.push({ $match: match });
+	}
+
+	// Subtract 6 hours for frontend display
+	pipeline.push({
+		$addFields: {
+			date: { $add: ["$dateAsDate", -6 * 60 * 60 * 1000] },
+		},
 	});
+
+	// Sort by date ascending
+	pipeline.push({ $sort: { date: 1 } });
+
+	// Remove temporary fields if needed
+	pipeline.push({ $project: { dateAsDate: 0, dayOfWeek: 0 } });
+
+	const data = await MNewsTradingRisk.aggregate(pipeline);
+	return data;
 };
+
+
+
+
 
 const getAccountDetailsByAccountNumber = async (accountNumber) => {
 	const data = await MNewsTradingRisk.aggregate([
@@ -418,6 +479,6 @@ const disableRiskedAccountForNewsTrading = async (account, accountDetails) => {
 module.exports = {
 	sendWarningEmailForNewsTrading,
 	disableRiskedAccountForNewsTrading,
-	getAllNewsTradingRisks,
+	getEconomicEvents,
 	getAccountDetailsByAccountNumber,
 };
