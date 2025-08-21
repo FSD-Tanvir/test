@@ -1,66 +1,18 @@
-// twoPercentRisk.schema.js
+
 const mongoose = require("mongoose");
-
-
-
-const newsTradingRiskAccountDetails = new mongoose.Schema(
-    {
-        email: {
-            type: String,
-            default: '',
-        },
-        account: {
-            type: Number,
-            default: null,
-        },
-        ticket: {
-            type: Number,
-            default: null,
-        },
-        openTime: {
-            type: Date,
-            default: null,
-        },
-        closeTime: {
-            type: Date,
-            default: null,
-        },
-        emailSent: {
-            type: Boolean,
-            default: false,
-        },
-        emailCount: {
-            type: Number,
-            default: 0,
-        },
-        isDisabled: {
-            type: Boolean,
-            default: false,
-        },
-        message: {
-            type: String,
-            default: "",
-        },
-    }
-)
 
 const newsTradingRiskSchema = new mongoose.Schema(
     {
-        newsTradingRiskAccountDetails: {
-            type: [newsTradingRiskAccountDetails],
-        },
-        newsDate: {
-            type: Date,
-            required: true,
-        },
-        currency: {
+        title: { type: String, required: true },
+        country: { type: String, required: true },
+        date: { type: Date, required: true },
+        impact: {
             type: String,
+            enum: ["Low", "Medium", "High"],
             required: true,
         },
-        heading: {
-            type: String,
-            required: true,
-        },
+        forecast: { type: String, default: "" },
+        previous: { type: String, default: "" },
     },
     { timestamps: true }
 );
