@@ -2,9 +2,8 @@ const { orderHistories } = require("../../thirdPartyMt5Api/thirdPartyMt5Api");
 
 const {
     sendWarningEmailForNewsTrading,
-    disableRiskedAccountForNewsTrading,
-    getAllNewsTradingRisks,
     getAccountDetailsByAccountNumber,
+    getEconomicEvents
 } = require("./newsTradingRisk.services");
 const { MNewsTradingRisk } = require("./newsTradingRisk.schema");
 const { allAccounts } = require("../../helper/utils/allAccounts");
@@ -132,15 +131,27 @@ const getAccountDetails = async (req, res) => {
 };
 
 
+
 const getAllNewsTradingRiskController = async (req, res) => {
     try {
-        const risks = await getAllNewsTradingRisks();
-        res.status(200).json({ success: true, data: risks });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        const { day, impact, country } = req.query;
+
+        const data = await getEconomicEvents({ day, impact, country });
+
+        res.status(200).json({
+            success: true,
+            count: data.length,
+            data,
+        });
+    } catch (error) {
+        console.error("Error fetching news trading risk:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server Error",
+            error: error.message,
+        });
     }
 };
-
 
 const sendWarningEmailHandlerForNewsTrading = async (req, res) => {
     try {

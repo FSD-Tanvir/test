@@ -6,6 +6,11 @@ const router = express.Router();
 
 
 
+
+
+
+
+
 router.get("/", getAllNewsTradingRiskController);
 
 router.get('/:account', getAccountDetails);
